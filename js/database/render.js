@@ -72,14 +72,14 @@ loading="lazy">
 <div class="buttonRow">
 
 <button
-onclick="editItem(${item.id})">
+onclick="editItem('${item.id}')">
 
 ✏️ Sửa
 
 </button>
 
 <button
-onclick="deleteItem(${item.id})">
+onclick="deleteItem('${item.id}')">
 
 🗑 Xóa
 
