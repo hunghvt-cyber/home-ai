@@ -1,7 +1,5 @@
 let isSaving = false;
 
-let editingId = null;
-
 
 async function saveItem() {
 
@@ -38,8 +36,7 @@ async function saveItem() {
 
 
     const saveButton =
-        document
-            .getElementById("saveButton");
+        document.getElementById("saveButton");
 
 
     isSaving = true;
@@ -108,10 +105,8 @@ async function saveItem() {
         }
 
 
-
         const resizedBlob =
             await resizeImage(selectedFile);
-
 
 
         const fileName =
@@ -121,7 +116,6 @@ async function saveItem() {
                 .replace(/\s/g, "_")
                 .replace(/\.[^/.]+$/, "") +
             ".jpg";
-
 
 
         const upload =
@@ -137,7 +131,6 @@ async function saveItem() {
                 );
 
 
-
         if (upload.error) {
 
             throw upload.error;
@@ -145,13 +138,11 @@ async function saveItem() {
         }
 
 
-
         const imageUrl =
             db.storage
                 .from("images")
                 .getPublicUrl(fileName)
                 .data.publicUrl;
-
 
 
         const insert =
@@ -166,13 +157,11 @@ async function saveItem() {
                 ]);
 
 
-
         if (insert.error) {
 
             throw insert.error;
 
         }
-
 
 
         showMessage(
@@ -186,29 +175,22 @@ async function saveItem() {
         await loadItems();
 
 
-
     }
     catch(error) {
-
 
         showMessage(
             "❌ " + error.message
         );
 
-
     }
     finally {
 
-
         isSaving = false;
-
 
         saveButton.disabled = false;
 
-
         saveButton.innerHTML =
             "💾 Lưu";
-
 
     }
 
