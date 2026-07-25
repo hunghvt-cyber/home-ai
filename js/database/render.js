@@ -46,6 +46,7 @@ function formatDate(dateString) {
 
 }
 
+
 function renderItems(items = allItems) {
 
     const list =
