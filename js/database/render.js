@@ -69,6 +69,24 @@ loading="lazy">
 
 <p>🕒 ${formatDate(item.created_at)}</p>
 
+<div class="buttonRow">
+
+<button
+onclick="editItem(${item.id})">
+
+✏️ Sửa
+
+</button>
+
+<button
+onclick="deleteItem(${item.id})">
+
+🗑 Xóa
+
+</button>
+
+</div>
+
 </div>
 
 `;
