@@ -4,6 +4,8 @@ function init() {
 
     initSearch();
 
+    initAI();
+
     loadItems();
 
 }
