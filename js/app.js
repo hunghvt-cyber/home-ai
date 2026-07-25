@@ -2,6 +2,8 @@ function init() {
 
     initImage();
 
+    initSearch();
+
     loadItems();
 
 }
