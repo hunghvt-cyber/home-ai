@@ -36,7 +36,8 @@ async function saveItem() {
 
 
     const saveButton =
-        document.getElementById("saveButton");
+        document
+            .getElementById("saveButton");
 
 
     isSaving = true;
@@ -47,7 +48,7 @@ async function saveItem() {
     try {
 
 
-        if (editingId) {
+        if (typeof editingId !== "undefined" && editingId) {
 
 
             const update =
@@ -70,16 +71,12 @@ async function saveItem() {
             }
 
 
-            showMessage(
-                "✅ Đã cập nhật."
-            );
-
-
             editingId = null;
 
 
-            saveButton.innerHTML =
-                "💾 Lưu";
+            showMessage(
+                "✅ Đã cập nhật."
+            );
 
 
             clearForm();
@@ -105,8 +102,10 @@ async function saveItem() {
         }
 
 
+
         const resizedBlob =
             await resizeImage(selectedFile);
+
 
 
         const fileName =
@@ -116,6 +115,7 @@ async function saveItem() {
                 .replace(/\s/g, "_")
                 .replace(/\.[^/.]+$/, "") +
             ".jpg";
+
 
 
         const upload =
@@ -131,6 +131,7 @@ async function saveItem() {
                 );
 
 
+
         if (upload.error) {
 
             throw upload.error;
@@ -138,11 +139,13 @@ async function saveItem() {
         }
 
 
+
         const imageUrl =
             db.storage
                 .from("images")
                 .getPublicUrl(fileName)
                 .data.publicUrl;
+
 
 
         const insert =
@@ -157,11 +160,13 @@ async function saveItem() {
                 ]);
 
 
+
         if (insert.error) {
 
             throw insert.error;
 
         }
+
 
 
         showMessage(
@@ -173,6 +178,7 @@ async function saveItem() {
 
 
         await loadItems();
+
 
 
     }
@@ -187,7 +193,9 @@ async function saveItem() {
 
         isSaving = false;
 
+
         saveButton.disabled = false;
+
 
         saveButton.innerHTML =
             "💾 Lưu";
