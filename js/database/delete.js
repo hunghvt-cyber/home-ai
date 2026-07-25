@@ -1,11 +1,10 @@
 async function deleteItem(id) {
 
-    const confirmDelete =
-        confirm(
-            "Bạn có chắc muốn xóa món đồ này?"
-        );
-
-    if (!confirmDelete) {
+    if (
+        !confirm(
+            "Bạn có chắc muốn xóa?"
+        )
+    ) {
 
         return;
 
@@ -18,26 +17,17 @@ async function deleteItem(id) {
                 x => x.id === id
             );
 
+
         if (!item) {
+
+            showMessage(
+                "❌ Không tìm thấy dữ liệu."
+            );
 
             return;
 
         }
 
-        const fileName =
-            item.image_url
-                .split("/images/")
-                .pop();
-
-        if (fileName) {
-
-            await db.storage
-                .from("images")
-                .remove([
-                    fileName
-                ]);
-
-        }
 
         const result =
             await db
@@ -48,17 +38,54 @@ async function deleteItem(id) {
                     id
                 );
 
+
         if (result.error) {
 
             throw result.error;
 
         }
 
+
+        if (
+            item.image_url
+        ) {
+
+            const fileName =
+                item.image_url
+                    .split("/")
+                    .pop();
+
+
+            if (fileName) {
+
+                const remove =
+                    await db.storage
+                        .from("images")
+                        .remove([
+                            fileName
+                        ]);
+
+
+                if (remove.error) {
+
+                    console.log(
+                        remove.error
+                    );
+
+                }
+
+            }
+
+        }
+
+
         showMessage(
-            "✅ Đã xóa."
+            "✅ Đã xóa thành công."
         );
 
+
         await loadItems();
+
 
     }
     catch(error) {
