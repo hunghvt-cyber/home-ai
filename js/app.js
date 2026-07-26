@@ -73,9 +73,16 @@ async function init() {
 
         initAI();
 
-        await loadRooms();
+
+        if (typeof loadRooms === "function") {
+
+            await loadRooms();
+
+        }
+
 
         await loadItems();
+
 
     }
     catch(error) {
