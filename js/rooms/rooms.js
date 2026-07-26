@@ -53,7 +53,6 @@ function updateRoomSelects() {
 </option>
 `;
 
-
         rooms.forEach(r => {
 
             room.innerHTML +=
@@ -78,8 +77,6 @@ ${r.name}
 </option>
 `;
 
-
-
         rooms.forEach(r => {
 
             roomFilter.innerHTML +=
@@ -103,9 +100,7 @@ function renderRoomManager() {
 
 
     const list =
-        document.getElementById(
-            "roomList"
-        );
+        document.getElementById("roomList");
 
 
     if (!list) {
@@ -133,14 +128,12 @@ function renderRoomManager() {
 </span>
 
 
-
 <button
 onclick="renameRoom('${r.id}')">
 
 ✏️
 
 </button>
-
 
 
 <button
@@ -163,6 +156,11 @@ onclick="deleteRoom('${r.id}')">
 
 
 }
+
+
+
+
+
 function openRoomManager() {
 
 
@@ -238,23 +236,19 @@ async function addRoom() {
         await db
             .from("rooms")
             .insert([
-
                 {
                     name:name
                 }
-
             ]);
 
 
 
     if (result.error) {
 
-
         showMessage(
             "❌ " +
             result.error.message
         );
-
 
         return;
 
@@ -266,7 +260,6 @@ async function addRoom() {
 
 
     await loadRooms();
-
 
 
     showMessage(
@@ -287,7 +280,6 @@ async function renameRoom(id) {
         rooms.find(
             r => r.id == id
         );
-
 
 
     if (!room) {
@@ -322,6 +314,38 @@ async function renameRoom(id) {
 
 
 
+    // cập nhật món đồ trước
+    const updateItems =
+        await db
+            .from("items")
+            .update({
+
+                room:name
+
+            })
+            .eq(
+                "room",
+                room.name
+            );
+
+
+
+    if (updateItems.error) {
+
+
+        showMessage(
+            "❌ Lỗi cập nhật đồ: " +
+            updateItems.error.message
+        );
+
+
+        return;
+
+    }
+
+
+
+    // cập nhật phòng sau
     const updateRoom =
         await db
             .from("rooms")
@@ -343,37 +367,6 @@ async function renameRoom(id) {
         showMessage(
             "❌ " +
             updateRoom.error.message
-        );
-
-
-        return;
-
-    }
-
-
-
-
-    const updateItems =
-        await db
-            .from("items")
-            .update({
-
-                room:name
-
-            })
-            .eq(
-                "room",
-                room.name
-            );
-
-
-
-    if (updateItems.error) {
-
-
-        showMessage(
-            "❌ " +
-            updateItems.error.message
         );
 
 
@@ -407,7 +400,6 @@ async function deleteRoom(id) {
         rooms.find(
             r => r.id == id
         );
-
 
 
     if (!room) {
