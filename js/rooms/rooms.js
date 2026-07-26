@@ -1,5 +1,6 @@
 let rooms = [];
 
+
 async function loadRooms() {
 
     const result =
@@ -13,13 +14,17 @@ async function loadRooms() {
                 }
             );
 
+
     if (result.error) {
 
         throw result.error;
 
     }
 
-    rooms = result.data || [];
+
+    rooms =
+        result.data || [];
+
 
     updateRoomSelects();
 
@@ -27,66 +32,102 @@ async function loadRooms() {
 
 }
 
+
+
 function updateRoomSelects() {
+
 
     const room =
         document.getElementById(
             "room"
         );
 
+
     const roomFilter =
         document.getElementById(
             "roomFilter"
         );
 
+
+
     if (room) {
 
+
         let html =
-            `<option value="">-- Chọn phòng --</option>`;
+            `
+<option value="">
+-- Chọn phòng --
+</option>
+`;
+
 
         rooms.forEach(item => {
 
-            html += `
+
+            html +=
+            `
 <option value="${item.name}">
 ${item.name}
 </option>
 `;
 
+
         });
+
 
         room.innerHTML =
             html;
 
+
     }
+
+
+
 
     if (roomFilter) {
 
+
         let html =
-            `<option value="">🏠 Tất cả phòng</option>`;
+            `
+<option value="">
+🏠 Tất cả phòng
+</option>
+`;
+
 
         rooms.forEach(item => {
 
-            html += `
+
+            html +=
+            `
 <option value="${item.name}">
 ${item.name}
 </option>
 `;
 
+
         });
+
 
         roomFilter.innerHTML =
             html;
 
+
     }
+
 
 }
 
+
+
 function renderRoomManager() {
+
 
     const list =
         document.getElementById(
             "roomList"
         );
+
 
     if (!list) {
 
@@ -94,40 +135,53 @@ function renderRoomManager() {
 
     }
 
+
     let html = "";
+
 
     rooms.forEach(room => {
 
-        html += `
+
+        html +=
+        `
 
 <div class="buttonRow">
 
-<div style="flex:1">
+<span style="flex:1">
 ${room.name}
-</div>
+</span>
+
 
 <button
 onclick="renameRoom('${room.id}')">
 ✏️
 </button>
 
+
 <button
 onclick="deleteRoom('${room.id}')">
 🗑️
 </button>
 
+
 </div>
 
 `;
 
+
     });
+
 
     list.innerHTML =
         html;
 
+
 }
 
+
+
 function openRoomManager() {
+
 
     document
         .getElementById(
@@ -136,9 +190,16 @@ function openRoomManager() {
         .style.display =
         "block";
 
+
+    loadRooms();
+
+
 }
 
+
+
 function closeRoomManager() {
+
 
     document
         .getElementById(
@@ -147,17 +208,24 @@ function closeRoomManager() {
         .style.display =
         "none";
 
+
 }
 
+
+
 async function addRoom() {
+
 
     const input =
         document.getElementById(
             "newRoom"
         );
 
+
     const name =
         input.value.trim();
+
+
 
     if (name === "") {
 
@@ -165,42 +233,62 @@ async function addRoom() {
 
     }
 
+
+
     const result =
         await db
             .from("rooms")
             .insert([
                 {
-                    name: name
+                    name:name
                 }
             ]);
 
+
+
     if (result.error) {
+
 
         showMessage(
             "❌ " +
             result.error.message
         );
 
+
         return;
+
 
     }
 
+
+
     input.value = "";
 
+
     await loadRooms();
+
+
 
     showMessage(
         "✅ Đã thêm phòng."
     );
 
+
 }
 
+
+
+
+
 async function renameRoom(id) {
+
 
     const room =
         rooms.find(
             x => x.id === id
         );
+
+
 
     if (!room) {
 
@@ -208,11 +296,15 @@ async function renameRoom(id) {
 
     }
 
+
+
     const name =
         prompt(
-            "Tên phòng",
+            "Tên phòng mới:",
             room.name
         );
+
+
 
     if (
         !name ||
@@ -223,37 +315,118 @@ async function renameRoom(id) {
 
     }
 
+
+
     const result =
         await db
             .from("rooms")
             .update({
-                name: name.trim()
+
+                name:
+                    name.trim()
+
             })
             .eq(
                 "id",
                 id
             );
 
+
+
     if (result.error) {
+
 
         showMessage(
             "❌ " +
             result.error.message
         );
 
+
+        return;
+
+
+    }
+
+
+
+    await loadRooms();
+
+
+    showMessage(
+        "✅ Đã đổi tên phòng."
+    );
+
+
+}
+
+
+
+
+
+async function deleteRoom(id) {
+
+
+    const room =
+        rooms.find(
+            x => x.id === id
+        );
+
+
+
+    if (!room) {
+
         return;
 
     }
 
-    await loadRooms();
 
-    showMessage(
-        "✅ Đã cập nhật."
-    );
 
-}
+    const check =
+        await db
+            .from("items")
+            .select("id")
+            .eq(
+                "room",
+                room.name
+            )
+            .limit(1);
 
-async function deleteRoom(id) {
+
+
+    if (check.error) {
+
+
+        showMessage(
+            "❌ " +
+            check.error.message
+        );
+
+
+        return;
+
+
+    }
+
+
+
+    if (
+        check.data &&
+        check.data.length > 0
+    ) {
+
+
+        showMessage(
+            "❌ Phòng này đang có đồ, không thể xóa."
+        );
+
+
+        return;
+
+
+    }
+
+
+
 
     if (
         !confirm(
@@ -265,6 +438,8 @@ async function deleteRoom(id) {
 
     }
 
+
+
     const result =
         await db
             .from("rooms")
@@ -274,21 +449,31 @@ async function deleteRoom(id) {
                 id
             );
 
+
+
     if (result.error) {
+
 
         showMessage(
             "❌ " +
             result.error.message
         );
 
+
         return;
+
 
     }
 
+
+
     await loadRooms();
 
+
+
     showMessage(
-        "✅ Đã xóa."
+        "✅ Đã xóa phòng."
     );
+
 
 }
