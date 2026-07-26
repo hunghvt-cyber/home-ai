@@ -1,6 +1,5 @@
 async function loadItems() {
 
-
     const result =
         await db
             .from("items")
@@ -11,7 +10,6 @@ async function loadItems() {
                     ascending: false
                 }
             );
-
 
 
     if (result.error) {
@@ -26,17 +24,19 @@ async function loadItems() {
     }
 
 
-
     allItems =
         result.data || [];
-
 
 
     renderItems();
 
 
+    if (
+        typeof renderRoomStats === "function"
+    ) {
 
-    renderRoomStats();
+        renderRoomStats();
 
+    }
 
 }
