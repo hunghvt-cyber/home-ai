@@ -5,20 +5,24 @@ function showError(error) {
             "message"
         );
 
+
     if (!message) {
 
         return;
 
     }
 
+
     message.innerHTML =
         "❌ " +
         error.message;
+
 
     message.style.color =
         "red";
 
 }
+
 
 
 window.onerror =
@@ -29,6 +33,7 @@ window.onerror =
         column,
         error
     ) {
+
 
         showError({
 
@@ -42,7 +47,9 @@ window.onerror =
 
         });
 
+
     };
+
 
 
 window.addEventListener(
@@ -51,6 +58,7 @@ window.addEventListener(
 
     function(event) {
 
+
         showError({
 
             message:
@@ -58,40 +66,68 @@ window.addEventListener(
 
         });
 
+
     }
 
 );
 
 
+
+
+
 async function init() {
+
 
     try {
 
+
         initImage();
 
+
         initSearch();
+
 
         initAI();
 
 
-        if (typeof loadRooms === "function") {
+
+        if (
+            typeof loadRooms === "function"
+        ) {
 
             await loadRooms();
 
         }
 
 
+
         await loadItems();
+
+
+
+        if (
+            typeof renderRoomStats === "function"
+        ) {
+
+            renderRoomStats();
+
+        }
+
 
 
     }
     catch(error) {
 
+
         showError(error);
+
 
     }
 
+
 }
+
+
 
 
 document.addEventListener(
