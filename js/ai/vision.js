@@ -142,9 +142,26 @@ async function analyzeImage() {
 
 
         showMessage(
-            "❌ " +
-            error.message
-        );
+
+    "❌ AI lỗi\n\n" +
+
+    error.message +
+
+    "\n\n" +
+
+    JSON.stringify(
+
+        error,
+
+        null,
+
+        2
+
+    ),
+
+    "error"
+
+);
 
 
     }
