@@ -1,5 +1,6 @@
 let allItems = [];
 
+
 function formatDate(dateString) {
 
     if (!dateString) {
@@ -8,29 +9,49 @@ function formatDate(dateString) {
 
     }
 
-    const date = new Date(dateString);
 
-    let hours = date.getHours();
+    const date =
+        new Date(dateString);
+
+
+    let hours =
+        date.getHours();
+
 
     const minutes =
-        String(date.getMinutes())
+        String(
+            date.getMinutes()
+        )
         .padStart(2, "0");
+
 
     const day =
-        String(date.getDate())
+        String(
+            date.getDate()
+        )
         .padStart(2, "0");
 
+
     const month =
-        String(date.getMonth() + 1)
+        String(
+            date.getMonth() + 1
+        )
         .padStart(2, "0");
+
 
     const year =
         date.getFullYear();
 
-    const ampm =
-        hours >= 12 ? "PM" : "AM";
 
-    hours = hours % 12;
+    const ampm =
+        hours >= 12
+            ? "PM"
+            : "AM";
+
+
+    hours =
+        hours % 12;
+
 
     if (hours === 0) {
 
@@ -38,39 +59,65 @@ function formatDate(dateString) {
 
     }
 
+
     hours =
         String(hours)
         .padStart(2, "0");
+
 
     return `${day}/${month}/${year} ${hours}:${minutes} ${ampm}`;
 
 }
 
 
+
 function renderItems(items = allItems) {
 
+
     const list =
-        document.getElementById("list");
+        document.getElementById(
+            "list"
+        );
+
 
     let html = "";
 
+
     items.forEach(item => {
+
 
         html += `
 
 <div class="card">
 
+
 <img
 src="${item.image_url}"
 loading="lazy">
 
-<h3>📦 ${item.name}</h3>
 
-<p>📍 ${item.location || "-"}</p>
+<h3>
+📦 ${item.name}
+</h3>
 
-<p>🕒 ${formatDate(item.created_at)}</p>
+
+<p>
+🏠 ${item.room || "-"}
+</p>
+
+
+<p>
+📍 ${item.location || "-"}
+</p>
+
+
+<p>
+🕒 ${formatDate(item.created_at)}
+</p>
+
 
 <div class="buttonRow">
+
 
 <button
 onclick="editItem('${item.id}')">
@@ -79,6 +126,7 @@ onclick="editItem('${item.id}')">
 
 </button>
 
+
 <button
 onclick="deleteItem('${item.id}')">
 
@@ -86,7 +134,9 @@ onclick="deleteItem('${item.id}')">
 
 </button>
 
+
 </div>
+
 
 </div>
 
@@ -94,6 +144,8 @@ onclick="deleteItem('${item.id}')">
 
     });
 
-    list.innerHTML = html;
+
+    list.innerHTML =
+        html;
 
 }
