@@ -5,7 +5,8 @@
 
 <meta charset="UTF-8">
 
-<meta name="viewport"
+<meta
+name="viewport"
 content="width=device-width, initial-scale=1">
 
 <title>🏠 Home AI</title>
@@ -29,7 +30,36 @@ onclick="openRoomManager()">
 🏠 Quản lý phòng
 </button>
 
+<div
+id="roomManager"
+style="display:none;">
+
+<h3>🏠 Quản lý phòng</h3>
+
+<div class="buttonRow">
+
+<input
+id="newRoom"
+type="text"
+placeholder="Tên phòng">
+
+<button
+onclick="addRoom()">
+➕
+</button>
+
+<button
+onclick="closeRoomManager()">
+✖
+</button>
+
+</div>
+
+<div id="roomList"></div>
+
 <hr>
+
+</div>
 
 <input
 id="cameraInput"
@@ -46,11 +76,13 @@ style="display:none;">
 
 <div class="buttonRow">
 
-<button onclick="openCamera()">
+<button
+onclick="openCamera()">
 📷 Chụp ảnh
 </button>
 
-<button onclick="openGallery()">
+<button
+onclick="openGallery()">
 🖼 Album
 </button>
 
@@ -78,6 +110,11 @@ type="text"
 placeholder="Vị trí">
 
 <select id="room">
+
+<option value="">
+-- Chọn phòng --
+</option>
+
 </select>
 
 <div class="buttonRow">
@@ -102,38 +139,17 @@ id="search"
 type="text"
 placeholder="🔍 Tìm kiếm">
 
+<select id="roomFilter">
+
+<option value="">
+🏠 Tất cả phòng
+</option>
+
+</select>
+
 <h3>📦 Danh sách đồ</h3>
 
 <div id="list"></div>
-
-<div
-id="roomManager"
-style="display:none;">
-
-<h3>🏠 Quản lý phòng</h3>
-
-<input
-id="newRoom"
-type="text"
-placeholder="Tên phòng">
-
-<div class="buttonRow">
-
-<button
-onclick="addRoom()">
-➕ Thêm
-</button>
-
-<button
-onclick="closeRoomManager()">
-Đóng
-</button>
-
-</div>
-
-<div id="roomList"></div>
-
-</div>
 
 </div>
 
