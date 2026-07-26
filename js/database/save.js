@@ -8,14 +8,6 @@ async function saveItem() {
 
     }
 
-    if (selectedFile == null) {
-
-        showMessage("❌ Vui lòng chọn ảnh.");
-
-        return;
-
-    }
-
     const name =
         document
             .getElementById("name")
@@ -24,7 +16,9 @@ async function saveItem() {
 
     if (name === "") {
 
-        showMessage("❌ Nhập tên đồ.");
+        showMessage(
+            "❌ Nhập tên đồ."
+        );
 
         return;
 
@@ -49,65 +43,117 @@ async function saveItem() {
 
     try {
 
-        const resizedBlob =
-            await resizeImage(selectedFile);
+        if (editingItem) {
 
-        const fileName =
-            Date.now() +
-            "_" +
-            selectedFile.name
-                .replace(/\s/g, "_")
-                .replace(/\.[^/.]+$/, "") +
-            ".jpg";
+            const update =
+                await db
+                    .from("items")
+                    .update({
+                        name: name,
+                        location: location
+                    })
+                    .eq(
+                        "id",
+                        editingItem.id
+                    );
 
-        const upload =
-            await db.storage
-                .from("images")
-                .upload(
-                    fileName,
-                    resizedBlob,
-                    {
-                        contentType:
-                            "image/jpeg"
-                    }
+            if (update.error) {
+
+                throw update.error;
+
+            }
+
+            editingItem = null;
+
+            clearForm();
+
+            document
+                .getElementById("cancelButton")
+                .style.display =
+                "none";
+
+            showMessage(
+                "✅ Đã cập nhật."
+            );
+
+            await loadItems();
+
+        }
+        else {
+
+            if (selectedFile == null) {
+
+                showMessage(
+                    "❌ Vui lòng chọn ảnh."
                 );
 
-        if (upload.error) {
+                return;
 
-            throw upload.error;
+            }
+
+            const resizedBlob =
+                await resizeImage(
+                    selectedFile
+                );
+
+            const fileName =
+                Date.now() +
+                "_" +
+                selectedFile.name
+                    .replace(/\s/g, "_")
+                    .replace(/\.[^/.]+$/, "") +
+                ".jpg";
+
+            const upload =
+                await db.storage
+                    .from("images")
+                    .upload(
+                        fileName,
+                        resizedBlob,
+                        {
+                            contentType:
+                                "image/jpeg"
+                        }
+                    );
+
+            if (upload.error) {
+
+                throw upload.error;
+
+            }
+
+            const imageUrl =
+                db.storage
+                    .from("images")
+                    .getPublicUrl(fileName)
+                    .data.publicUrl;
+
+            const insert =
+                await db
+                    .from("items")
+                    .insert([
+                        {
+                            name: name,
+                            location: location,
+                            image_url: imageUrl
+                        }
+                    ]);
+
+            if (insert.error) {
+
+                throw insert.error;
+
+            }
+
+            clearForm();
+
+            showMessage(
+                "✅ Đã lưu thành công."
+            );
+
+            await loadItems();
 
         }
-
-        const imageUrl =
-            db.storage
-                .from("images")
-                .getPublicUrl(fileName)
-                .data.publicUrl;
-
-        const insert =
-            await db
-                .from("items")
-                .insert([
-                    {
-                        name: name,
-                        location: location,
-                        image_url: imageUrl
-                    }
-                ]);
-
-        if (insert.error) {
-
-            throw insert.error;
-
-        }
-
-        showMessage(
-            "✅ Đã lưu thành công."
-        );
-
-        clearForm();
-
-        await loadItems();
 
     }
     catch(error) {
@@ -133,35 +179,3 @@ async function saveItem() {
 function clearForm() {
 
     selectedFile = null;
-
-    document
-        .getElementById("cameraInput")
-        .value = "";
-
-    document
-        .getElementById("galleryInput")
-        .value = "";
-
-    document
-        .getElementById("name")
-        .value = "";
-
-    document
-        .getElementById("location")
-        .value = "";
-
-    document
-        .getElementById("selectedImage")
-        .innerHTML =
-        "Chưa chọn ảnh";
-
-    const preview =
-        document
-            .getElementById("preview");
-
-    preview.src = "";
-
-    preview.style.display =
-        "none";
-
-}
