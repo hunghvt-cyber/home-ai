@@ -34,12 +34,15 @@ async function analyzeImage() {
 
                 {
 
-                    method:"POST",
+                    method: "POST",
 
-                    headers:{
+                    headers: {
 
                         "Content-Type":
                         "application/json",
+
+                        "apikey":
+                        SUPABASE_KEY,
 
                         "Authorization":
                         "Bearer " +
@@ -47,7 +50,8 @@ async function analyzeImage() {
 
                     },
 
-                    body:JSON.stringify({
+                    body:
+                    JSON.stringify({
 
                         imageBase64:
                         cleanBase64
@@ -65,6 +69,20 @@ async function analyzeImage() {
 
 
 
+        if (!response.ok) {
+
+            throw new Error(
+
+                data.message ||
+
+                JSON.stringify(data)
+
+            );
+
+        }
+
+
+
         let text =
             data
             .candidates[0]
@@ -76,8 +94,8 @@ async function analyzeImage() {
 
         text =
             text
-            .replace(/```json/g,"")
-            .replace(/```/g,"")
+            .replace(/```json/g, "")
+            .replace(/```/g, "")
             .trim();
 
 
@@ -90,9 +108,9 @@ async function analyzeImage() {
         if (ai.name) {
 
             document
-            .getElementById("name")
-            .value =
-            ai.name;
+                .getElementById("name")
+                .value =
+                ai.name;
 
         }
 
@@ -101,9 +119,9 @@ async function analyzeImage() {
         if (ai.room) {
 
             document
-            .getElementById("room")
-            .value =
-            ai.room;
+                .getElementById("room")
+                .value =
+                ai.room;
 
         }
 
@@ -115,9 +133,9 @@ async function analyzeImage() {
         ) {
 
             document
-            .getElementById("tags")
-            .value =
-            ai.tags.join(", ");
+                .getElementById("tags")
+                .value =
+                ai.tags.join(", ");
 
         }
 
@@ -128,13 +146,12 @@ async function analyzeImage() {
         );
 
 
-
     }
-    catch(error) {
+    catch (error) {
 
 
         showMessage(
-            "❌ AI lỗi: " +
+            "❌ " +
             error.message
         );
 
@@ -153,12 +170,11 @@ function fileToBase64(file) {
 
     return new Promise(
 
-        (resolve,reject)=>{
+        (resolve, reject) => {
 
 
             const reader =
                 new FileReader();
-
 
 
             reader.onload =
@@ -168,10 +184,8 @@ function fileToBase64(file) {
                 );
 
 
-
             reader.onerror =
                 reject;
-
 
 
             reader.readAsDataURL(
