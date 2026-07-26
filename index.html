@@ -11,55 +11,103 @@ content="width=device-width, initial-scale=1">
 
 <title>🏠 Home AI</title>
 
+
 <link
 rel="stylesheet"
 href="css/style.css">
 
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 
 </head>
 
+
 <body>
+
 
 <div class="container">
 
+
 <h2>🏠 Home AI</h2>
+
+
 
 <button
 onclick="openRoomManager()">
+
 🏠 Quản lý phòng
+
 </button>
+
+
 
 <div
 id="roomManager"
 style="display:none;">
 
+
 <h3>🏠 Quản lý phòng</h3>
 
+
 <div class="buttonRow">
+
 
 <input
 id="newRoom"
 type="text"
 placeholder="Tên phòng">
 
+
 <button
 onclick="addRoom()">
+
 ➕
+
 </button>
+
 
 <button
 onclick="closeRoomManager()">
+
 ✖
+
 </button>
+
 
 </div>
 
-<div id="roomList"></div>
+
+
+<div
+id="roomList">
+
+</div>
+
+
+
+</div>
+
+
 
 <hr>
 
+
+
+<h3>📊 Thống kê phòng</h3>
+
+
+<div
+id="roomStats">
+
 </div>
+
+
+
+<hr>
+
+
+
 
 <input
 id="cameraInput"
@@ -68,112 +116,230 @@ accept="image/*"
 capture="environment"
 style="display:none;">
 
+
+
 <input
 id="galleryInput"
 type="file"
 accept="image/*"
 style="display:none;">
 
+
+
+
 <div class="buttonRow">
+
 
 <button
 onclick="openCamera()">
+
 📷 Chụp ảnh
+
 </button>
+
+
 
 <button
 onclick="openGallery()">
+
 🖼 Album
+
 </button>
 
+
+
 </div>
+
+
+
+
 
 <img
 id="preview"
 src=""
 style="display:none;">
 
-<p id="selectedImage">
+
+
+<p
+id="selectedImage">
+
 Chưa chọn ảnh
+
 </p>
 
-<div id="message"></div>
+
+
+<div
+id="message">
+
+</div>
+
+
+
 
 <input
 id="name"
 type="text"
 placeholder="Tên đồ">
 
+
+
 <input
 id="location"
 type="text"
 placeholder="Vị trí">
 
-<select id="room">
+
+
+<select
+id="room">
+
 
 <option value="">
+
 -- Chọn phòng --
+
 </option>
+
 
 </select>
 
+
+
+
 <div class="buttonRow">
+
+
 
 <button
 id="saveButton"
 onclick="saveItem()">
+
 💾 Lưu
+
 </button>
+
+
 
 <button
 id="cancelButton"
 onclick="cancelEdit()"
 style="display:none;">
+
 ❌ Hủy
+
 </button>
 
+
+
 </div>
+
+
+
+
 
 <input
 id="search"
 type="text"
 placeholder="🔍 Tìm kiếm">
 
-<select id="roomFilter">
+
+
+
+
+<select
+id="roomFilter">
+
 
 <option value="">
+
 🏠 Tất cả phòng
+
 </option>
+
 
 </select>
 
-<h3>📦 Danh sách đồ</h3>
 
-<div id="list"></div>
+
+
+
+<h3>
+📦 Danh sách đồ
+</h3>
+
+
+
+<div
+id="list">
 
 </div>
 
+
+
+</div>
+
+
+
+
+
+
 <script src="js/config.js"></script>
+
+
 <script src="js/image.js"></script>
 
+
+
+
 <script src="js/database/message.js"></script>
+
 <script src="js/database/render.js"></script>
+
 <script src="js/database/load.js"></script>
+
 <script src="js/database/delete.js"></script>
+
 <script src="js/database/edit.js"></script>
+
 <script src="js/database/save.js"></script>
+
+
+
+
 
 <script src="js/rooms/rooms.js"></script>
 
+<script src="js/rooms/stats.js"></script>
+
+
+
+
+
 <script src="js/search/filter.js"></script>
+
 <script src="js/search/search.js"></script>
 
+
+
+
+
 <script src="js/ai/vision.js"></script>
+
 <script src="js/ai/chat.js"></script>
+
 <script src="js/ai/suggest.js"></script>
+
+
+
+
 
 <script src="js/app.js"></script>
 
+
+
 </body>
+
 
 </html>
