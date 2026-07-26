@@ -1,6 +1,5 @@
 let isSaving = false;
 
-
 async function saveItem() {
 
     if (isSaving) {
@@ -9,6 +8,13 @@ async function saveItem() {
 
     }
 
+    if (selectedFile == null) {
+
+        showMessage("❌ Vui lòng chọn ảnh.");
+
+        return;
+
+    }
 
     const name =
         document
@@ -16,17 +22,13 @@ async function saveItem() {
             .value
             .trim();
 
-
     if (name === "") {
 
-        showMessage(
-            "❌ Nhập tên đồ."
-        );
+        showMessage("❌ Nhập tên đồ.");
 
         return;
 
     }
-
 
     const location =
         document
@@ -34,79 +36,21 @@ async function saveItem() {
             .value
             .trim();
 
-
     const saveButton =
         document
             .getElementById("saveButton");
-
 
     isSaving = true;
 
     saveButton.disabled = true;
 
+    saveButton.innerHTML =
+        "⏳ Đang lưu...";
 
     try {
 
-
-        if (typeof editingId !== "undefined" && editingId) {
-
-
-            const update =
-                await db
-                    .from("items")
-                    .update({
-                        name: name,
-                        location: location
-                    })
-                    .eq(
-                        "id",
-                        editingId
-                    );
-
-
-            if (update.error) {
-
-                throw update.error;
-
-            }
-
-
-            editingId = null;
-
-
-            showMessage(
-                "✅ Đã cập nhật."
-            );
-
-
-            clearForm();
-
-
-            await loadItems();
-
-
-            return;
-
-        }
-
-
-
-        if (selectedFile == null) {
-
-            showMessage(
-                "❌ Vui lòng chọn ảnh."
-            );
-
-            return;
-
-        }
-
-
-
         const resizedBlob =
             await resizeImage(selectedFile);
-
-
 
         const fileName =
             Date.now() +
@@ -115,8 +59,6 @@ async function saveItem() {
                 .replace(/\s/g, "_")
                 .replace(/\.[^/.]+$/, "") +
             ".jpg";
-
-
 
         const upload =
             await db.storage
@@ -130,23 +72,17 @@ async function saveItem() {
                     }
                 );
 
-
-
         if (upload.error) {
 
             throw upload.error;
 
         }
 
-
-
         const imageUrl =
             db.storage
                 .from("images")
                 .getPublicUrl(fileName)
                 .data.publicUrl;
-
-
 
         const insert =
             await db
@@ -159,27 +95,19 @@ async function saveItem() {
                     }
                 ]);
 
-
-
         if (insert.error) {
 
             throw insert.error;
 
         }
 
-
-
         showMessage(
             "✅ Đã lưu thành công."
         );
 
-
         clearForm();
 
-
         await loadItems();
-
-
 
     }
     catch(error) {
@@ -193,13 +121,47 @@ async function saveItem() {
 
         isSaving = false;
 
-
         saveButton.disabled = false;
-
 
         saveButton.innerHTML =
             "💾 Lưu";
 
     }
+
+}
+
+function clearForm() {
+
+    selectedFile = null;
+
+    document
+        .getElementById("cameraInput")
+        .value = "";
+
+    document
+        .getElementById("galleryInput")
+        .value = "";
+
+    document
+        .getElementById("name")
+        .value = "";
+
+    document
+        .getElementById("location")
+        .value = "";
+
+    document
+        .getElementById("selectedImage")
+        .innerHTML =
+        "Chưa chọn ảnh";
+
+    const preview =
+        document
+            .getElementById("preview");
+
+    preview.src = "";
+
+    preview.style.display =
+        "none";
 
 }
