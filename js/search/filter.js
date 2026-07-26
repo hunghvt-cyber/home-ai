@@ -38,9 +38,13 @@ function filterItems(keyword) {
 
 
         const tags =
-            (item.tags || "")
-            .toString()
-            .toLowerCase();
+            Array.isArray(item.tags)
+
+                ? item.tags
+                    .join(" ")
+                    .toLowerCase()
+
+                : "";
 
 
 
