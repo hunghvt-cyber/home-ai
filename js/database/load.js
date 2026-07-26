@@ -16,12 +16,10 @@ async function loadItems() {
 
     if (result.error) {
 
-
         showMessage(
             "❌ " +
             result.error.message
         );
-
 
         return;
 
@@ -38,20 +36,7 @@ async function loadItems() {
 
 
 
-    if (
-        typeof renderRoomStats === "function"
-    ) {
-
-        setTimeout(
-            function() {
-
-                renderRoomStats();
-
-            },
-            100
-        );
-
-    }
+    renderRoomStats();
 
 
 }
