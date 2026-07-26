@@ -42,9 +42,14 @@ async function loadItems() {
         typeof renderRoomStats === "function"
     ) {
 
+        setTimeout(
+            function() {
 
-        renderRoomStats();
+                renderRoomStats();
 
+            },
+            100
+        );
 
     }
 
