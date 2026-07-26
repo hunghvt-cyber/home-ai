@@ -15,64 +15,96 @@ async function loadRooms() {
 
     if (result.error) {
 
-        showMessage(
-            "❌ " +
-            result.error.message
-        );
-
-        return;
+        throw result.error;
 
     }
 
-    rooms = result.data;
+    rooms = result.data || [];
 
-    renderRooms();
+    updateRoomSelects();
+
+    renderRoomManager();
 
 }
 
-function renderRooms() {
+function updateRoomSelects() {
 
-    const select =
+    const room =
         document.getElementById(
             "room"
         );
+
+    const roomFilter =
+        document.getElementById(
+            "roomFilter"
+        );
+
+    if (room) {
+
+        let html =
+            `<option value="">-- Chọn phòng --</option>`;
+
+        rooms.forEach(item => {
+
+            html += `
+<option value="${item.name}">
+${item.name}
+</option>
+`;
+
+        });
+
+        room.innerHTML =
+            html;
+
+    }
+
+    if (roomFilter) {
+
+        let html =
+            `<option value="">🏠 Tất cả phòng</option>`;
+
+        rooms.forEach(item => {
+
+            html += `
+<option value="${item.name}">
+${item.name}
+</option>
+`;
+
+        });
+
+        roomFilter.innerHTML =
+            html;
+
+    }
+
+}
+
+function renderRoomManager() {
 
     const list =
         document.getElementById(
             "roomList"
         );
 
-    if (select) {
+    if (!list) {
 
-        let html = "";
-
-        rooms.forEach(room => {
-
-            html += `
-<option value="${room.name}">
-${room.name}
-</option>
-`;
-
-        });
-
-        select.innerHTML = html;
+        return;
 
     }
 
-    if (list) {
+    let html = "";
 
-        let html = "";
+    rooms.forEach(room => {
 
-        rooms.forEach(room => {
-
-            html += `
+        html += `
 
 <div class="buttonRow">
 
-<span style="flex:1;">
+<div style="flex:1">
 ${room.name}
-</span>
+</div>
 
 <button
 onclick="renameRoom('${room.id}')">
@@ -88,11 +120,10 @@ onclick="deleteRoom('${room.id}')">
 
 `;
 
-        });
+    });
 
-        list.innerHTML = html;
-
-    }
+    list.innerHTML =
+        html;
 
 }
 
@@ -104,8 +135,6 @@ function openRoomManager() {
         )
         .style.display =
         "block";
-
-    loadRooms();
 
 }
 
@@ -160,6 +189,10 @@ async function addRoom() {
 
     await loadRooms();
 
+    showMessage(
+        "✅ Đã thêm phòng."
+    );
+
 }
 
 async function renameRoom(id) {
@@ -177,7 +210,7 @@ async function renameRoom(id) {
 
     const name =
         prompt(
-            "Tên mới:",
+            "Tên phòng",
             room.name
         );
 
@@ -214,13 +247,17 @@ async function renameRoom(id) {
 
     await loadRooms();
 
+    showMessage(
+        "✅ Đã cập nhật."
+    );
+
 }
 
 async function deleteRoom(id) {
 
     if (
         !confirm(
-            "Xóa phòng?"
+            "Xóa phòng này?"
         )
     ) {
 
@@ -249,5 +286,9 @@ async function deleteRoom(id) {
     }
 
     await loadRooms();
+
+    showMessage(
+        "✅ Đã xóa."
+    );
 
 }
