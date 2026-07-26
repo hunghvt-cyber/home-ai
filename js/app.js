@@ -63,7 +63,7 @@ window.addEventListener(
 );
 
 
-function init() {
+async function init() {
 
     try {
 
@@ -73,7 +73,9 @@ function init() {
 
         initAI();
 
-        loadItems();
+        await loadRooms();
+
+        await loadItems();
 
     }
     catch(error) {
