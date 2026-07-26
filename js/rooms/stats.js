@@ -4,11 +4,20 @@ function getRoomStats() {
     const stats = {};
 
 
+    if (!allItems || allItems.length === 0) {
+
+        return stats;
+
+    }
+
+
+
     allItems.forEach(item => {
 
 
         const room =
             item.room || "Chưa có phòng";
+
 
 
         if (!stats[room]) {
@@ -18,16 +27,20 @@ function getRoomStats() {
         }
 
 
+
         stats[room]++;
 
 
     });
 
 
+
     return stats;
 
 
 }
+
+
 
 
 
@@ -38,6 +51,7 @@ function renderRoomStats() {
         document.getElementById(
             "roomStats"
         );
+
 
 
     if (!box) {
@@ -72,6 +86,7 @@ style="cursor:pointer">
 🏠 ${room}
 </span>
 
+
 <span>
 ${stats[room]} món
 </span>
@@ -82,6 +97,21 @@ ${stats[room]} món
 
 
         });
+
+
+
+    if (html === "") {
+
+
+        html =
+
+        `
+<p>
+Chưa có dữ liệu thống kê.
+</p>
+`;
+
+    }
 
 
 
