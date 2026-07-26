@@ -1,6 +1,7 @@
 let isSaving = false;
 
 
+
 async function saveItem() {
 
 
@@ -11,6 +12,7 @@ async function saveItem() {
     }
 
 
+
     const name =
         document
             .getElementById("name")
@@ -18,15 +20,19 @@ async function saveItem() {
             .trim();
 
 
+
     if (name === "") {
+
 
         showMessage(
             "❌ Nhập tên đồ."
         );
 
+
         return;
 
     }
+
 
 
     const location =
@@ -36,15 +42,26 @@ async function saveItem() {
             .trim();
 
 
+
     const room =
         document
             .getElementById("room")
             .value;
 
 
+
+    const tags =
+        document
+            .getElementById("tags")
+            .value
+            .trim();
+
+
+
     const saveButton =
         document
             .getElementById("saveButton");
+
 
 
     isSaving = true;
@@ -57,6 +74,7 @@ async function saveItem() {
         "⏳ Đang lưu...";
 
 
+
     try {
 
 
@@ -65,6 +83,7 @@ async function saveItem() {
 
             let imageUrl =
                 editingItem.image_url;
+
 
 
             if (selectedFile) {
@@ -76,6 +95,7 @@ async function saveItem() {
                     );
 
 
+
                 const fileName =
                     Date.now() +
                     "_" +
@@ -83,6 +103,7 @@ async function saveItem() {
                         .replace(/\s/g, "_")
                         .replace(/\.[^/.]+$/, "") +
                     ".jpg";
+
 
 
                 const upload =
@@ -98,11 +119,13 @@ async function saveItem() {
                         );
 
 
+
                 if (upload.error) {
 
                     throw upload.error;
 
                 }
+
 
 
                 imageUrl =
@@ -118,21 +141,21 @@ async function saveItem() {
             }
 
 
+
             const update =
                 await db
                     .from("items")
                     .update({
 
-                        name: name,
+                        name:name,
 
-                        location:
-                            location,
+                        location:location,
 
-                        room:
-                            room,
+                        room:room,
 
-                        image_url:
-                            imageUrl
+                        tags:tags,
+
+                        image_url:imageUrl
 
                     })
                     .eq(
@@ -141,14 +164,13 @@ async function saveItem() {
                     );
 
 
+
             if (update.error) {
 
                 throw update.error;
 
             }
 
-
-            editingItem = null;
 
 
             clearForm();
@@ -162,25 +184,31 @@ async function saveItem() {
             await loadItems();
 
 
+
         }
         else {
 
 
-            if (selectedFile == null) {
+
+            if (!selectedFile) {
+
 
                 showMessage(
                     "❌ Vui lòng chọn ảnh."
                 );
+
 
                 return;
 
             }
 
 
+
             const resizedBlob =
                 await resizeImage(
                     selectedFile
                 );
+
 
 
             const fileName =
@@ -190,6 +218,7 @@ async function saveItem() {
                     .replace(/\s/g, "_")
                     .replace(/\.[^/.]+$/, "") +
                 ".jpg";
+
 
 
             const upload =
@@ -205,11 +234,13 @@ async function saveItem() {
                     );
 
 
+
             if (upload.error) {
 
                 throw upload.error;
 
             }
+
 
 
             const imageUrl =
@@ -222,26 +253,28 @@ async function saveItem() {
                     .publicUrl;
 
 
+
             const insert =
                 await db
                     .from("items")
                     .insert([
 
                         {
-                            name:
-                                name,
 
-                            location:
-                                location,
+                            name:name,
 
-                            room:
-                                room,
+                            location:location,
 
-                            image_url:
-                                imageUrl
+                            room:room,
+
+                            tags:tags,
+
+                            image_url:imageUrl
+
                         }
 
                     ]);
+
 
 
             if (insert.error) {
@@ -251,7 +284,9 @@ async function saveItem() {
             }
 
 
+
             clearForm();
+
 
 
             showMessage(
@@ -259,10 +294,12 @@ async function saveItem() {
             );
 
 
+
             await loadItems();
 
 
         }
+
 
 
     }
@@ -291,7 +328,10 @@ async function saveItem() {
 
     }
 
+
 }
+
+
 
 
 
@@ -304,9 +344,11 @@ function clearForm() {
     editingItem = null;
 
 
+
     document
         .getElementById("cameraInput")
         .value = "";
+
 
 
     document
@@ -314,9 +356,11 @@ function clearForm() {
         .value = "";
 
 
+
     document
         .getElementById("name")
         .value = "";
+
 
 
     document
@@ -324,9 +368,17 @@ function clearForm() {
         .value = "";
 
 
+
     document
         .getElementById("room")
         .value = "";
+
+
+
+    document
+        .getElementById("tags")
+        .value = "";
+
 
 
     document
@@ -335,16 +387,20 @@ function clearForm() {
         "Chưa chọn ảnh";
 
 
+
     const preview =
         document
             .getElementById("preview");
 
 
+
     preview.src = "";
+
 
 
     preview.style.display =
         "none";
+
 
 
     document
