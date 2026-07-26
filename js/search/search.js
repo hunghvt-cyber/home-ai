@@ -1,31 +1,74 @@
 function initSearch() {
 
+
     const search =
         document.getElementById(
             "search"
         );
 
-    if (!search) {
 
-        return;
+    const roomFilter =
+        document.getElementById(
+            "roomFilter"
+        );
+
+
+
+    if (search) {
+
+
+        search.addEventListener(
+
+            "input",
+
+            function() {
+
+
+                const items =
+                    filterItems(
+                        search.value
+                    );
+
+
+                renderItems(items);
+
+
+            }
+
+        );
+
 
     }
 
-    search.addEventListener(
 
-        "input",
 
-        function() {
+    if (roomFilter) {
 
-            const items =
-                filterItems(
-                    search.value
-                );
 
-            renderItems(items);
+        roomFilter.addEventListener(
 
-        }
+            "change",
 
-    );
+            function() {
+
+
+                const items =
+                    filterItems(
+                        search
+                            ? search.value
+                            : ""
+                    );
+
+
+                renderItems(items);
+
+
+            }
+
+        );
+
+
+    }
+
 
 }
