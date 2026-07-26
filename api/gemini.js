@@ -65,7 +65,7 @@ export default async function handler(req, res) {
 
                                         text: `Phân tích ảnh đồ vật trong nhà.
 
-Trả về JSON:
+Trả về đúng JSON:
 
 {
 "name":"",
@@ -73,7 +73,9 @@ Trả về JSON:
 "tags":[]
 }
 
-Chỉ trả JSON.`
+Không giải thích.
+Không markdown.
+Không \`\`\`.`
 
                                     },
 
@@ -103,8 +105,44 @@ Chỉ trả JSON.`
 
             );
 
+
+
         const data =
             await response.json();
+
+
+
+        if (!response.ok) {
+
+            return res.status(500).json({
+
+                error:
+                    "Gemini HTTP Error",
+
+                gemini:
+                    data
+
+            });
+
+        }
+
+
+
+        if (!data.candidates) {
+
+            return res.status(500).json({
+
+                error:
+                    "Gemini không trả candidates",
+
+                gemini:
+                    data
+
+            });
+
+        }
+
+
 
         return res.status(200).json(data);
 
@@ -114,7 +152,8 @@ Chỉ trả JSON.`
 
         return res.status(500).json({
 
-            error: e.message
+            error:
+                e.message
 
         });
 
