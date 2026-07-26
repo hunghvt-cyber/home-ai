@@ -5,11 +5,15 @@
 
 <meta charset="UTF-8">
 
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta
+name="viewport"
+content="width=device-width, initial-scale=1">
 
 <title>🏠 Home AI</title>
 
-<link rel="stylesheet" href="css/style.css">
+<link
+rel="stylesheet"
+href="css/style.css">
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -36,11 +40,13 @@ style="display:none;">
 
 <div class="buttonRow">
 
-<button onclick="openCamera()">
+<button
+onclick="openCamera()">
 📷 Chụp ảnh
 </button>
 
-<button onclick="openGallery()">
+<button
+onclick="openGallery()">
 🖼 Album
 </button>
 
@@ -67,11 +73,22 @@ id="location"
 type="text"
 placeholder="Vị trí">
 
+<div class="buttonRow">
+
 <button
 id="saveButton"
 onclick="saveItem()">
 💾 Lưu
 </button>
+
+<button
+id="cancelButton"
+onclick="cancelEdit()"
+style="display:none;">
+❌ Hủy
+</button>
+
+</div>
 
 <input
 id="search"
