@@ -3,7 +3,9 @@ let selectedFile = null;
 function openCamera() {
 
     document
-        .getElementById("cameraInput")
+        .getElementById(
+            "cameraInput"
+        )
         .click();
 
 }
@@ -11,7 +13,9 @@ function openCamera() {
 function openGallery() {
 
     document
-        .getElementById("galleryInput")
+        .getElementById(
+            "galleryInput"
+        )
         .click();
 
 }
@@ -19,208 +23,150 @@ function openGallery() {
 function initImage() {
 
     document
-        .getElementById("cameraInput")
+        .getElementById(
+            "cameraInput"
+        )
         .addEventListener(
             "change",
-            selectImage
+            handleImage
         );
 
     document
-        .getElementById("galleryInput")
+        .getElementById(
+            "galleryInput"
+        )
         .addEventListener(
             "change",
-            selectImage
+            handleImage
         );
 
 }
 
-function selectImage(event) {
+function handleImage(event) {
 
-    if (
-        event.target.files.length === 0
-    ) {
+    const file =
+        event.target.files[0];
+
+    if (!file) {
 
         return;
 
     }
 
-    selectedFile =
-        event.target.files[0];
+    selectedFile = file;
 
-    showMessage(
-        "⏳ Đang xử lý ảnh..."
-    );
-
-    document
-        .getElementById("selectedImage")
-        .innerHTML =
-        "✅ " +
-        selectedFile.name +
-        "<br>" +
-        formatSize(
-            selectedFile.size
+    const preview =
+        document.getElementById(
+            "preview"
         );
 
-    const reader =
-        new FileReader();
+    preview.src =
+        URL.createObjectURL(file);
 
-    reader.onload = function(e) {
+    preview.style.display =
+        "block";
 
-        const img =
-            document.getElementById(
-                "preview"
-            );
-
-        img.onload = function() {
-
-            showMessage(
-                "✅ Đã chọn ảnh."
-            );
-
-        };
-
-        img.src =
-            e.target.result;
-
-        img.style.display =
-            "block";
-
-    };
-
-    reader.readAsDataURL(
-        selectedFile
-    );
+    document
+        .getElementById(
+            "selectedImage"
+        )
+        .innerHTML =
+        "📷 " + file.name;
 
 }
 
-function formatSize(bytes) {
+async function resizeImage(file) {
 
-    if (bytes < 1024) {
-
-        return bytes + " B";
-
-    }
-
-    if (bytes < 1024 * 1024) {
-
-        return (
-            bytes / 1024
-        ).toFixed(1) + " KB";
-
-    }
-
-    return (
-        bytes / 1024 / 1024
-    ).toFixed(2) + " MB";
-
-}
-function resizeImage(file) {
-
-    return new Promise((resolve, reject) => {
-
-        const reader =
-            new FileReader();
-
-        reader.onload = function(e) {
+    return new Promise(
+        function(resolve) {
 
             const img =
                 new Image();
 
-            img.onload = function() {
+            img.onload =
+                function() {
 
-                let width =
-                    img.width;
+                    const canvas =
+                        document.createElement(
+                            "canvas"
+                        );
 
-                let height =
-                    img.height;
+                    const maxSize =
+                        1280;
 
-                const maxSize = 1600;
+                    let width =
+                        img.width;
 
-                if (
-                    width > height &&
-                    width > maxSize
-                ) {
+                    let height =
+                        img.height;
 
-                    height =
-                        height *
-                        maxSize /
+                    if (
+                        width > height &&
+                        width > maxSize
+                    ) {
+
+                        height =
+                            height *
+                            maxSize /
+                            width;
+
+                        width =
+                            maxSize;
+
+                    }
+                    else if (
+                        height > maxSize
+                    ) {
+
+                        width =
+                            width *
+                            maxSize /
+                            height;
+
+                        height =
+                            maxSize;
+
+                    }
+
+                    canvas.width =
                         width;
 
-                    width =
-                        maxSize;
-
-                }
-
-                if (
-                    height >= width &&
-                    height > maxSize
-                ) {
-
-                    width =
-                        width *
-                        maxSize /
+                    canvas.height =
                         height;
 
-                    height =
-                        maxSize;
+                    canvas
+                        .getContext("2d")
+                        .drawImage(
+                            img,
+                            0,
+                            0,
+                            width,
+                            height
+                        );
 
-                }
+                    canvas.toBlob(
 
-                const canvas =
-                    document.createElement(
-                        "canvas"
+                        function(blob) {
+
+                            resolve(blob);
+
+                        },
+
+                        "image/jpeg",
+
+                        0.8
+
                     );
 
-                canvas.width =
-                    width;
-
-                canvas.height =
-                    height;
-
-                const ctx =
-                    canvas.getContext(
-                        "2d"
-                    );
-
-                ctx.drawImage(
-                    img,
-                    0,
-                    0,
-                    width,
-                    height
-                );
-
-                canvas.toBlob(
-
-                    function(blob) {
-
-                        resolve(blob);
-
-                    },
-
-                    "image/jpeg",
-
-                    0.85
-
-                );
-
-            };
-
-            img.onerror =
-                reject;
+                };
 
             img.src =
-                e.target.result;
+                URL.createObjectURL(
+                    file
+                );
 
-        };
+        }
 
-        reader.onerror =
-            reject;
-
-        reader.readAsDataURL(
-            file
-        );
-
-    });
+    );
 
 }
