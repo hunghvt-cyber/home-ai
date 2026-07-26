@@ -1,7 +1,6 @@
 let isSaving = false;
 
 
-
 async function saveItem() {
 
 
@@ -23,11 +22,9 @@ async function saveItem() {
 
     if (name === "") {
 
-
         showMessage(
             "❌ Nhập tên đồ."
         );
-
 
         return;
 
@@ -50,11 +47,25 @@ async function saveItem() {
 
 
 
-    const tags =
+    const tagsInput =
         document
             .getElementById("tags")
             .value
             .trim();
+
+
+
+    const tags =
+        tagsInput
+            ? tagsInput
+                .split(",")
+                .map(
+                    t => t.trim()
+                )
+                .filter(
+                    t => t !== ""
+                )
+            : [];
 
 
 
@@ -181,6 +192,7 @@ async function saveItem() {
             );
 
 
+
             await loadItems();
 
 
@@ -192,11 +204,9 @@ async function saveItem() {
 
             if (!selectedFile) {
 
-
                 showMessage(
                     "❌ Vui lòng chọn ảnh."
                 );
-
 
                 return;
 
@@ -286,7 +296,6 @@ async function saveItem() {
 
 
             clearForm();
-
 
 
             showMessage(
@@ -395,7 +404,6 @@ function clearForm() {
 
 
     preview.src = "";
-
 
 
     preview.style.display =
