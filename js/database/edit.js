@@ -29,6 +29,23 @@ function editItem(id) {
         .value =
         item.location || "";
 
+    const preview =
+        document
+            .getElementById("preview");
+
+    preview.src =
+        item.image_url || "";
+
+    preview.style.display =
+        item.image_url
+            ? "block"
+            : "none";
+
+    document
+        .getElementById("selectedImage")
+        .innerHTML =
+        "Ảnh hiện tại";
+
     document
         .getElementById("saveButton")
         .innerHTML =
