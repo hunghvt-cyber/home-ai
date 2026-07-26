@@ -4,6 +4,7 @@ function getRoomStats() {
     const stats = {};
 
 
+
     if (!allItems || allItems.length === 0) {
 
         return stats;
@@ -16,7 +17,10 @@ function getRoomStats() {
 
 
         const room =
-            item.room || "Chưa có phòng";
+            item.room &&
+            item.room.trim() !== ""
+                ? item.room
+                : "Chưa có phòng";
 
 
 
@@ -75,12 +79,14 @@ function renderRoomStats() {
         .forEach(room => {
 
 
-            html += `
+            html +=
+            `
 
 <div
 class="buttonRow"
 onclick="filterByRoom('${room}')"
 style="cursor:pointer">
+
 
 <span>
 🏠 ${room}
@@ -91,10 +97,10 @@ style="cursor:pointer">
 ${stats[room]} món
 </span>
 
+
 </div>
 
 `;
-
 
         });
 
@@ -104,7 +110,6 @@ ${stats[room]} món
 
 
         html =
-
         `
 <p>
 Chưa có dữ liệu thống kê.
@@ -117,6 +122,55 @@ Chưa có dữ liệu thống kê.
 
     box.innerHTML =
         html;
+
+
+}
+
+
+
+
+
+function filterByRoom(roomName) {
+
+
+    let items = [];
+
+
+    if (
+        roomName === "Chưa có phòng"
+    ) {
+
+
+        items =
+            allItems.filter(
+                item =>
+                    !item.room ||
+                    item.room.trim() === ""
+            );
+
+
+    }
+    else {
+
+
+        items =
+            allItems.filter(
+                item =>
+                    item.room === roomName
+            );
+
+
+    }
+
+
+
+    renderItems(items);
+
+
+
+    showMessage(
+        "🏠 Lọc: " + roomName
+    );
 
 
 }
