@@ -1,31 +1,63 @@
 function filterItems(keyword) {
 
+
     keyword =
         keyword
             .trim()
             .toLowerCase();
 
-    if (keyword === "") {
 
-        return allItems;
 
-    }
+    const roomFilter =
+        document
+            .getElementById("roomFilter")
+            ?.value || "";
+
+
 
     return allItems.filter(item => {
+
+
 
         const name =
             (item.name || "")
                 .toLowerCase();
 
+
+
         const location =
             (item.location || "")
                 .toLowerCase();
 
-        return (
+
+
+        const room =
+            (item.room || "")
+                .toLowerCase();
+
+
+
+        const matchKeyword =
+            keyword === "" ||
             name.includes(keyword) ||
-            location.includes(keyword)
+            location.includes(keyword) ||
+            room.includes(keyword);
+
+
+
+        const matchRoom =
+            roomFilter === "" ||
+            item.room === roomFilter;
+
+
+
+        return (
+            matchKeyword &&
+            matchRoom
         );
 
+
     });
+
 
 }
