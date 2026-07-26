@@ -1,6 +1,7 @@
 let allItems = [];
 
 
+
 function formatDate(dateString) {
 
     if (!dateString) {
@@ -19,23 +20,17 @@ function formatDate(dateString) {
 
 
     const minutes =
-        String(
-            date.getMinutes()
-        )
+        String(date.getMinutes())
         .padStart(2, "0");
 
 
     const day =
-        String(
-            date.getDate()
-        )
+        String(date.getDate())
         .padStart(2, "0");
 
 
     const month =
-        String(
-            date.getMonth() + 1
-        )
+        String(date.getMonth() + 1)
         .padStart(2, "0");
 
 
@@ -71,6 +66,8 @@ function formatDate(dateString) {
 
 
 
+
+
 function filterByRoom(roomName) {
 
 
@@ -85,6 +82,7 @@ function filterByRoom(roomName) {
     renderItems(items);
 
 
+
     const search =
         document.getElementById(
             "search"
@@ -97,8 +95,76 @@ function filterByRoom(roomName) {
 
     }
 
+}
+
+
+
+
+
+function renderTags(tags) {
+
+
+    if (!tags) {
+
+        return "";
+
+    }
+
+
+
+    let list = [];
+
+
+
+    try {
+
+        list =
+            Array.isArray(tags)
+                ? tags
+                : JSON.parse(tags);
+
+
+    }
+    catch {
+
+        list =
+            String(tags)
+            .split(",");
+
+    }
+
+
+
+    if (
+        !list ||
+        list.length === 0
+    ) {
+
+        return "";
+
+    }
+
+
+
+    return list
+        .filter(
+            tag =>
+            tag &&
+            tag.trim() !== ""
+        )
+        .map(
+            tag =>
+            `
+<span class="tag">
+${tag.trim()}
+</span>
+`
+        )
+        .join("");
 
 }
+
+
 
 
 
@@ -114,7 +180,9 @@ function renderItems(items = allItems) {
     let html = "";
 
 
+
     items.forEach(item => {
+
 
 
         const roomBadge =
@@ -139,6 +207,13 @@ border-radius:12px;
 
 
 
+        const tags =
+            renderTags(
+                item.tags
+            );
+
+
+
         html += `
 
 <div class="card">
@@ -154,9 +229,17 @@ loading="lazy">
 </h3>
 
 
+
 <p>
 ${roomBadge}
 </p>
+
+
+
+<p>
+${tags}
+</p>
+
 
 
 <p>
@@ -164,9 +247,11 @@ ${roomBadge}
 </p>
 
 
+
 <p>
 🕒 ${formatDate(item.created_at)}
 </p>
+
 
 
 <div class="buttonRow">
@@ -178,6 +263,7 @@ onclick="editItem('${item.id}')">
 ✏️ Sửa
 
 </button>
+
 
 
 <button
@@ -196,6 +282,7 @@ onclick="deleteItem('${item.id}')">
 `;
 
     });
+
 
 
     list.innerHTML =
