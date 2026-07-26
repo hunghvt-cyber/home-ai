@@ -1,5 +1,4 @@
-let editingId = null;
-
+let editingItem = null;
 
 function editItem(id) {
 
@@ -7,7 +6,6 @@ function editItem(id) {
         allItems.find(
             x => x.id === id
         );
-
 
     if (!item) {
 
@@ -19,30 +17,25 @@ function editItem(id) {
 
     }
 
-
-    editingId = id;
-
+    editingItem = item;
 
     document
         .getElementById("name")
         .value =
         item.name || "";
 
-
     document
         .getElementById("location")
         .value =
         item.location || "";
 
-
     document
         .getElementById("saveButton")
         .innerHTML =
-        "✏️ Cập nhật";
-
+        "💾 Cập nhật";
 
     showMessage(
-        "✏️ Đang sửa."
+        "✏️ Đang chỉnh sửa."
     );
 
 }
