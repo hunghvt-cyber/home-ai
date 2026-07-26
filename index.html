@@ -5,8 +5,7 @@
 
 <meta charset="UTF-8">
 
-<meta
-name="viewport"
+<meta name="viewport"
 content="width=device-width, initial-scale=1">
 
 <title>🏠 Home AI</title>
@@ -25,6 +24,13 @@ href="css/style.css">
 
 <h2>🏠 Home AI</h2>
 
+<button
+onclick="openRoomManager()">
+🏠 Quản lý phòng
+</button>
+
+<hr>
+
 <input
 id="cameraInput"
 type="file"
@@ -40,13 +46,11 @@ style="display:none;">
 
 <div class="buttonRow">
 
-<button
-onclick="openCamera()">
+<button onclick="openCamera()">
 📷 Chụp ảnh
 </button>
 
-<button
-onclick="openGallery()">
+<button onclick="openGallery()">
 🖼 Album
 </button>
 
@@ -72,6 +76,9 @@ placeholder="Tên đồ">
 id="location"
 type="text"
 placeholder="Vị trí">
+
+<select id="room">
+</select>
 
 <div class="buttonRow">
 
@@ -99,6 +106,35 @@ placeholder="🔍 Tìm kiếm">
 
 <div id="list"></div>
 
+<div
+id="roomManager"
+style="display:none;">
+
+<h3>🏠 Quản lý phòng</h3>
+
+<input
+id="newRoom"
+type="text"
+placeholder="Tên phòng">
+
+<div class="buttonRow">
+
+<button
+onclick="addRoom()">
+➕ Thêm
+</button>
+
+<button
+onclick="closeRoomManager()">
+Đóng
+</button>
+
+</div>
+
+<div id="roomList"></div>
+
+</div>
+
 </div>
 
 <script src="js/config.js"></script>
@@ -110,6 +146,8 @@ placeholder="🔍 Tìm kiếm">
 <script src="js/database/delete.js"></script>
 <script src="js/database/edit.js"></script>
 <script src="js/database/save.js"></script>
+
+<script src="js/rooms/rooms.js"></script>
 
 <script src="js/search/filter.js"></script>
 <script src="js/search/search.js"></script>
