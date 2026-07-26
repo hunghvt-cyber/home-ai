@@ -71,6 +71,37 @@ function formatDate(dateString) {
 
 
 
+function filterByRoom(roomName) {
+
+
+    const items =
+        allItems.filter(item => {
+
+            return item.room === roomName;
+
+        });
+
+
+    renderItems(items);
+
+
+    const search =
+        document.getElementById(
+            "search"
+        );
+
+
+    if (search) {
+
+        search.value = "";
+
+    }
+
+
+}
+
+
+
 function renderItems(items = allItems) {
 
 
@@ -84,6 +115,28 @@ function renderItems(items = allItems) {
 
 
     items.forEach(item => {
+
+
+        const roomBadge =
+            item.room
+                ?
+                `
+<span
+onclick="filterByRoom('${item.room}')"
+style="
+cursor:pointer;
+background:#e3f2fd;
+padding:4px 8px;
+border-radius:12px;
+">
+
+🏠 ${item.room}
+
+</span>
+`
+                :
+                "🏠 Chưa có phòng";
+
 
 
         html += `
@@ -102,7 +155,7 @@ loading="lazy">
 
 
 <p>
-🏠 ${item.room || "-"}
+${roomBadge}
 </p>
 
 
