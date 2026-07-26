@@ -29,8 +29,7 @@ async function analyzeImage() {
         const response =
             await fetch(
 
-                SUPABASE_URL +
-                "/functions/v1/gemini",
+                "https://home-ai-two-topaz.vercel.app/api/gemini",
 
                 {
 
@@ -39,19 +38,11 @@ async function analyzeImage() {
                     headers: {
 
                         "Content-Type":
-                        "application/json",
-
-                        "apikey":
-                        SUPABASE_KEY,
-
-                        "Authorization":
-                        "Bearer " +
-                        SUPABASE_KEY
+                        "application/json"
 
                     },
 
-                    body:
-                    JSON.stringify({
+                    body: JSON.stringify({
 
                         imageBase64:
                         cleanBase64
@@ -73,7 +64,7 @@ async function analyzeImage() {
 
             throw new Error(
 
-                data.message ||
+                data.error ||
 
                 JSON.stringify(data)
 
