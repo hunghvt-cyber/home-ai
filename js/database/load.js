@@ -11,18 +11,24 @@ async function loadItems() {
                 }
             );
 
+
     if (result.error) {
 
         showMessage(
-            "❌ " + result.error.message
+            "❌ " +
+            result.error.message
         );
 
         return;
 
     }
 
-    allItems = result.data;
+
+    allItems =
+        result.data || [];
+
 
     renderItems();
+
 
 }
