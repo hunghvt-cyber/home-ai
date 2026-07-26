@@ -34,8 +34,47 @@ function editItem(id) {
         .innerHTML =
         "💾 Cập nhật";
 
+    document
+        .getElementById("cancelButton")
+        .style.display =
+        "inline-block";
+
+    window.scrollTo({
+
+        top: 0,
+
+        behavior: "smooth"
+
+    });
+
+    document
+        .getElementById("name")
+        .focus();
+
     showMessage(
         "✏️ Đang chỉnh sửa."
+    );
+
+}
+
+function cancelEdit() {
+
+    editingItem = null;
+
+    clearForm();
+
+    document
+        .getElementById("saveButton")
+        .innerHTML =
+        "💾 Lưu";
+
+    document
+        .getElementById("cancelButton")
+        .style.display =
+        "none";
+
+    showMessage(
+        "✅ Đã hủy chỉnh sửa."
     );
 
 }
