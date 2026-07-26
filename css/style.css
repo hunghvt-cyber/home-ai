@@ -1,101 +1,247 @@
-*{
-    box-sizing:border-box;
+* {
+    box-sizing: border-box;
 }
 
-body{
-    margin:0;
-    background:#f3f4f6;
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
-    color:#222;
+
+
+body {
+
+    margin: 0;
+
+    padding: 0;
+
+    font-family:
+        Arial,
+        sans-serif;
+
+    background:
+        #f5f5f5;
+
 }
 
-.container{
-    max-width:600px;
-    margin:auto;
-    padding:16px;
+
+
+.container {
+
+    max-width: 600px;
+
+    margin: auto;
+
+    padding: 15px;
+
 }
 
-h2{
-    text-align:center;
-    margin:10px 0 20px;
+
+
+h2,
+h3 {
+
+    text-align: center;
+
 }
 
-.buttonRow{
-    display:flex;
-    gap:10px;
+
+
+input,
+select {
+
+    width: 100%;
+
+    min-height: 48px;
+
+    font-size: 17px;
+
+    padding: 10px 12px;
+
+    margin-top: 8px;
+
+    margin-bottom: 8px;
+
+    border-radius: 8px;
+
+    border: 1px solid #ccc;
+
 }
 
-button{
-    flex:1;
-    padding:14px;
-    border:none;
-    border-radius:14px;
-    background:#2563eb;
-    color:#fff;
-    font-size:16px;
-    font-weight:600;
+
+
+button {
+
+    min-height: 42px;
+
+    padding: 8px 14px;
+
+    font-size: 16px;
+
+    border-radius: 8px;
+
+    border: none;
+
+    cursor: pointer;
+
 }
 
-button:active{
-    transform:scale(.98);
+
+
+.buttonRow {
+
+    display: flex;
+
+    gap: 8px;
+
+    align-items: center;
+
+    margin-top: 8px;
+
 }
 
-button:disabled{
-    background:#9ca3af;
+
+
+.buttonRow button {
+
+    flex: 0 0 auto;
+
 }
 
-input[type=text]{
-    width:100%;
-    margin-top:12px;
-    padding:14px;
-    border:1px solid #d1d5db;
-    border-radius:12px;
-    font-size:16px;
+
+
+#room,
+#roomFilter {
+
+    width: 100%;
+
+    min-height: 52px;
+
+    font-size: 18px;
+
+    padding: 12px;
+
+    margin-top: 10px;
+
+    margin-bottom: 10px;
+
 }
 
-#preview{
-    display:block;
-    width:100%;
-    max-height:320px;
-    object-fit:contain;
-    margin-top:12px;
-    border-radius:14px;
-    background:#fff;
-    border:1px solid #ddd;
+
+
+#preview {
+
+    width: 100%;
+
+    max-height: 300px;
+
+    object-fit: contain;
+
+    border-radius: 10px;
+
+    margin-top: 10px;
+
 }
 
-#selectedImage{
-    text-align:center;
-    color:#666;
-    font-size:14px;
+
+
+.card {
+
+    background: white;
+
+    padding: 12px;
+
+    margin-top: 12px;
+
+    border-radius: 12px;
+
+    box-shadow:
+        0 2px 6px rgba(0,0,0,0.1);
+
 }
 
-#message{
-    min-height:24px;
-    margin:12px 0;
-    padding:10px;
-    border-radius:10px;
-    background:#e8f5e9;
-    color:#1b5e20;
-    text-align:center;
-    opacity:0;
-    transition:.3s;
+
+
+.card img {
+
+    width: 100%;
+
+    border-radius: 10px;
+
 }
 
-#message.show{
-    opacity:1;
+
+
+.card h3 {
+
+    text-align: left;
+
 }
 
-.card{
-    margin-top:16px;
-    padding:12px;
-    background:#fff;
-    border-radius:16px;
-    box-shadow:0 2px 10px rgba(0,0,0,.08);
+
+
+#message {
+
+    margin: 10px 0;
+
+    font-size: 16px;
+
 }
 
-.card img{
-    width:100%;
-    border-radius:12px;
-    object-fit:cover;
+
+
+#roomManager {
+
+    background: white;
+
+    padding: 12px;
+
+    border-radius: 10px;
+
+}
+
+
+
+#roomList .buttonRow {
+
+    background: #f0f0f0;
+
+    padding: 10px;
+
+    border-radius: 8px;
+
+}
+
+
+
+#roomStats .buttonRow {
+
+    justify-content: space-between;
+
+    background: white;
+
+    padding: 12px;
+
+    margin-top: 8px;
+
+    border-radius: 8px;
+
+    box-shadow:
+        0 1px 4px rgba(0,0,0,0.1);
+
+}
+
+
+
+@media (max-width: 600px) {
+
+
+    .buttonRow {
+
+        flex-wrap: wrap;
+
+    }
+
+
+    button {
+
+        font-size: 16px;
+
+    }
+
 }
