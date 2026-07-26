@@ -45,12 +45,84 @@ async function saveItem() {
 
         if (editingItem) {
 
+            let imageUrl =
+                editingItem.image_url;
+
+            if (selectedFile) {
+
+                const resizedBlob =
+                    await resizeImage(
+                        selectedFile
+                    );
+
+                const fileName =
+                    Date.now() +
+                    "_" +
+                    selectedFile.name
+                        .replace(/\s/g, "_")
+                        .replace(/\.[^/.]+$/, "") +
+                    ".jpg";
+
+                const upload =
+                    await db.storage
+                        .from("images")
+                        .upload(
+                            fileName,
+                            resizedBlob,
+                            {
+                                contentType:
+                                    "image/jpeg"
+                            }
+                        );
+
+                if (upload.error) {
+
+                    throw upload.error;
+
+                }
+
+                imageUrl =
+                    db.storage
+                        .from("images")
+                        .getPublicUrl(
+                            fileName
+                        )
+                        .data
+                        .publicUrl;
+
+                if (
+                    editingItem.image_url
+                ) {
+
+                    const oldFile =
+                        editingItem
+                            .image_url
+                            .split("/")
+                            .pop();
+
+                    await db.storage
+                        .from("images")
+                        .remove([
+                            oldFile
+                        ]);
+
+                }
+
+            }
+
             const update =
                 await db
                     .from("items")
                     .update({
+
                         name: name,
-                        location: location
+
+                        location:
+                            location,
+
+                        image_url:
+                            imageUrl
+
                     })
                     .eq(
                         "id",
@@ -62,15 +134,9 @@ async function saveItem() {
                 throw update.error;
 
             }
-
             editingItem = null;
 
             clearForm();
-
-            document
-                .getElementById("cancelButton")
-                .style.display =
-                "none";
 
             showMessage(
                 "✅ Đã cập nhật."
@@ -159,7 +225,8 @@ async function saveItem() {
     catch(error) {
 
         showMessage(
-            "❌ " + error.message
+            "❌ " +
+            error.message
         );
 
     }
@@ -179,3 +246,42 @@ async function saveItem() {
 function clearForm() {
 
     selectedFile = null;
+
+    editingItem = null;
+
+    document
+        .getElementById("cameraInput")
+        .value = "";
+
+    document
+        .getElementById("galleryInput")
+        .value = "";
+
+    document
+        .getElementById("name")
+        .value = "";
+
+    document
+        .getElementById("location")
+        .value = "";
+
+    document
+        .getElementById("selectedImage")
+        .innerHTML =
+        "Chưa chọn ảnh";
+
+    const preview =
+        document
+            .getElementById("preview");
+
+    preview.src = "";
+
+    preview.style.display =
+        "none";
+
+    document
+        .getElementById("cancelButton")
+        .style.display =
+        "none";
+
+}
