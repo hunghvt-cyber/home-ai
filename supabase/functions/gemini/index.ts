@@ -1,7 +1,34 @@
 import { serve } from "https://deno.land/std/http/server.ts";
 
+const corsHeaders = {
+
+    "Access-Control-Allow-Origin": "*",
+
+    "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type"
+
+};
+
 
 serve(async (req) => {
+
+
+    if (req.method === "OPTIONS") {
+
+        return new Response(
+
+            "ok",
+
+            {
+
+                headers:
+                corsHeaders
+
+            }
+
+        );
+
+    }
 
 
     try {
@@ -22,8 +49,8 @@ serve(async (req) => {
         const response =
             await fetch(
 
-                "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key="
-                + apiKey,
+                "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" +
+                apiKey,
 
                 {
 
@@ -102,6 +129,8 @@ Chỉ trả JSON.`
 
                 headers: {
 
+                    ...corsHeaders,
+
                     "Content-Type":
                     "application/json"
 
@@ -113,7 +142,7 @@ Chỉ trả JSON.`
 
 
     }
-    catch(error) {
+    catch (error) {
 
 
         return new Response(
@@ -127,9 +156,11 @@ Chỉ trả JSON.`
 
             {
 
-                status:500,
+                status: 500,
 
                 headers: {
+
+                    ...corsHeaders,
 
                     "Content-Type":
                     "application/json"
