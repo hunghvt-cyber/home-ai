@@ -7,10 +7,9 @@ async function analyzeImage() {
             "❌ Chưa có ảnh."
         );
 
-        return null;
+        return;
 
     }
-
 
 
     try {
@@ -22,14 +21,12 @@ async function analyzeImage() {
             );
 
 
-
         const cleanBase64 =
-            base64
-            .split(",")[1];
+            base64.split(",")[1];
 
 
 
-        const result =
+        const response =
             await fetch(
 
                 SUPABASE_URL +
@@ -50,8 +47,7 @@ async function analyzeImage() {
 
                     },
 
-                    body:
-                    JSON.stringify({
+                    body:JSON.stringify({
 
                         imageBase64:
                         cleanBase64
@@ -65,11 +61,71 @@ async function analyzeImage() {
 
 
         const data =
-            await result.json();
+            await response.json();
 
 
 
-        return data;
+        let text =
+            data
+            .candidates[0]
+            .content
+            .parts[0]
+            .text;
+
+
+
+        text =
+            text
+            .replace(/```json/g,"")
+            .replace(/```/g,"")
+            .trim();
+
+
+
+        const ai =
+            JSON.parse(text);
+
+
+
+        if (ai.name) {
+
+            document
+            .getElementById("name")
+            .value =
+            ai.name;
+
+        }
+
+
+
+        if (ai.room) {
+
+            document
+            .getElementById("room")
+            .value =
+            ai.room;
+
+        }
+
+
+
+        if (
+            ai.tags &&
+            Array.isArray(ai.tags)
+        ) {
+
+            document
+            .getElementById("tags")
+            .value =
+            ai.tags.join(", ");
+
+        }
+
+
+
+        showMessage(
+            "🤖 AI đã gợi ý xong."
+        );
 
 
 
@@ -82,8 +138,6 @@ async function analyzeImage() {
             error.message
         );
 
-
-        return null;
 
     }
 
@@ -98,6 +152,7 @@ function fileToBase64(file) {
 
 
     return new Promise(
+
         (resolve,reject)=>{
 
 
@@ -107,13 +162,10 @@ function fileToBase64(file) {
 
 
             reader.onload =
-                () => {
-
-                    resolve(
-                        reader.result
-                    );
-
-                };
+                () =>
+                resolve(
+                    reader.result
+                );
 
 
 
@@ -141,7 +193,7 @@ function initAI() {
 
 
     console.log(
-        "🤖 AI ready"
+        "🤖 AI Ready"
     );
 
 
