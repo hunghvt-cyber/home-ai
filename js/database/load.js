@@ -1,5 +1,6 @@
 async function loadItems() {
 
+
     const result =
         await db
             .from("items")
@@ -12,23 +13,40 @@ async function loadItems() {
             );
 
 
+
     if (result.error) {
+
 
         showMessage(
             "❌ " +
             result.error.message
         );
 
+
         return;
 
     }
+
 
 
     allItems =
         result.data || [];
 
 
+
     renderItems();
+
+
+
+    if (
+        typeof renderRoomStats === "function"
+    ) {
+
+
+        renderRoomStats();
+
+
+    }
 
 
 }
