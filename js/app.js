@@ -1,14 +1,89 @@
-function init() {
+function showError(error) {
 
-    initImage();
+    const message =
+        document.getElementById(
+            "message"
+        );
 
-    initSearch();
+    if (!message) {
 
-    initAI();
+        return;
 
-    loadItems();
+    }
+
+    message.innerHTML =
+        "❌ " +
+        error.message;
+
+    message.style.color =
+        "red";
 
 }
+
+
+window.onerror =
+    function(
+        message,
+        source,
+        line,
+        column,
+        error
+    ) {
+
+        showError({
+
+            message:
+                message +
+                " (" +
+                line +
+                ":" +
+                column +
+                ")"
+
+        });
+
+    };
+
+
+window.addEventListener(
+
+    "unhandledrejection",
+
+    function(event) {
+
+        showError({
+
+            message:
+                event.reason
+
+        });
+
+    }
+
+);
+
+
+function init() {
+
+    try {
+
+        initImage();
+
+        initSearch();
+
+        initAI();
+
+        loadItems();
+
+    }
+    catch(error) {
+
+        showError(error);
+
+    }
+
+}
+
 
 document.addEventListener(
 
