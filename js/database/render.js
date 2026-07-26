@@ -104,40 +104,10 @@ function filterByRoom(roomName) {
 function renderTags(tags) {
 
 
-    if (!tags) {
-
-        return "";
-
-    }
-
-
-
-    let list = [];
-
-
-
-    try {
-
-        list =
-            Array.isArray(tags)
-                ? tags
-                : JSON.parse(tags);
-
-
-    }
-    catch {
-
-        list =
-            String(tags)
-            .split(",");
-
-    }
-
-
-
     if (
-        !list ||
-        list.length === 0
+        !tags ||
+        !Array.isArray(tags) ||
+        tags.length === 0
     ) {
 
         return "";
@@ -146,17 +116,12 @@ function renderTags(tags) {
 
 
 
-    return list
-        .filter(
-            tag =>
-            tag &&
-            tag.trim() !== ""
-        )
+    return tags
         .map(
             tag =>
             `
 <span class="tag">
-${tag.trim()}
+${tag}
 </span>
 `
         )
@@ -175,6 +140,14 @@ function renderItems(items = allItems) {
         document.getElementById(
             "list"
         );
+
+
+    if (!list) {
+
+        return;
+
+    }
+
 
 
     let html = "";
@@ -222,6 +195,7 @@ border-radius:12px;
 <img
 src="${item.image_url}"
 loading="lazy">
+
 
 
 <h3>
@@ -274,6 +248,7 @@ onclick="deleteItem('${item.id}')">
 </button>
 
 
+
 </div>
 
 
@@ -287,5 +262,6 @@ onclick="deleteItem('${item.id}')">
 
     list.innerHTML =
         html;
+
 
 }
