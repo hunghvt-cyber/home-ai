@@ -1,6 +1,8 @@
 let isSaving = false;
 
+
 async function saveItem() {
+
 
     if (isSaving) {
 
@@ -8,11 +10,13 @@ async function saveItem() {
 
     }
 
+
     const name =
         document
             .getElementById("name")
             .value
             .trim();
+
 
     if (name === "") {
 
@@ -24,36 +28,53 @@ async function saveItem() {
 
     }
 
+
     const location =
         document
             .getElementById("location")
             .value
             .trim();
 
+
+    const room =
+        document
+            .getElementById("room")
+            .value;
+
+
     const saveButton =
         document
             .getElementById("saveButton");
 
+
     isSaving = true;
 
+
     saveButton.disabled = true;
+
 
     saveButton.innerHTML =
         "⏳ Đang lưu...";
 
+
     try {
 
+
         if (editingItem) {
+
 
             let imageUrl =
                 editingItem.image_url;
 
+
             if (selectedFile) {
+
 
                 const resizedBlob =
                     await resizeImage(
                         selectedFile
                     );
+
 
                 const fileName =
                     Date.now() +
@@ -62,6 +83,7 @@ async function saveItem() {
                         .replace(/\s/g, "_")
                         .replace(/\.[^/.]+$/, "") +
                     ".jpg";
+
 
                 const upload =
                     await db.storage
@@ -75,11 +97,13 @@ async function saveItem() {
                             }
                         );
 
+
                 if (upload.error) {
 
                     throw upload.error;
 
                 }
+
 
                 imageUrl =
                     db.storage
@@ -90,25 +114,9 @@ async function saveItem() {
                         .data
                         .publicUrl;
 
-                if (
-                    editingItem.image_url
-                ) {
-
-                    const oldFile =
-                        editingItem
-                            .image_url
-                            .split("/")
-                            .pop();
-
-                    await db.storage
-                        .from("images")
-                        .remove([
-                            oldFile
-                        ]);
-
-                }
 
             }
+
 
             const update =
                 await db
@@ -120,6 +128,9 @@ async function saveItem() {
                         location:
                             location,
 
+                        room:
+                            room,
+
                         image_url:
                             imageUrl
 
@@ -129,23 +140,31 @@ async function saveItem() {
                         editingItem.id
                     );
 
+
             if (update.error) {
 
                 throw update.error;
 
             }
+
+
             editingItem = null;
 
+
             clearForm();
+
 
             showMessage(
                 "✅ Đã cập nhật."
             );
 
+
             await loadItems();
+
 
         }
         else {
+
 
             if (selectedFile == null) {
 
@@ -157,10 +176,12 @@ async function saveItem() {
 
             }
 
+
             const resizedBlob =
                 await resizeImage(
                     selectedFile
                 );
+
 
             const fileName =
                 Date.now() +
@@ -169,6 +190,7 @@ async function saveItem() {
                     .replace(/\s/g, "_")
                     .replace(/\.[^/.]+$/, "") +
                 ".jpg";
+
 
             const upload =
                 await db.storage
@@ -182,28 +204,45 @@ async function saveItem() {
                         }
                     );
 
+
             if (upload.error) {
 
                 throw upload.error;
 
             }
 
+
             const imageUrl =
                 db.storage
                     .from("images")
-                    .getPublicUrl(fileName)
-                    .data.publicUrl;
+                    .getPublicUrl(
+                        fileName
+                    )
+                    .data
+                    .publicUrl;
+
 
             const insert =
                 await db
                     .from("items")
                     .insert([
+
                         {
-                            name: name,
-                            location: location,
-                            image_url: imageUrl
+                            name:
+                                name,
+
+                            location:
+                                location,
+
+                            room:
+                                room,
+
+                            image_url:
+                                imageUrl
                         }
+
                     ]);
+
 
             if (insert.error) {
 
@@ -211,77 +250,107 @@ async function saveItem() {
 
             }
 
+
             clearForm();
+
 
             showMessage(
                 "✅ Đã lưu thành công."
             );
 
+
             await loadItems();
+
 
         }
 
+
     }
     catch(error) {
+
 
         showMessage(
             "❌ " +
             error.message
         );
 
+
     }
     finally {
 
+
         isSaving = false;
+
 
         saveButton.disabled = false;
 
+
         saveButton.innerHTML =
             "💾 Lưu";
+
 
     }
 
 }
 
+
+
 function clearForm() {
+
 
     selectedFile = null;
 
+
     editingItem = null;
+
 
     document
         .getElementById("cameraInput")
         .value = "";
 
+
     document
         .getElementById("galleryInput")
         .value = "";
+
 
     document
         .getElementById("name")
         .value = "";
 
+
     document
         .getElementById("location")
         .value = "";
+
+
+    document
+        .getElementById("room")
+        .value = "";
+
 
     document
         .getElementById("selectedImage")
         .innerHTML =
         "Chưa chọn ảnh";
 
+
     const preview =
         document
             .getElementById("preview");
 
+
     preview.src = "";
+
 
     preview.style.display =
         "none";
+
 
     document
         .getElementById("cancelButton")
         .style.display =
         "none";
+
 
 }
