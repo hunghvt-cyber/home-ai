@@ -64,12 +64,17 @@ async function analyzeImage() {
 
             throw new Error(
 
-                data.error ||
+    JSON.stringify(
 
-                JSON.stringify(data)
+        data,
 
-            );
+        null,
 
+        2
+
+    )
+
+);
         }
 
 
