@@ -46,7 +46,6 @@ function updateRoomSelects() {
 
     if (room) {
 
-
         room.innerHTML =
         `
 <option value="">
@@ -57,7 +56,6 @@ function updateRoomSelects() {
 
         rooms.forEach(r => {
 
-
             room.innerHTML +=
             `
 <option value="${r.name}">
@@ -65,16 +63,13 @@ ${r.name}
 </option>
 `;
 
-
         });
-
 
     }
 
 
 
     if (roomFilter) {
-
 
         roomFilter.innerHTML =
         `
@@ -87,7 +82,6 @@ ${r.name}
 
         rooms.forEach(r => {
 
-
             roomFilter.innerHTML +=
             `
 <option value="${r.name}">
@@ -95,9 +89,7 @@ ${r.name}
 </option>
 `;
 
-
         });
-
 
     }
 
@@ -111,10 +103,16 @@ function renderRoomManager() {
 
 
     const list =
-        document.getElementById("roomList");
+        document.getElementById(
+            "roomList"
+        );
 
 
-    if (!list) return;
+    if (!list) {
+
+        return;
+
+    }
 
 
 
@@ -165,6 +163,118 @@ onclick="deleteRoom('${r.id}')">
 
 
 }
+function openRoomManager() {
+
+
+    const box =
+        document.getElementById(
+            "roomManager"
+        );
+
+
+    if (box) {
+
+        box.style.display =
+            "block";
+
+    }
+
+
+    loadRooms();
+
+
+}
+
+
+
+
+
+function closeRoomManager() {
+
+
+    const box =
+        document.getElementById(
+            "roomManager"
+        );
+
+
+    if (box) {
+
+        box.style.display =
+            "none";
+
+    }
+
+
+}
+
+
+
+
+
+async function addRoom() {
+
+
+    const input =
+        document.getElementById(
+            "newRoom"
+        );
+
+
+    const name =
+        input.value.trim();
+
+
+
+    if (!name) {
+
+        return;
+
+    }
+
+
+
+    const result =
+        await db
+            .from("rooms")
+            .insert([
+
+                {
+                    name:name
+                }
+
+            ]);
+
+
+
+    if (result.error) {
+
+
+        showMessage(
+            "❌ " +
+            result.error.message
+        );
+
+
+        return;
+
+    }
+
+
+
+    input.value = "";
+
+
+    await loadRooms();
+
+
+
+    showMessage(
+        "✅ Đã thêm phòng."
+    );
+
+
+}
 
 
 
@@ -179,7 +289,12 @@ async function renameRoom(id) {
         );
 
 
-    if (!room) return;
+
+    if (!room) {
+
+        return;
+
+    }
 
 
 
@@ -234,6 +349,7 @@ async function renameRoom(id) {
         return;
 
     }
+
 
 
 
@@ -293,7 +409,12 @@ async function deleteRoom(id) {
         );
 
 
-    if (!room) return;
+
+    if (!room) {
+
+        return;
+
+    }
 
 
 
@@ -305,6 +426,21 @@ async function deleteRoom(id) {
                 "room",
                 room.name
             );
+
+
+
+    if (check.error) {
+
+
+        showMessage(
+            "❌ " +
+            check.error.message
+        );
+
+
+        return;
+
+    }
 
 
 
