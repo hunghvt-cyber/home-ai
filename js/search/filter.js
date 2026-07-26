@@ -21,32 +21,45 @@ function filterItems(keyword) {
 
         const name =
             (item.name || "")
-                .toLowerCase();
+            .toLowerCase();
 
 
 
         const location =
             (item.location || "")
-                .toLowerCase();
+            .toLowerCase();
 
 
 
         const room =
             (item.room || "")
-                .toLowerCase();
+            .toLowerCase();
+
+
+
+        const tags =
+            (item.tags || "")
+            .toString()
+            .toLowerCase();
 
 
 
         const matchKeyword =
             keyword === "" ||
+
             name.includes(keyword) ||
+
             location.includes(keyword) ||
-            room.includes(keyword);
+
+            room.includes(keyword) ||
+
+            tags.includes(keyword);
 
 
 
         const matchRoom =
             roomFilter === "" ||
+
             item.room === roomFilter;
 
 
