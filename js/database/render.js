@@ -223,6 +223,12 @@ ${tags}
 
 
 <p>
+📝 ${item.description || "-"}
+</p>
+
+
+
+<p>
 🕒 ${formatDate(item.created_at)}
 </p>
 
