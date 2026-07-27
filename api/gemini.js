@@ -1,12 +1,10 @@
-import { VISION_PROMPT } from "./prompt.js";
+import { createVisionPrompt } from "./prompt.js";
 import { cleanGeminiResponse } from "./response.js";
 
 
-// Gemini model
 const MODEL = "gemini-flash-latest";
 
 
-// API Key lấy từ Vercel Environment
 const GEMINI_API_KEY =
     process.env.GEMINI_API_KEY;
 
@@ -15,7 +13,6 @@ const GEMINI_API_KEY =
 export default async function handler(req, res) {
 
 
-    // CORS
     res.setHeader(
         "Access-Control-Allow-Origin",
         "*"
@@ -39,7 +36,6 @@ export default async function handler(req, res) {
     }
 
 
-
     if (req.method !== "POST") {
 
         return res.status(405).json({
@@ -51,7 +47,6 @@ export default async function handler(req, res) {
     }
 
 
-
     try {
 
 
@@ -59,7 +54,9 @@ export default async function handler(req, res) {
 
             imageBase64,
 
-            mimeType
+            mimeType,
+
+            rooms
 
         } = req.body;
 
@@ -84,7 +81,6 @@ export default async function handler(req, res) {
 
         const body = {
 
-
             contents: [
 
                 {
@@ -93,10 +89,12 @@ export default async function handler(req, res) {
 
                         {
 
-                            text: VISION_PROMPT
+                            text:
+                                createVisionPrompt(
+                                    rooms || []
+                                )
 
                         },
-
 
                         {
 
@@ -119,7 +117,6 @@ export default async function handler(req, res) {
             ],
 
 
-
             generationConfig: {
 
                 temperature: 0.2,
@@ -129,18 +126,14 @@ export default async function handler(req, res) {
 
             }
 
-
         };
 
 
 
         const response =
             await fetch(
-
                 url,
-
                 {
-
                     method: "POST",
 
                     headers: {
@@ -154,7 +147,6 @@ export default async function handler(req, res) {
                         JSON.stringify(body)
 
                 }
-
             );
 
 
@@ -166,13 +158,6 @@ export default async function handler(req, res) {
 
         if (!response.ok) {
 
-
-            console.error(
-                "Gemini HTTP Error:",
-                result
-            );
-
-
             return res.status(
                 response.status
             ).json({
@@ -183,13 +168,11 @@ export default async function handler(req, res) {
 
             });
 
-
         }
 
 
 
         const text =
-
             result
                 ?.candidates?.[0]
                 ?.content
@@ -198,12 +181,9 @@ export default async function handler(req, res) {
 
 
 
-        const data =
-            cleanGeminiResponse(text);
-
-
-
-        return res.status(200).json(data);
+        return res.status(200).json(
+            cleanGeminiResponse(text)
+        );
 
 
 
@@ -211,7 +191,6 @@ export default async function handler(req, res) {
 
 
         console.error(
-            "Gemini Error:",
             error
         );
 
@@ -222,7 +201,6 @@ export default async function handler(req, res) {
                 error.message
 
         });
-
 
     }
 
