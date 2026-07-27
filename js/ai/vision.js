@@ -1,81 +1,4 @@
-let selectedFile = null;
-
-
-function openCamera() {
-
-    document
-        .getElementById("cameraInput")
-        .click();
-
-}
-
-
-
-function openGallery() {
-
-    document
-        .getElementById("galleryInput")
-        .click();
-
-}
-
-
-
-function initImage() {
-
-    document
-        .getElementById("cameraInput")
-        .addEventListener(
-            "change",
-            handleImage
-        );
-
-
-    document
-        .getElementById("galleryInput")
-        .addEventListener(
-            "change",
-            handleImage
-        );
-
-}
-
-
-
-function handleImage(event) {
-
-    const file =
-        event.target.files[0];
-
-
-    if (!file) return;
-
-
-    selectedFile = file;
-
-
-    const preview =
-        document.getElementById("preview");
-
-
-    preview.src =
-        URL.createObjectURL(file);
-
-
-    preview.style.display =
-        "block";
-
-
-    document
-        .getElementById("selectedImage")
-        .innerHTML =
-        "📷 " + file.name;
-
-}
-
-
-
-async function analyzeImage() {
+function analyzeImage() {
 
 
     if (!selectedFile) {
@@ -93,6 +16,36 @@ async function analyzeImage() {
     try {
 
 
+        sendImageToAI();
+
+
+    }
+    catch (error) {
+
+
+        showMessage(
+
+            "❌ AI lỗi\n\n" +
+            error.message,
+
+            "error"
+
+        );
+
+
+    }
+
+}
+
+
+
+
+async function sendImageToAI() {
+
+
+    try {
+
+
         const base64 =
             await fileToBase64(
                 selectedFile
@@ -103,8 +56,6 @@ async function analyzeImage() {
             base64.split(",")[1];
 
 
-
-        // Lấy danh sách phòng từ Supabase
 
         const { data: rooms } =
             await db
@@ -284,6 +235,7 @@ async function analyzeImage() {
 
 
 
+
 async function selectRoom(aiRoom) {
 
 
@@ -323,9 +275,7 @@ async function selectRoom(aiRoom) {
 
             return;
 
-
         }
-
 
     }
 
@@ -353,14 +303,12 @@ async function selectRoom(aiRoom) {
 
             return;
 
-
         }
-
 
     }
 
-
 }
+
 
 
 
@@ -400,6 +348,7 @@ function fileToBase64(file) {
 
 
 }
+
 
 
 
