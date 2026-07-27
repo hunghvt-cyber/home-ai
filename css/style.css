@@ -43,7 +43,8 @@ h3 {
 
 
 input,
-select {
+select,
+textarea {
 
     width: 100%;
 
@@ -60,6 +61,22 @@ select {
     border-radius: 8px;
 
     border: 1px solid #ccc;
+
+    font-family:
+        Arial,
+        sans-serif;
+
+}
+
+
+
+textarea {
+
+    min-height: 120px;
+
+    resize: vertical;
+
+    line-height: 1.5;
 
 }
 
@@ -228,6 +245,16 @@ button {
 
 
 
+.card p {
+
+    line-height: 1.5;
+
+    margin: 8px 0;
+
+}
+
+
+
 @media (max-width: 600px) {
 
 
@@ -245,11 +272,21 @@ button {
     }
 
 }
+
+
+
 .tag {
+
     display:inline-block;
+
     padding:4px 10px;
+
     margin:3px;
+
     border-radius:20px;
+
     background:#eee;
+
     font-size:14px;
+
 }
