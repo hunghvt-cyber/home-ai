@@ -55,6 +55,14 @@ async function saveItem() {
 
 
 
+    const description =
+        document
+            .getElementById("description")
+            ?.value
+            .trim() || "";
+
+
+
     const tags =
         tagsInput
             ? tagsInput
@@ -89,7 +97,9 @@ async function saveItem() {
     try {
 
 
+
         if (editingItem) {
+
 
 
             let imageUrl =
@@ -98,6 +108,7 @@ async function saveItem() {
 
 
             if (selectedFile) {
+
 
 
                 const resizedBlob =
@@ -166,6 +177,8 @@ async function saveItem() {
 
                         tags:tags,
 
+                        description:description,
+
                         image_url:imageUrl
 
                     })
@@ -198,11 +211,7 @@ async function saveItem() {
 
 
         }
-        else {
-
-
-
-            if (!selectedFile) {
+        else {            if (!selectedFile) {
 
                 showMessage(
                     "❌ Vui lòng chọn ảnh."
@@ -279,6 +288,8 @@ async function saveItem() {
 
                             tags:tags,
 
+                            description:description,
+
                             image_url:imageUrl
 
                         }
@@ -305,6 +316,7 @@ async function saveItem() {
 
 
             await loadItems();
+
 
 
         }
@@ -390,6 +402,20 @@ function clearForm() {
 
 
 
+    const description =
+        document.getElementById(
+            "description"
+        );
+
+
+    if (description) {
+
+        description.value = "";
+
+    }
+
+
+
     document
         .getElementById("selectedImage")
         .innerHTML =
@@ -417,4 +443,4 @@ function clearForm() {
         "none";
 
 
-}
+} 
