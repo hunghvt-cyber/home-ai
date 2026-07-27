@@ -1,5 +1,65 @@
-async function analyzeImage() {
+let selectedFile = null;
 
+function openCamera() {
+
+    document
+        .getElementById("cameraInput")
+        .click();
+
+}
+
+function openGallery() {
+
+    document
+        .getElementById("galleryInput")
+        .click();
+
+}
+
+function initImage() {
+
+    document
+        .getElementById("cameraInput")
+        .addEventListener(
+            "change",
+            handleImage
+        );
+
+    document
+        .getElementById("galleryInput")
+        .addEventListener(
+            "change",
+            handleImage
+        );
+
+}
+
+function handleImage(event) {
+
+    const file =
+        event.target.files[0];
+
+    if (!file) return;
+
+    selectedFile = file;
+
+    const preview =
+        document.getElementById("preview");
+
+    preview.src =
+        URL.createObjectURL(file);
+
+    preview.style.display =
+        "block";
+
+    document
+        .getElementById("selectedImage")
+        .innerHTML =
+        "📷 " + file.name;
+
+}
+
+async function analyzeImage() {
 
     if (!selectedFile) {
 
@@ -11,20 +71,15 @@ async function analyzeImage() {
 
     }
 
-
     try {
-
 
         const base64 =
             await fileToBase64(
                 selectedFile
             );
 
-
         const cleanBase64 =
             base64.split(",")[1];
-
-
 
         const response =
             await fetch(
@@ -53,53 +108,24 @@ async function analyzeImage() {
 
             );
 
-
-
-        const data =
+        const ai =
             await response.json();
-
-
 
         if (!response.ok) {
 
             throw new Error(
 
-    JSON.stringify(
+                ai.error ||
 
-        data,
+                JSON.stringify(
+                    ai,
+                    null,
+                    2
+                )
 
-        null,
+            );
 
-        2
-
-    )
-
-);
         }
-
-
-
-        let text =
-            data
-            .candidates[0]
-            .content
-            .parts[0]
-            .text;
-
-
-
-        text =
-            text
-            .replace(/```json/g, "")
-            .replace(/```/g, "")
-            .trim();
-
-
-
-        const ai =
-            JSON.parse(text);
-
-
 
         if (ai.name) {
 
@@ -110,8 +136,6 @@ async function analyzeImage() {
 
         }
 
-
-
         if (ai.room) {
 
             document
@@ -121,7 +145,21 @@ async function analyzeImage() {
 
         }
 
+        if (ai.location) {
 
+            const location =
+                document.getElementById(
+                    "location"
+                );
+
+            if (location) {
+
+                location.value =
+                    ai.location;
+
+            }
+
+        }
 
         if (
             ai.tags &&
@@ -135,60 +173,51 @@ async function analyzeImage() {
 
         }
 
+        if (ai.description) {
 
+            const description =
+                document.getElementById(
+                    "description"
+                );
+
+            if (description) {
+
+                description.value =
+                    ai.description;
+
+            }
+
+        }
 
         showMessage(
-            "🤖 AI đã gợi ý xong."
+            "🤖 AI đã nhận diện xong."
         );
-
 
     }
     catch (error) {
 
-
         showMessage(
 
-    "❌ AI lỗi\n\n" +
+            "❌ AI lỗi\n\n" +
 
-    error.message +
+            error.message,
 
-    "\n\n" +
+            "error"
 
-    JSON.stringify(
-
-        error,
-
-        null,
-
-        2
-
-    ),
-
-    "error"
-
-);
-
+        );
 
     }
 
-
 }
 
-
-
-
-
 function fileToBase64(file) {
-
 
     return new Promise(
 
         (resolve, reject) => {
 
-
             const reader =
                 new FileReader();
-
 
             reader.onload =
                 () =>
@@ -196,15 +225,12 @@ function fileToBase64(file) {
                     reader.result
                 );
 
-
             reader.onerror =
                 reject;
-
 
             reader.readAsDataURL(
                 file
             );
-
 
         }
 
@@ -212,16 +238,10 @@ function fileToBase64(file) {
 
 }
 
-
-
-
-
 function initAI() {
-
 
     console.log(
         "🤖 AI Ready"
     );
-
 
 }
