@@ -5,35 +5,27 @@ function showError(error) {
             "message"
         );
 
-
     if (!message) {
-
         return;
-
     }
-
 
     message.innerHTML =
         "❌ " +
-        error.message;
-
+        (error.message || error);
 
     message.style.color =
         "red";
 
 }
 
-
-
 window.onerror =
-    function(
+    function (
         message,
         source,
         line,
         column,
         error
     ) {
-
 
         showError({
 
@@ -47,17 +39,13 @@ window.onerror =
 
         });
 
-
     };
-
-
 
 window.addEventListener(
 
     "unhandledrejection",
 
-    function(event) {
-
+    function (event) {
 
         showError({
 
@@ -66,74 +54,48 @@ window.addEventListener(
 
         });
 
-
     }
 
 );
 
-
-
-
-
 async function init() {
-
 
     try {
 
+        if (typeof initImage === "function") {
+            initImage();
+        }
 
-        initImage();
+        if (typeof initSearch === "function") {
+            initSearch();
+        }
 
+        if (typeof initAI === "function") {
+            initAI();
+        }
 
-        initSearch();
-
-
-        initAI();
-
-
-
-        if (
-            typeof loadRooms === "function"
-        ) {
-
+        if (typeof loadRooms === "function") {
             await loadRooms();
-
         }
 
+        if (typeof loadItems === "function") {
+            await loadItems();
+        }
 
-
-        await loadItems();
-
-
-
-        if (
-            typeof renderRoomStats === "function"
-        ) {
-
+        if (typeof renderRoomStats === "function") {
             renderRoomStats();
-
         }
-
-
 
     }
-    catch(error) {
-
+    catch (error) {
 
         showError(error);
 
-
     }
-
 
 }
 
-
-
-
 document.addEventListener(
-
     "DOMContentLoaded",
-
     init
-
 );
