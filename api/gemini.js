@@ -1,4 +1,5 @@
 export default async function handler(req, res) {
+
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
@@ -13,35 +14,23 @@ export default async function handler(req, res) {
     });
   }
 
-  const apiKey = process.env.GEMINI_API_KEY;
-
-  if (!apiKey) {
-    return res.status(500).json({
-      error: "Missing GEMINI_API_KEY"
-    });
-  }
-
   try {
+
+    const key = process.env.GEMINI_API_KEY;
+
     const userText = req.body?.text || "Xin chào";
 
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent",
       {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "X-goog-api-key": key
         },
         body: JSON.stringify({
-          system_instruction: {
-            parts: [
-              {
-                text: "Luôn trả lời bằng tiếng Việt."
-              }
-            ]
-          },
           contents: [
             {
-              role: "user",
               parts: [
                 {
                   text: userText
@@ -53,13 +42,16 @@ export default async function handler(req, res) {
       }
     );
 
-    const data = await response.json();
+    const data = await response.text();
 
-    return res.status(response.status).json(data);
+    return res.status(response.status).send(data);
 
-  } catch (err) {
+  } catch (e) {
+
     return res.status(500).json({
-      error: err.message
+      error: e.message
     });
+
   }
+
 }
