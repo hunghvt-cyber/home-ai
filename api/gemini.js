@@ -3,17 +3,78 @@ import { cleanGeminiResponse } from "./response.js";
 
 
 // Gemini model
-const MODEL = "gemini-2.5-flash";
+const MODEL = "gemini-flash-latest";
 
 
-// API Key
-const GEMINI_API_KEY = "YOUR_API_KEY";
+// API Key lấy từ Vercel Environment
+const GEMINI_API_KEY =
+    process.env.GEMINI_API_KEY;
 
 
-// Gemini Vision
-export async function analyzeImage(base64Image, mimeType = "image/jpeg") {
+
+export default async function handler(req, res) {
+
+
+    // CORS
+    res.setHeader(
+        "Access-Control-Allow-Origin",
+        "*"
+    );
+
+    res.setHeader(
+        "Access-Control-Allow-Methods",
+        "POST, OPTIONS"
+    );
+
+    res.setHeader(
+        "Access-Control-Allow-Headers",
+        "Content-Type"
+    );
+
+
+    if (req.method === "OPTIONS") {
+
+        return res.status(200).end();
+
+    }
+
+
+
+    if (req.method !== "POST") {
+
+        return res.status(405).json({
+
+            error: "Method not allowed"
+
+        });
+
+    }
+
+
 
     try {
+
+
+        const {
+
+            imageBase64,
+
+            mimeType
+
+        } = req.body;
+
+
+
+        if (!imageBase64) {
+
+            return res.status(400).json({
+
+                error: "Missing image"
+
+            });
+
+        }
+
 
 
         const url =
@@ -23,6 +84,7 @@ export async function analyzeImage(base64Image, mimeType = "image/jpeg") {
 
         const body = {
 
+
             contents: [
 
                 {
@@ -30,16 +92,21 @@ export async function analyzeImage(base64Image, mimeType = "image/jpeg") {
                     parts: [
 
                         {
+
                             text: VISION_PROMPT
+
                         },
+
 
                         {
 
                             inline_data: {
 
-                                mime_type: mimeType,
+                                mime_type:
+                                    mimeType || "image/jpeg",
 
-                                data: base64Image
+                                data:
+                                    imageBase64
 
                             }
 
@@ -52,57 +119,77 @@ export async function analyzeImage(base64Image, mimeType = "image/jpeg") {
             ],
 
 
+
             generationConfig: {
 
                 temperature: 0.2,
 
-                responseMimeType: "application/json"
+                responseMimeType:
+                    "application/json"
 
             }
+
 
         };
 
 
 
-        const response = await fetch(
-            url,
-            {
+        const response =
+            await fetch(
 
-                method: "POST",
+                url,
 
-                headers: {
+                {
 
-                    "Content-Type": "application/json"
+                    method: "POST",
 
-                },
+                    headers: {
 
-                body: JSON.stringify(body)
+                        "Content-Type":
+                            "application/json"
 
-            }
-        );
+                    },
+
+                    body:
+                        JSON.stringify(body)
+
+                }
+
+            );
 
 
 
-        const result = await response.json();
+        const result =
+            await response.json();
 
 
 
         if (!response.ok) {
+
 
             console.error(
                 "Gemini HTTP Error:",
                 result
             );
 
-            throw new Error(
-                "Gemini API Error"
-            );
+
+            return res.status(
+                response.status
+            ).json({
+
+                error: "Gemini API Error",
+
+                detail: result
+
+            });
+
 
         }
 
 
 
         const text =
+
             result
                 ?.candidates?.[0]
                 ?.content
@@ -111,7 +198,12 @@ export async function analyzeImage(base64Image, mimeType = "image/jpeg") {
 
 
 
-        return cleanGeminiResponse(text);
+        const data =
+            cleanGeminiResponse(text);
+
+
+
+        return res.status(200).json(data);
 
 
 
@@ -124,19 +216,13 @@ export async function analyzeImage(base64Image, mimeType = "image/jpeg") {
         );
 
 
-        return {
+        return res.status(500).json({
 
-            name: "",
+            error:
+                error.message
 
-            location: "",
+        });
 
-            room: "",
-
-            tags: [],
-
-            description: ""
-
-        };
 
     }
 
