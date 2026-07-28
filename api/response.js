@@ -1,3 +1,19 @@
+const EMPTY_RESPONSE = {
+
+    name: "",
+
+    location: "",
+
+    room: "",
+
+    tags: [],
+
+    description: ""
+
+};
+
+
+
 export function cleanGeminiResponse(text) {
 
     try {
@@ -5,73 +21,109 @@ export function cleanGeminiResponse(text) {
         if (!text) {
 
             return {
-                name: "",
-                location: "",
-                room: "",
-                tags: [],
-                description: ""
+
+                ...EMPTY_RESPONSE
+
             };
 
         }
 
 
-        // Xóa markdown nếu Gemini trả về
-        text = text
-            .replace(/```json/g, "")
-            .replace(/```/g, "")
-            .trim();
+
+        let json = text.trim();
 
 
-        // Tìm phần JSON nếu AI trả thêm chữ
-        const start = text.indexOf("{");
-        const end = text.lastIndexOf("}");
 
-        if (start !== -1 && end !== -1) {
+        json = json.replace(
 
-            text = text.substring(start, end + 1);
+            /^```json/i,
 
-        }
+            ""
 
-
-        const data = JSON.parse(text);
-
-
-        return {
-
-            name: data.name || "",
-
-            location: data.location || "",
-
-            room: data.room || "",
-
-            tags: Array.isArray(data.tags)
-                ? data.tags.slice(0, 5)
-                : [],
-
-            description: data.description || ""
-
-        };
-
-
-    } catch (error) {
-
-        console.error(
-            "Gemini JSON Parse Error:",
-            error
         );
 
 
+
+        json = json.replace(
+
+            /^```/,
+
+            ""
+
+        );
+
+
+
+        json = json.replace(
+
+            /```$/,
+
+            ""
+
+        );
+
+
+
+        const parsed = JSON.parse(
+
+            json.trim()
+
+        );
+
+
+
         return {
 
-            name: "",
+            name:
+                typeof parsed.name === "string"
+                    ? parsed.name.trim()
+                    : "",
 
-            location: "",
+            location:
+                typeof parsed.location === "string"
+                    ? parsed.location.trim()
+                    : "",
 
-            room: "",
+            room:
+                typeof parsed.room === "string"
+                    ? parsed.room.trim()
+                    : "",
 
-            tags: [],
+            tags:
+                Array.isArray(parsed.tags)
+                    ? parsed.tags
+                        .filter(
+                            tag =>
+                                typeof tag === "string"
+                        )
+                        .map(
+                            tag => tag.trim()
+                        )
+                    : [],
 
-            description: ""
+            description:
+                typeof parsed.description === "string"
+                    ? parsed.description.trim()
+                    : ""
+
+        };
+
+    }
+    catch (error) {
+
+        console.error(
+
+            "JSON Parse Error:",
+
+            error,
+
+            text
+
+        );
+
+        return {
+
+            ...EMPTY_RESPONSE
 
         };
 
