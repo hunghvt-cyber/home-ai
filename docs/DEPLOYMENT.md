@@ -17,15 +17,12 @@ GitHub Pages
       ▼
 Browser
       │
-      ▼
-Supabase
-      │
-      ├── PostgreSQL
-      ├── Storage
-      └── Edge Functions
-              │
-              ▼
-         Google Gemini
+      ├──────────────────────┐
+      ▼                      ▼
+Supabase               Vercel Serverless Function
+      │                      │
+PostgreSQL + Storage         ▼
+                        Google Gemini
 ```
 
 ---
@@ -46,7 +43,7 @@ Frontend được deploy bằng GitHub Pages.
 
 # Backend
 
-Backend sử dụng Supabase Edge Functions.
+Backend AI sử dụng Vercel Serverless Function (`api/gemini.js`).
 
 Vai trò:
 
@@ -60,30 +57,28 @@ Vai trò:
 
 # Vercel
 
-Trong một giai đoạn phát triển, Vercel được sử dụng để triển khai backend.
+Vercel là nền tảng chính để triển khai backend AI.
 
 Lý do:
 
-- Có thể deploy ngay trên điện thoại.
-- Không cần máy tính.
-- Thiết lập nhanh.
-- Phù hợp khi chưa chuyển sang Supabase Edge Functions.
+- Có thể deploy ngay trên điện thoại, không cần máy tính.
+- Thiết lập nhanh, chỉ cần push lên GitHub là tự deploy.
+- Dashboard quản lý biến môi trường (API Key) dễ dùng trên trình duyệt điện thoại.
 
-Sau khi kiến trúc ổn định, vai trò của Vercel giảm dần và được thay thế bởi Edge Functions.
+Dự án từng thử nghiệm chuyển backend sang Supabase Edge Functions (dùng CLI để deploy), nhưng vì toàn bộ quá trình phát triển diễn ra trên điện thoại (không có PC), quy trình đó bất tiện hơn so với Vercel. Vì vậy Vercel được giữ lại làm backend chính, và phần code thử nghiệm trên Supabase Edge Functions đã được gỡ bỏ khỏi repo để tránh gây nhầm lẫn.
 
 ---
 
 # Supabase
 
-Supabase là nền tảng trung tâm của ứng dụng.
+Supabase là nền tảng trung tâm cho dữ liệu của ứng dụng.
 
 Bao gồm:
 
 - PostgreSQL Database
 - Storage
-- Edge Functions
 
-Việc sử dụng cùng một nền tảng giúp đơn giản hóa việc quản lý.
+Backend AI (Gemini) không nằm trên Supabase mà nằm trên Vercel — xem phần "Vercel" ở trên.
 
 ---
 
@@ -112,7 +107,7 @@ Frontend
 
 ↓
 
-Edge Function
+Vercel Serverless Function
 
 ↓
 
@@ -131,8 +126,8 @@ Mỗi lần cập nhật:
 
 1. Chỉnh sửa mã nguồn.
 2. Commit lên GitHub.
-3. GitHub Pages tự động cập nhật.
-4. Nếu thay đổi Edge Function thì deploy lại trên Supabase.
+3. GitHub Pages tự động cập nhật Frontend.
+4. Vercel tự động deploy lại nếu thư mục `api/` thay đổi.
 
 ---
 
@@ -144,9 +139,8 @@ Trong quá trình phát triển:
 
 - Quản lý GitHub trên điện thoại.
 - Chỉnh sửa mã nguồn trên điện thoại hoặc máy tính bảng.
-- Quản lý Supabase trên trình duyệt.
-- Deploy Edge Functions khi cần.
-- Sử dụng Vercel ở giai đoạn đầu để có thể triển khai nhanh mà không cần PC.
+- Quản lý Supabase (Database, Storage) trên trình duyệt.
+- Quản lý Vercel (biến môi trường, deploy log) trên trình duyệt — không cần CLI hay PC.
 
 Điều này giúp việc phát triển linh hoạt hơn.
 
@@ -159,8 +153,9 @@ Những kinh nghiệm rút ra:
 - Frontend và Backend nên tách riêng.
 - API Key không nên xuất hiện trong Frontend.
 - GitHub Pages rất phù hợp cho web tĩnh.
-- Edge Functions giúp đơn giản hóa việc bảo mật.
+- Chọn nền tảng backend dựa trên quy trình phát triển thực tế (ở đây là không có PC), không chỉ dựa trên "kiến trúc lý tưởng".
 - Kiến trúc càng đơn giản thì càng dễ bảo trì.
+- Khi thử nghiệm một nền tảng mới rồi quyết định không dùng, nên xóa code thử nghiệm khỏi repo ngay, tránh để lại 2 phiên bản backend không đồng bộ.
 
 ---
 
