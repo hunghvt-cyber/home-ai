@@ -1,58 +1,177 @@
 # Lessons Learned
 
-Đây là tài liệu ghi lại những bài học và kinh nghiệm rút ra trong quá trình phát triển Storage & Forget.
+Tài liệu này ghi lại những bài học quan trọng rút ra trong quá trình phát triển Storage & Forget.
 
-Mục tiêu là áp dụng những kinh nghiệm này cho mọi dự án sau, tránh lặp lại các sai lầm cũ.
-
----
-
-# Nguyên tắc
-
-- Ưu tiên code dễ đọc hơn code quá thông minh.
-- Mỗi file chỉ nên đảm nhiệm một nhiệm vụ.
-- Tách UI và Business Logic.
-- Không tối ưu quá sớm.
-- Luôn nghĩ đến khả năng mở rộng.
+Đây là những kinh nghiệm thực tế để áp dụng cho các dự án sau.
 
 ---
 
-# Những điều nên làm
+# 1. Chia module càng sớm càng tốt
 
-- Chia module theo chức năng.
-- Đặt tên hàm rõ nghĩa.
-- Tái sử dụng code khi có thể.
-- Thêm xử lý lỗi cho mọi API.
-- Luôn có trạng thái Loading.
-- Thông báo lỗi rõ ràng cho người dùng.
-- Resize ảnh trước khi upload hoặc gửi AI.
-- Ghi tài liệu ngay khi hoàn thành một tính năng lớn.
+Ban đầu việc gom nhiều chức năng vào một file giúp phát triển nhanh.
 
----
+Tuy nhiên khi dự án lớn hơn:
 
-# Những điều nên tránh
+- Khó đọc.
+- Khó sửa.
+- Khó mở rộng.
 
-- File JavaScript quá lớn.
-- Hardcode giá trị trong nhiều nơi.
-- Hàm làm quá nhiều việc.
-- Code trùng lặp.
-- Bỏ qua việc xử lý lỗi.
-- Để tài liệu bị lỗi thời.
+Sau khi tách thành các module:
+
+- Database
+- AI
+- Search
+- Rooms
+- Image
+
+việc phát triển trở nên dễ dàng hơn rất nhiều.
 
 ---
 
-# Checklist cho dự án mới
+# 2. Một file chỉ nên có một trách nhiệm
 
-- Thiết kế cấu trúc thư mục.
-- Thiết kế Database.
-- Thiết kế API.
-- Thiết kế UI.
-- Viết README.
-- Tạo thư mục docs.
-- Chuẩn bị CHANGELOG.
-- Chuẩn bị ROADMAP.
+Ví dụ:
+
+- save.js chỉ lưu dữ liệu.
+- load.js chỉ đọc dữ liệu.
+- render.js chỉ hiển thị.
+- image.js chỉ xử lý ảnh.
+- message.js chỉ hiển thị thông báo.
+
+Đây là nguyên tắc giúp code dễ bảo trì.
 
 ---
 
-# Sẽ cập nhật
+# 3. Không để Frontend gọi AI trực tiếp
 
-Tài liệu này sẽ được bổ sung sau mỗi phiên bản khi có thêm kinh nghiệm mới.
+Ban đầu Frontend gọi Gemini API trực tiếp.
+
+Sau đó chuyển sang Edge Function.
+
+Lợi ích:
+
+- Bảo vệ API Key.
+- Dễ thay đổi model.
+- Dễ bảo trì.
+- Dễ kiểm soát request.
+
+Đây là một trong những quyết định đúng nhất của dự án.
+
+---
+
+# 4. Resize ảnh trước khi xử lý
+
+Resize ảnh trước khi upload hoặc gửi AI giúp:
+
+- Giảm dung lượng.
+- Tăng tốc xử lý.
+- Giảm băng thông.
+- Tiết kiệm token.
+
+Đây là một bước tối ưu quan trọng.
+
+---
+
+# 5. Chỉ lưu URL ảnh
+
+Không lưu Base64 trong Database.
+
+Ưu điểm:
+
+- Database nhỏ.
+- Backup nhanh.
+- Truy vấn hiệu quả hơn.
+- Dễ thay đổi Storage.
+
+---
+
+# 6. Hạn chế query lặp
+
+Dữ liệu được tải một lần và lưu trong bộ nhớ.
+
+Các chức năng như:
+
+- Search
+- Filter
+- Rooms
+- Statistics
+
+đều sử dụng lại dữ liệu đã tải.
+
+Điều này giúp giảm request đến Database.
+
+---
+
+# 7. Refactor định kỳ
+
+Không nên đợi dự án hoàn thành mới refactor.
+
+Việc cải thiện cấu trúc sau mỗi giai đoạn giúp:
+
+- Code sạch hơn.
+- Ít lỗi hơn.
+- Dễ bổ sung tính năng mới.
+
+---
+
+# 8. Viết tài liệu sớm
+
+Đây là bài học lớn nhất.
+
+Nếu viết tài liệu ngay từ đầu sẽ:
+
+- Dễ nhớ quyết định thiết kế.
+- Dễ quay lại dự án sau thời gian dài.
+- Dễ tái sử dụng cho dự án khác.
+
+---
+
+# 9. GitHub là một phần của dự án
+
+Không chỉ dùng để lưu mã nguồn.
+
+GitHub còn giúp:
+
+- Theo dõi lịch sử.
+- Quản lý phiên bản.
+- Đồng bộ giữa các thiết bị.
+- Triển khai GitHub Pages.
+
+---
+
+# 10. Thiết kế để có thể thay đổi
+
+Trong quá trình phát triển đã thay đổi:
+
+- Model AI.
+- Backend.
+- Kiến trúc triển khai.
+
+Việc tách module giúp các thay đổi này không ảnh hưởng toàn bộ dự án.
+
+---
+
+# Những điều sẽ làm khác nếu bắt đầu lại
+
+- Thiết kế cấu trúc thư mục ngay từ đầu.
+- Dùng ES Modules ngay từ phiên bản đầu tiên.
+- Chuẩn hóa quy tắc đặt tên.
+- Viết tài liệu song song với quá trình phát triển.
+- Tách các service dùng chung sớm hơn.
+
+---
+
+# Tổng kết
+
+Storage & Forget không chỉ là một ứng dụng lưu đồ vật.
+
+Đây là một dự án giúp tích lũy kinh nghiệm về:
+
+- Thiết kế kiến trúc.
+- Quản lý mã nguồn.
+- Tổ chức module.
+- AI.
+- Supabase.
+- Triển khai ứng dụng web.
+
+Những bài học này có thể áp dụng trực tiếp cho các dự án web AI trong tương lai.
