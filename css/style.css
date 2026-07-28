@@ -1,292 +1,202 @@
-* {
-    box-sizing: border-box;
+*{
+    box-sizing:border-box;
 }
 
-
-
-body {
-
-    margin: 0;
-
-    padding: 0;
-
-    font-family:
-        Arial,
-        sans-serif;
-
-    background:
-        #f5f5f5;
-
+body{
+    margin:0;
+    padding:0;
+    font-family:Arial,sans-serif;
+    background:#f5f5f5;
 }
 
-
-
-.container {
-
-    max-width: 600px;
-
-    margin: auto;
-
-    padding: 15px;
-
+.container{
+    max-width:600px;
+    margin:auto;
+    padding:15px;
 }
-
-
 
 h2,
-h3 {
-
-    text-align: center;
-
+h3{
+    text-align:center;
 }
-
-
 
 input,
 select,
-textarea {
-
-    width: 100%;
-
-    min-height: 48px;
-
-    font-size: 17px;
-
-    padding: 10px 12px;
-
-    margin-top: 8px;
-
-    margin-bottom: 8px;
-
-    border-radius: 8px;
-
-    border: 1px solid #ccc;
-
-    font-family:
-        Arial,
-        sans-serif;
-
+textarea{
+    width:100%;
+    min-height:48px;
+    font-size:16px;
+    padding:10px 12px;
+    margin:8px 0;
+    border:1px solid #ccc;
+    border-radius:8px;
 }
 
-
-
-textarea {
-
-    min-height: 120px;
-
-    resize: vertical;
-
-    line-height: 1.5;
-
+textarea{
+    min-height:110px;
+    resize:vertical;
 }
 
-
-
-button {
-
-    min-height: 42px;
-
-    padding: 8px 14px;
-
-    font-size: 16px;
-
-    border-radius: 8px;
-
-    border: none;
-
-    cursor: pointer;
-
+button{
+    min-height:42px;
+    padding:8px 14px;
+    font-size:16px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
 }
 
-
-
-.buttonRow {
-
-    display: flex;
-
-    gap: 8px;
-
-    align-items: center;
-
-    margin-top: 8px;
-
+.buttonRow{
+    display:flex;
+    gap:8px;
+    align-items:center;
+    margin-top:8px;
 }
-
-
-
-.buttonRow button {
-
-    flex: 0 0 auto;
-
-}
-
-
 
 #room,
-#roomFilter {
-
-    width: 100%;
-
-    min-height: 52px;
-
-    font-size: 18px;
-
-    padding: 12px;
-
-    margin-top: 10px;
-
-    margin-bottom: 10px;
-
+#roomFilter{
+    min-height:52px;
+    font-size:17px;
 }
 
-
-
-#preview {
-
-    width: 100%;
-
-    max-height: 300px;
-
-    object-fit: contain;
-
-    border-radius: 10px;
-
-    margin-top: 10px;
-
+#preview{
+    width:100%;
+    max-height:300px;
+    object-fit:contain;
+    border-radius:10px;
+    margin-top:10px;
 }
 
-
-
-.card {
-
-    background: white;
-
-    padding: 12px;
-
-    margin-top: 12px;
-
-    border-radius: 12px;
-
-    box-shadow:
-        0 2px 6px rgba(0,0,0,0.1);
-
+#message{
+    margin:10px 0;
 }
 
-
-
-.card img {
-
-    width: 100%;
-
-    border-radius: 10px;
-
+#roomManager{
+    background:#fff;
+    padding:12px;
+    border-radius:10px;
 }
 
-
-
-.card h3 {
-
-    text-align: left;
-
+#roomList .buttonRow{
+    background:#f0f0f0;
+    padding:10px;
+    border-radius:8px;
 }
 
-
-
-#message {
-
-    margin: 10px 0;
-
-    font-size: 16px;
-
+#roomStats .buttonRow{
+    justify-content:space-between;
+    background:#fff;
+    padding:12px;
+    margin-top:8px;
+    border-radius:8px;
+    box-shadow:0 1px 4px rgba(0,0,0,.1);
 }
 
+/* ===== Card mới ===== */
 
-
-#roomManager {
-
-    background: white;
-
-    padding: 12px;
-
-    border-radius: 10px;
-
+.card{
+    display:flex;
+    gap:12px;
+    align-items:flex-start;
+    background:#fff;
+    margin-top:10px;
+    padding:10px;
+    border-radius:12px;
+    box-shadow:0 2px 6px rgba(0,0,0,.08);
 }
 
-
-
-#roomList .buttonRow {
-
-    background: #f0f0f0;
-
-    padding: 10px;
-
-    border-radius: 8px;
-
+.cardImage{
+    flex:0 0 90px;
 }
 
-
-
-#roomStats .buttonRow {
-
-    justify-content: space-between;
-
-    background: white;
-
-    padding: 12px;
-
-    margin-top: 8px;
-
-    border-radius: 8px;
-
-    box-shadow:
-        0 1px 4px rgba(0,0,0,0.1);
-
+.cardImage img{
+    width:90px;
+    height:90px;
+    object-fit:cover;
+    border-radius:10px;
+    cursor:pointer;
 }
 
-
-
-.card p {
-
-    line-height: 1.5;
-
-    margin: 8px 0;
-
+.cardBody{
+    flex:1;
+    min-width:0;
 }
 
-
-
-@media (max-width: 600px) {
-
-
-    .buttonRow {
-
-        flex-wrap: wrap;
-
-    }
-
-
-    button {
-
-        font-size: 16px;
-
-    }
-
+.cardBody h3{
+    margin:0 0 6px;
+    text-align:left;
+    font-size:18px;
 }
 
-
-
-.tag {
-
-    display:inline-block;
-
-    padding:4px 10px;
-
-    margin:3px;
-
-    border-radius:20px;
-
-    background:#eee;
-
+.description{
+    margin:0 0 8px;
+    color:#555;
     font-size:14px;
+    line-height:1.4;
+    display:-webkit-box;
+    -webkit-line-clamp:3;
+    -webkit-box-orient:vertical;
+    overflow:hidden;
+}
 
+.meta{
+    margin:6px 0;
+    font-size:14px;
+}
+
+.roomBadge{
+    background:#e3f2fd;
+    padding:3px 8px;
+    border-radius:12px;
+    cursor:pointer;
+}
+
+.date{
+    margin-top:8px;
+    color:#888;
+    font-size:12px;
+}
+
+.card .buttonRow{
+    justify-content:flex-end;
+    margin-top:8px;
+}
+
+.card .buttonRow button{
+    min-height:34px;
+    min-width:42px;
+    padding:6px 10px;
+}
+
+.tag{
+    display:inline-block;
+    padding:3px 8px;
+    margin:2px;
+    border-radius:12px;
+    background:#eee;
+    font-size:12px;
+}
+
+@media(max-width:600px){
+
+    .card{
+        gap:10px;
+    }
+
+    .cardImage{
+        flex:0 0 80px;
+    }
+
+    .cardImage img{
+        width:80px;
+        height:80px;
+    }
+
+    .cardBody h3{
+        font-size:17px;
+    }
+
+    .description{
+        font-size:13px;
+    }
 }
