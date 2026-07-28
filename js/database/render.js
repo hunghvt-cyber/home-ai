@@ -10,43 +10,34 @@ function formatDate(dateString) {
 
     }
 
-
     const date =
         new Date(dateString);
-
 
     let hours =
         date.getHours();
 
-
     const minutes =
         String(date.getMinutes())
-        .padStart(2, "0");
-
+            .padStart(2, "0");
 
     const day =
         String(date.getDate())
-        .padStart(2, "0");
-
+            .padStart(2, "0");
 
     const month =
         String(date.getMonth() + 1)
-        .padStart(2, "0");
-
+            .padStart(2, "0");
 
     const year =
         date.getFullYear();
-
 
     const ampm =
         hours >= 12
             ? "PM"
             : "AM";
 
-
     hours =
         hours % 12;
-
 
     if (hours === 0) {
 
@@ -54,11 +45,9 @@ function formatDate(dateString) {
 
     }
 
-
     hours =
         String(hours)
-        .padStart(2, "0");
-
+            .padStart(2, "0");
 
     return `${day}/${month}/${year} ${hours}:${minutes} ${ampm}`;
 
@@ -70,24 +59,18 @@ function formatDate(dateString) {
 
 function filterByRoom(roomName) {
 
-
     const items =
-        allItems.filter(item => {
-
-            return item.room === roomName;
-
-        });
-
+        allItems.filter(
+            item =>
+                item.room === roomName
+        );
 
     renderItems(items);
-
-
 
     const search =
         document.getElementById(
             "search"
         );
-
 
     if (search) {
 
@@ -103,7 +86,6 @@ function filterByRoom(roomName) {
 
 function renderTags(tags) {
 
-
     if (
         !tags ||
         !Array.isArray(tags) ||
@@ -114,16 +96,10 @@ function renderTags(tags) {
 
     }
 
-
-
     return tags
         .map(
             tag =>
-            `
-<span class="tag">
-${tag}
-</span>
-`
+                `<span class="tag">${tag}</span>`
         )
         .join("");
 
@@ -135,12 +111,10 @@ ${tag}
 
 function renderItems(items = allItems) {
 
-
     const list =
         document.getElementById(
             "list"
         );
-
 
     if (!list) {
 
@@ -148,115 +122,90 @@ function renderItems(items = allItems) {
 
     }
 
-
-
     let html = "";
 
-
-
     items.forEach(item => {
-
-
-
-        const roomBadge =
-            item.room
-                ?
-                `
-<span
-onclick="filterByRoom('${item.room}')"
-style="
-cursor:pointer;
-background:#e3f2fd;
-padding:4px 8px;
-border-radius:12px;
-">
-
-🏠 ${item.room}
-
-</span>
-`
-                :
-                "🏠 Chưa có phòng";
-
-
 
         const tags =
             renderTags(
                 item.tags
             );
 
-
-
         html += `
 
 <div class="card">
 
+<div class="cardImage">
 
 <img
 src="${item.image_url}"
-loading="lazy">
+loading="lazy"
+onclick="window.open('${item.image_url}','_blank')">
 
+</div>
 
+<div class="cardBody">
 
 <h3>
+
 📦 ${item.name}
+
 </h3>
 
+<p class="description">
 
+${item.description || ""}
 
-<p>
-${roomBadge}
 </p>
 
+<p class="meta">
 
+🏠
+<span
+class="roomBadge"
+onclick="filterByRoom('${item.room}')">
 
-<p>
-${tags}
-</p>
+${item.room || "Chưa có phòng"}
 
+</span>
 
+&nbsp;&nbsp;
 
-<p>
 📍 ${item.location || "-"}
+
 </p>
 
+<div>
 
+${tags}
 
-<p>
-📝 ${item.description || "-"}
-</p>
+</div>
 
+<p class="date">
 
-
-<p>
 🕒 ${formatDate(item.created_at)}
+
 </p>
-
-
 
 <div class="buttonRow">
-
 
 <button
 onclick="editItem('${item.id}')">
 
-✏️ Sửa
+✏️
 
 </button>
-
-
 
 <button
 onclick="deleteItem('${item.id}')">
 
-🗑 Xóa
+🗑
 
 </button>
 
-
-
 </div>
 
+</div>
 
 </div>
 
@@ -264,10 +213,7 @@ onclick="deleteItem('${item.id}')">
 
     });
 
-
-
     list.innerHTML =
         html;
-
 
 }
