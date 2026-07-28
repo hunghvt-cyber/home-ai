@@ -2,8 +2,7 @@ let editingItem = null;
 
 
 
-function editItem(id) {
-
+async function editItem(id) {
 
     const item =
         allItems.find(
@@ -14,11 +13,9 @@ function editItem(id) {
 
     if (!item) {
 
-
         showMessage(
             "❌ Không tìm thấy dữ liệu."
         );
-
 
         return;
 
@@ -44,19 +41,33 @@ function editItem(id) {
 
 
 
-    const room =
+    document
+        .getElementById("room")
+        .value =
+        item.room || "";
+
+
+
+    document
+        .getElementById("tags")
+        .value =
+        Array.isArray(item.tags)
+            ? item.tags.join(", ")
+            : "";
+
+
+
+    const description =
         document.getElementById(
-            "room"
+            "description"
         );
 
 
 
-    if (room) {
+    if (description) {
 
-
-        room.value =
-            item.room || "";
-
+        description.value =
+            item.description || "";
 
     }
 
@@ -69,20 +80,15 @@ function editItem(id) {
 
 
 
-    if (preview) {
+    preview.src =
+        item.image_url || "";
 
 
-        preview.src =
-            item.image_url || "";
 
-
-        preview.style.display =
-            item.image_url
-                ? "block"
-                : "none";
-
-
-    }
+    preview.style.display =
+        item.image_url
+            ? "block"
+            : "none";
 
 
 
@@ -91,16 +97,8 @@ function editItem(id) {
             "selectedImage"
         )
         .innerHTML =
-        "Ảnh hiện tại";
-
-
-
-    document
-        .getElementById(
-            "saveButton"
-        )
-        .innerHTML =
-        "💾 Cập nhật";
+        item.name ||
+        "Đang sửa";
 
 
 
@@ -115,9 +113,9 @@ function editItem(id) {
 
     window.scrollTo({
 
-        top:0,
+        top: 0,
 
-        behavior:"smooth"
+        behavior: "smooth"
 
     });
 
@@ -127,7 +125,6 @@ function editItem(id) {
         "✏️ Đang chỉnh sửa."
     );
 
-
 }
 
 
@@ -136,51 +133,10 @@ function editItem(id) {
 
 function cancelEdit() {
 
-
-    editingItem = null;
-
-
     clearForm();
 
-
-
-    const saveButton =
-        document.getElementById(
-            "saveButton"
-        );
-
-
-    if (saveButton) {
-
-
-        saveButton.innerHTML =
-            "💾 Lưu";
-
-
-    }
-
-
-
-    const cancelButton =
-        document.getElementById(
-            "cancelButton"
-        );
-
-
-    if (cancelButton) {
-
-
-        cancelButton.style.display =
-            "none";
-
-
-    }
-
-
-
     showMessage(
-        "✅ Đã hủy chỉnh sửa."
+        "❎ Đã hủy chỉnh sửa."
     );
-
 
 }
