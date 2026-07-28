@@ -72,8 +72,7 @@ Hướng dẫn triển khai dự án.
 Bao gồm:
 
 - GitHub Pages
-- Supabase Edge Functions
-- Vercel
+- Vercel Serverless Function
 - Triển khai bằng điện thoại
 - Những lỗi thường gặp
 
