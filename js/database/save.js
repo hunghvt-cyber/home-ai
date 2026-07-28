@@ -58,8 +58,8 @@ async function saveItem() {
     const description =
         document
             .getElementById("description")
-            ?.value
-            .trim() || "";
+            .value
+            .trim();
 
 
 
@@ -85,9 +85,7 @@ async function saveItem() {
 
     isSaving = true;
 
-
     saveButton.disabled = true;
-
 
     saveButton.innerHTML =
         "⏳ Đang lưu...";
@@ -97,9 +95,7 @@ async function saveItem() {
     try {
 
 
-
         if (editingItem) {
-
 
 
             let imageUrl =
@@ -108,7 +104,6 @@ async function saveItem() {
 
 
             if (selectedFile) {
-
 
 
                 const resizedBlob =
@@ -159,7 +154,6 @@ async function saveItem() {
                         .data
                         .publicUrl;
 
-
             }
 
 
@@ -169,17 +163,23 @@ async function saveItem() {
                     .from("items")
                     .update({
 
-                        name:name,
+                        name:
+                            name,
 
-                        location:location,
+                        location:
+                            location,
 
-                        room:room,
+                        room:
+                            room,
 
-                        tags:tags,
+                        tags:
+                            tags,
 
-                        description:description,
+                        description:
+                            description,
 
-                        image_url:imageUrl
+                        image_url:
+                            imageUrl
 
                     })
                     .eq(
@@ -199,19 +199,17 @@ async function saveItem() {
 
             clearForm();
 
-
             showMessage(
                 "✅ Đã cập nhật."
             );
 
-
-
             await loadItems();
 
-
-
         }
-        else {            if (!selectedFile) {
+        else {
+
+
+            if (!selectedFile) {
 
                 showMessage(
                     "❌ Vui lòng chọn ảnh."
@@ -227,9 +225,6 @@ async function saveItem() {
                 await resizeImage(
                     selectedFile
                 );
-
-
-
             const fileName =
                 Date.now() +
                 "_" +
@@ -280,17 +275,23 @@ async function saveItem() {
 
                         {
 
-                            name:name,
+                            name:
+                                name,
 
-                            location:location,
+                            location:
+                                location,
 
-                            room:room,
+                            room:
+                                room,
 
-                            tags:tags,
+                            tags:
+                                tags,
 
-                            description:description,
+                            description:
+                                description,
 
-                            image_url:imageUrl
+                            image_url:
+                                imageUrl
 
                         }
 
@@ -308,47 +309,33 @@ async function saveItem() {
 
             clearForm();
 
-
             showMessage(
                 "✅ Đã lưu thành công."
             );
 
-
-
             await loadItems();
-
-
 
         }
 
-
-
     }
-    catch(error) {
-
+    catch (error) {
 
         showMessage(
             "❌ " +
             error.message
         );
 
-
     }
     finally {
 
-
         isSaving = false;
 
-
         saveButton.disabled = false;
-
 
         saveButton.innerHTML =
             "💾 Lưu";
 
-
     }
-
 
 }
 
@@ -358,9 +345,7 @@ async function saveItem() {
 
 function clearForm() {
 
-
     selectedFile = null;
-
 
     editingItem = null;
 
@@ -407,7 +392,6 @@ function clearForm() {
             "description"
         );
 
-
     if (description) {
 
         description.value = "";
@@ -424,13 +408,11 @@ function clearForm() {
 
 
     const preview =
-        document
-            .getElementById("preview");
-
-
+        document.getElementById(
+            "preview"
+        );
 
     preview.src = "";
-
 
     preview.style.display =
         "none";
@@ -438,9 +420,10 @@ function clearForm() {
 
 
     document
-        .getElementById("cancelButton")
+        .getElementById(
+            "cancelButton"
+        )
         .style.display =
         "none";
 
-
-} 
+}
