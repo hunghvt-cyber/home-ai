@@ -1,32 +1,97 @@
 async function deleteItem(id) {
 
-    if (
-        !confirm(
-            "Bạn có chắc muốn xóa?"
-        )
-    ) {
+    const ok =
+        confirm(
+            "Xóa món đồ này?"
+        );
+
+    if (!ok) {
 
         return;
 
     }
 
+
+
     try {
 
         const item =
             allItems.find(
-                x => x.id === id
+                x => x.id == id
             );
+
 
 
         if (!item) {
 
-            showMessage(
-                "❌ Không tìm thấy dữ liệu."
+            throw new Error(
+                "Không tìm thấy dữ liệu."
             );
 
-            return;
+        }
+
+
+
+        if (item.image_url) {
+
+            try {
+
+                const url =
+                    new URL(
+                        item.image_url
+                    );
+
+
+
+                const parts =
+                    url.pathname.split(
+                        "/"
+                    );
+
+
+
+                const bucketIndex =
+                    parts.indexOf(
+                        "images"
+                    );
+
+
+
+                if (
+                    bucketIndex >= 0
+                ) {
+
+                    const filePath =
+                        parts
+                            .slice(
+                                bucketIndex + 1
+                            )
+                            .join("/");
+
+
+
+                    await db.storage
+                        .from("images")
+                        .remove([
+                            decodeURIComponent(
+                                filePath
+                            )
+                        ]);
+
+                }
+
+            }
+            catch (e) {
+
+                console.warn(
+                    "Không xóa được ảnh:",
+                    e
+                );
+
+            }
 
         }
+
 
 
         const result =
@@ -39,6 +104,7 @@ async function deleteItem(id) {
                 );
 
 
+
         if (result.error) {
 
             throw result.error;
@@ -46,52 +112,21 @@ async function deleteItem(id) {
         }
 
 
-        if (
-            item.image_url
-        ) {
-
-            const fileName =
-                item.image_url
-                    .split("/")
-                    .pop();
-
-
-            if (fileName) {
-
-                const remove =
-                    await db.storage
-                        .from("images")
-                        .remove([
-                            fileName
-                        ]);
-
-
-                if (remove.error) {
-
-                    console.log(
-                        remove.error
-                    );
-
-                }
-
-            }
-
-        }
-
-
-        showMessage(
-            "✅ Đã xóa thành công."
-        );
-
 
         await loadItems();
 
 
-    }
-    catch(error) {
 
         showMessage(
-            "❌ " + error.message
+            "🗑 Đã xóa."
+        );
+
+    }
+    catch (error) {
+
+        showMessage(
+            "❌ " +
+            error.message
         );
 
     }
