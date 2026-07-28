@@ -216,6 +216,24 @@ Một dự án nhỏ cũng nên:
 
 ---
 
+# Backend: Vercel hay Supabase Edge Functions?
+
+Ở một giai đoạn, dự án thử viết lại backend AI bằng Supabase Edge Functions, với mục tiêu gộp toàn bộ hạ tầng về một nền tảng duy nhất (Supabase).
+
+Tuy nhiên bản Edge Functions viết thử bị bỏ dở và không cập nhật theo kịp bản Vercel (khác model Gemini, thiếu retry, thiếu tách Prompt/Response) — dẫn đến việc repo có 2 bản backend không đồng bộ trong một thời gian.
+
+Lý do quyết định cuối cùng giữ Vercel:
+
+- Toàn bộ quá trình phát triển diễn ra trên điện thoại, không có PC.
+- Vercel cho phép quản lý biến môi trường và xem log deploy ngay trên trình duyệt điện thoại.
+- Supabase CLI (cần để deploy Edge Functions đầy đủ tính năng) không thuận tiện khi không có PC.
+
+Code Edge Functions thử nghiệm đã được xóa khỏi repo để tránh nhầm lẫn giữa 2 bản backend.
+
+Bài học: khi thử nghiệm một hướng kiến trúc mới, nếu quyết định không theo hướng đó nữa thì nên dọn dẹp code thử nghiệm ngay, thay vì để lại trong repo "phòng khi cần".
+
+---
+
 # Hướng phát triển
 
 Các phiên bản tiếp theo sẽ tập trung vào:
