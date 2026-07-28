@@ -28,7 +28,7 @@ Image       Database       Search         Rooms          AI
                 Database + Storage
                          │
                          ▼
-                 Edge Function (Gemini)
+                 Vercel Serverless Function (Gemini)
                          │
                          ▼
                     Google Gemini
@@ -217,7 +217,7 @@ Giúp Frontend không phải xây dựng Prompt trực tiếp.
 
 ---
 
-# Edge Function
+# Vercel Serverless Function
 
 Frontend không gọi Gemini trực tiếp.
 
@@ -227,7 +227,7 @@ Luồng hoạt động:
 Browser
       │
       ▼
-Edge Function
+Vercel Serverless Function
       │
       ▼
 Gemini API
@@ -288,7 +288,7 @@ Resize
 
 ↓
 
-Edge Function
+Vercel Serverless Function
 
 ↓
 
@@ -350,7 +350,7 @@ Storage & Forget được xây dựng dựa trên các nguyên tắc:
 - Luồng dữ liệu đơn giản.
 - AI tách riêng.
 - Database tách riêng.
-- Có Edge Function.
+- Có lớp backend riêng (Vercel Serverless Function) bảo vệ API Key.
 - Dễ bảo trì.
 - Dễ bổ sung tính năng.
 
