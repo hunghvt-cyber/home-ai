@@ -12,7 +12,7 @@ AI được thiết kế là một thành phần hỗ trợ, không thay thế n
 Browser
       │
       ▼
-Edge Function
+Vercel Serverless Function
       │
       ▼
 Gemini API
@@ -57,7 +57,7 @@ Base64
 
 ↓
 
-Edge Function
+Vercel Serverless Function
 
 ↓
 
@@ -128,9 +128,9 @@ Kết quả từ Gemini được chuẩn hóa trước khi trả về Frontend.
 
 ---
 
-# Edge Function
+# Vercel Serverless Function
 
-Edge Function là lớp trung gian giữa ứng dụng và Gemini.
+Vercel Serverless Function (`api/gemini.js`) là lớp trung gian giữa ứng dụng và Gemini.
 
 Vai trò:
 
@@ -141,6 +141,8 @@ Vai trò:
 - Dễ thay đổi model.
 
 Đây là một quyết định kiến trúc quan trọng của dự án.
+
+Lưu ý: dự án từng thử nghiệm chuyển sang Supabase Edge Functions, nhưng vì phát triển hoàn toàn trên điện thoại (không có PC), quy trình deploy của Vercel thuận tiện hơn nên Vercel được giữ làm backend chính. Xem `DEPLOYMENT.md` và `LESSONS_LEARNED.md`.
 
 ---
 
