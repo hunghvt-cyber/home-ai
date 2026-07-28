@@ -1,17 +1,76 @@
 import { createVisionPrompt } from "./prompt.js";
 import { cleanGeminiResponse } from "./response.js";
 
-
 const MODEL = "gemini-flash-latest";
-
 
 const GEMINI_API_KEY =
     process.env.GEMINI_API_KEY;
 
+const TIMEOUT =
+    60000;
 
+async function callGemini(url, body) {
+
+    const controller =
+        new AbortController();
+
+    const timeout =
+        setTimeout(
+            () => controller.abort(),
+            TIMEOUT
+        );
+
+    try {
+
+        const response =
+            await fetch(
+                url,
+                {
+                    method: "POST",
+
+                    headers: {
+
+                        "Content-Type":
+                            "application/json"
+
+                    },
+
+                    body:
+                        JSON.stringify(body),
+
+                    signal:
+                        controller.signal
+
+                }
+            );
+
+        clearTimeout(timeout);
+
+        const result =
+            await response.json();
+
+        return {
+
+            ok:
+                response.ok,
+
+            status:
+                response.status,
+
+            result
+
+        };
+
+    }
+    finally {
+
+        clearTimeout(timeout);
+
+    }
+
+}
 
 export default async function handler(req, res) {
-
 
     res.setHeader(
         "Access-Control-Allow-Origin",
@@ -28,27 +87,24 @@ export default async function handler(req, res) {
         "Content-Type"
     );
 
-
     if (req.method === "OPTIONS") {
 
         return res.status(200).end();
 
     }
 
-
     if (req.method !== "POST") {
 
         return res.status(405).json({
 
-            error: "Method not allowed"
+            error:
+                "Method not allowed"
 
         });
 
     }
 
-
     try {
-
 
         const {
 
@@ -60,24 +116,19 @@ export default async function handler(req, res) {
 
         } = req.body;
 
-
-
         if (!imageBase64) {
 
             return res.status(400).json({
 
-                error: "Missing image"
+                error:
+                    "Missing image"
 
             });
 
         }
 
-
-
         const url =
             `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${GEMINI_API_KEY}`;
-
-
 
         const body = {
 
@@ -101,7 +152,8 @@ export default async function handler(req, res) {
                             inline_data: {
 
                                 mime_type:
-                                    mimeType || "image/jpeg",
+                                    mimeType ||
+                                    "image/jpeg",
 
                                 data:
                                     imageBase64
@@ -116,10 +168,10 @@ export default async function handler(req, res) {
 
             ],
 
-
             generationConfig: {
 
-                temperature: 0.2,
+                temperature:
+                    0.2,
 
                 responseMimeType:
                     "application/json"
@@ -128,79 +180,98 @@ export default async function handler(req, res) {
 
         };
 
-
-
-        const response =
-            await fetch(
+        let gemini =
+            await callGemini(
                 url,
-                {
-                    method: "POST",
-
-                    headers: {
-
-                        "Content-Type":
-                            "application/json"
-
-                    },
-
-                    body:
-                        JSON.stringify(body)
-
-                }
+                body
             );
 
+        if (!gemini.ok) {
 
+            console.warn(
+                "Retry Gemini..."
+            );
 
-        const result =
-            await response.json();
-
-
-
-        if (!response.ok) {
-
-            return res.status(
-                response.status
-            ).json({
-
-                error: "Gemini API Error",
-
-                detail: result
-
-            });
+            gemini =
+                await callGemini(
+                    url,
+                    body
+                );
 
         }
 
+        if (!gemini.ok) {
 
+            console.error(
+                "Gemini HTTP Error:",
+                gemini.result
+            );
+
+            return res
+                .status(
+                    gemini.status
+                )
+                .json({
+
+                    error:
+                        "Gemini API Error",
+
+                    detail:
+                        gemini.result
+
+                });
+
+        }
 
         const text =
-            result
+            gemini.result
                 ?.candidates?.[0]
                 ?.content
                 ?.parts?.[0]
                 ?.text || "";
 
+        const ai =
+            cleanGeminiResponse(
+                text
+            );
 
+        return res
+            .status(200)
+            .json(ai);
 
-        return res.status(200).json(
-            cleanGeminiResponse(text)
-        );
-
-
-
-    } catch (error) {
-
+    }
+    catch (error) {
 
         console.error(
+            "Gemini Error:",
             error
         );
 
+        if (
+            error.name ===
+            "AbortError"
+        ) {
 
-        return res.status(500).json({
+            return res
+                .status(408)
+                .json({
 
-            error:
-                error.message
+                    error:
+                        "Gemini timeout"
 
-        });
+                });
+
+        }
+
+        return res
+            .status(500)
+            .json({
+
+                error:
+                    error.message ||
+                    "Unknown error"
+
+            });
 
     }
 
