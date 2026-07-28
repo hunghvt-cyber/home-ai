@@ -31,7 +31,7 @@ Người dùng có thể chụp ảnh hoặc chọn ảnh, để AI nhận diệ
 
 - Supabase Database
 - Supabase Storage
-- Supabase Edge Functions
+- Vercel Serverless Function (gọi Gemini API)
 
 ### AI
 
@@ -40,8 +40,7 @@ Người dùng có thể chụp ảnh hoặc chọn ảnh, để AI nhận diệ
 ### Deployment
 
 - GitHub Pages (Frontend)
-- Supabase Edge Functions (Backend)
-- Vercel (đã sử dụng trong một giai đoạn phát triển)
+- Vercel (Backend / AI)
 
 ---
 
