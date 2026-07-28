@@ -151,6 +151,19 @@ Việc tách module giúp các thay đổi này không ảnh hưởng toàn bộ
 
 ---
 
+# 11. Xóa code thử nghiệm ngay khi không dùng nữa
+
+Dự án từng thử viết lại backend AI bằng Supabase Edge Functions song song với bản Vercel đang chạy.
+
+Vì không xóa ngay, 2 bản backend dần lệch nhau (khác model, khác tính năng) mà không ai nhận ra cho đến khi đọc lại toàn bộ code.
+
+Bài học:
+
+- Nhánh/bản thử nghiệm không dùng nữa nên xóa khỏi repo chính ngay, hoặc để ở branch riêng.
+- Không giữ lại "phòng khi cần" — vì code cũ không ai bảo trì rất dễ gây hiểu nhầm là đang được dùng thật.
+
+---
+
 # Những điều sẽ làm khác nếu bắt đầu lại
 
 - Thiết kế cấu trúc thư mục ngay từ đầu.
