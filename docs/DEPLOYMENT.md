@@ -1,21 +1,46 @@
 # Deployment
 
-Tài liệu này ghi lại toàn bộ quá trình triển khai (deploy) của dự án Storage & Forget.
+Storage & Forget được thiết kế để có thể triển khai hoàn toàn miễn phí và có thể quản lý ngay trên điện thoại.
 
-Mục tiêu là giúp triển khai lại dự án nhanh chóng và lưu giữ kinh nghiệm thực tế.
+Trong quá trình phát triển, kiến trúc triển khai đã thay đổi nhiều lần để cân bằng giữa chi phí, bảo mật và sự tiện lợi.
+
+---
+
+# Kiến trúc triển khai
+
+```
+GitHub
+      │
+      ▼
+GitHub Pages
+      │
+      ▼
+Browser
+      │
+      ▼
+Supabase
+      │
+      ├── PostgreSQL
+      ├── Storage
+      └── Edge Functions
+              │
+              ▼
+         Google Gemini
+```
 
 ---
 
 # Frontend
 
-Frontend được triển khai bằng GitHub Pages.
+Frontend được deploy bằng GitHub Pages.
 
 Ưu điểm:
 
 - Miễn phí.
-- Dễ sử dụng.
-- Tự động cập nhật sau khi push lên GitHub.
-- Phù hợp với web tĩnh.
+- Dễ cập nhật.
+- Chỉ cần push lên GitHub.
+- Không cần máy chủ riêng.
+- Phù hợp với ứng dụng HTML, CSS và JavaScript.
 
 ---
 
@@ -27,8 +52,9 @@ Vai trò:
 
 - Gọi Gemini API.
 - Bảo vệ API Key.
-- Xử lý logic phía server.
-- Trả kết quả về frontend.
+- Xử lý Prompt.
+- Chuẩn hóa phản hồi.
+- Làm cầu nối giữa Frontend và AI.
 
 ---
 
@@ -38,45 +64,124 @@ Trong một giai đoạn phát triển, Vercel được sử dụng để triể
 
 Lý do:
 
-- Có thể deploy dễ dàng ngay trên điện thoại.
+- Có thể deploy ngay trên điện thoại.
 - Không cần máy tính.
-- Triển khai nhanh.
-- Phù hợp khi chưa sử dụng Edge Functions.
+- Thiết lập nhanh.
+- Phù hợp khi chưa chuyển sang Supabase Edge Functions.
+
+Sau khi kiến trúc ổn định, vai trò của Vercel giảm dần và được thay thế bởi Edge Functions.
 
 ---
 
 # Supabase
 
-Supabase được sử dụng cho:
+Supabase là nền tảng trung tâm của ứng dụng.
 
-- PostgreSQL Database.
-- Storage.
-- Edge Functions.
+Bao gồm:
+
+- PostgreSQL Database
+- Storage
+- Edge Functions
+
+Việc sử dụng cùng một nền tảng giúp đơn giản hóa việc quản lý.
 
 ---
 
-# Môi trường triển khai
+# Quy trình triển khai
 
-- Frontend: GitHub Pages
-- Backend: Supabase Edge Functions
-- AI: Google Gemini
-- Database: Supabase PostgreSQL
-- Storage: Supabase Storage
+```
+Code
+
+↓
+
+GitHub
+
+↓
+
+GitHub Pages
+
+↓
+
+Người dùng
+```
+
+Đối với AI:
+
+```
+Frontend
+
+↓
+
+Edge Function
+
+↓
+
+Gemini
+
+↓
+
+Frontend
+```
+
+---
+
+# Quy trình cập nhật
+
+Mỗi lần cập nhật:
+
+1. Chỉnh sửa mã nguồn.
+2. Commit lên GitHub.
+3. GitHub Pages tự động cập nhật.
+4. Nếu thay đổi Edge Function thì deploy lại trên Supabase.
+
+---
+
+# Triển khai bằng điện thoại
+
+Một mục tiêu quan trọng của dự án là hạn chế phụ thuộc vào máy tính.
+
+Trong quá trình phát triển:
+
+- Quản lý GitHub trên điện thoại.
+- Chỉnh sửa mã nguồn trên điện thoại hoặc máy tính bảng.
+- Quản lý Supabase trên trình duyệt.
+- Deploy Edge Functions khi cần.
+- Sử dụng Vercel ở giai đoạn đầu để có thể triển khai nhanh mà không cần PC.
+
+Điều này giúp việc phát triển linh hoạt hơn.
 
 ---
 
 # Kinh nghiệm
 
-Tài liệu này sẽ ghi lại:
+Những kinh nghiệm rút ra:
 
-- Các bước deploy.
-- Những lỗi từng gặp.
-- Cách xử lý.
-- Các lưu ý khi triển khai bằng điện thoại.
-- Những kinh nghiệm để triển khai nhanh hơn.
+- Frontend và Backend nên tách riêng.
+- API Key không nên xuất hiện trong Frontend.
+- GitHub Pages rất phù hợp cho web tĩnh.
+- Edge Functions giúp đơn giản hóa việc bảo mật.
+- Kiến trúc càng đơn giản thì càng dễ bảo trì.
 
 ---
 
-# Ghi chú
+# Có thể cải thiện
 
-Deployment sẽ được cập nhật khi kiến trúc triển khai của dự án thay đổi.
+Trong tương lai có thể bổ sung:
+
+- Môi trường Development và Production riêng.
+- Tự động kiểm tra trước khi deploy.
+- CI/CD hoàn chỉnh.
+- Domain riêng.
+- Theo dõi lỗi và hiệu năng.
+
+---
+
+# Tổng kết
+
+Kiến trúc triển khai hiện tại đáp ứng tốt các mục tiêu của dự án:
+
+- Chi phí thấp.
+- Dễ triển khai.
+- Dễ bảo trì.
+- Có thể quản lý ngay trên điện thoại.
+- Đủ khả năng mở rộng cho các phiên bản tiếp theo.
