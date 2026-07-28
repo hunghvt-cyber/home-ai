@@ -1,74 +1,114 @@
-# Storage & Forget
+# Documentation
 
-Storage & Forget là một web app giúp lưu trữ và quản lý vị trí đồ dùng trong nhà bằng AI.
+Chào mừng đến với tài liệu của dự án **Storage & Forget**.
 
-Người dùng có thể chụp ảnh hoặc chọn ảnh, để AI nhận diện đồ vật, sau đó lưu thông tin vào cơ sở dữ liệu và tìm kiếm lại khi cần.
-
----
-
-## ✨ Tính năng
-
-- 📷 Chụp ảnh hoặc chọn ảnh từ thư viện
-- 🤖 AI Vision nhận diện đồ vật
-- 💬 AI Chat hỗ trợ hỏi đáp
-- 💾 Lưu dữ liệu lên Supabase
-- 🔍 Tìm kiếm theo tên hoặc vị trí
-- 🏷️ Quản lý phòng và vị trí lưu trữ
-- 🗑️ Chỉnh sửa và xóa dữ liệu
-- 📱 Giao diện tối ưu cho điện thoại
+Thư mục `docs/` lưu toàn bộ tài liệu kỹ thuật, kinh nghiệm phát triển và các ghi chú trong suốt quá trình xây dựng dự án.
 
 ---
 
-## 🛠️ Tech Stack
+# 📚 Danh mục tài liệu
 
-### Frontend
+## 🏗️ ARCHITECTURE.md
 
-- HTML
-- CSS
-- JavaScript (Vanilla)
+Mô tả kiến trúc của dự án.
 
-### Backend
+Bao gồm:
 
-- Supabase Database
-- Supabase Storage
+- Cấu trúc thư mục
+- Luồng hoạt động
+- Cách các module giao tiếp với nhau
+- Quy tắc tổ chức source code
+
+---
+
+## 📝 DEVELOPMENT.md
+
+Nhật ký phát triển của dự án.
+
+Bao gồm:
+
+- Ý tưởng ban đầu
+- Các phiên bản
+- Những thay đổi lớn
+- Các quyết định kỹ thuật
+- Những vấn đề từng gặp và cách giải quyết
+
+---
+
+## 🤖 AI.md
+
+Tài liệu về hệ thống AI.
+
+Bao gồm:
+
+- Gemini Vision
+- Gemini Chat
+- Prompt Engineering
+- Image Resize
+- Model đã sử dụng
+- Kinh nghiệm tối ưu
+
+---
+
+## 🗄️ DATABASE.md
+
+Tài liệu về Supabase.
+
+Bao gồm:
+
+- Database Schema
+- Storage
+- Bucket
+- RLS
+- SQL Script
+- Chính sách bảo mật
+
+---
+
+## 🚀 DEPLOYMENT.md
+
+Hướng dẫn triển khai dự án.
+
+Bao gồm:
+
+- GitHub Pages
 - Supabase Edge Functions
-
-### AI
-
-- Google Gemini API
-
-### Deployment
-
-- GitHub Pages (Frontend)
-- Supabase Edge Functions (Backend)
-- Vercel (đã sử dụng trong một giai đoạn phát triển)
+- Vercel
+- Triển khai bằng điện thoại
+- Những lỗi thường gặp
 
 ---
 
-## 📚 Documentation
+## 📖 LESSONS_LEARNED.md
 
-Toàn bộ tài liệu nằm trong thư mục `docs/`.
+Những bài học rút ra trong quá trình phát triển.
 
-- README_INDEX.md
-- ARCHITECTURE.md
-- DEVELOPMENT.md
-- LESSONS_LEARNED.md
-- CHANGELOG.md
-- ROADMAP.md
-- DATABASE.md
-- AI.md
-- DEPLOYMENT.md
+Đây là tài liệu quan trọng nhất để áp dụng cho các dự án sau.
 
 ---
 
-## 🚀 Roadmap
+## 🛣️ ROADMAP.md
 
-Xem tại:
+Kế hoạch phát triển dự án.
 
-`docs/ROADMAP.md`
+Bao gồm:
+
+- Hoàn thành
+- Đang thực hiện
+- Dự định
+- Ý tưởng tương lai
 
 ---
 
-## 📄 License
+## 📜 CHANGELOG.md
 
-Dự án phục vụ mục đích học tập và sử dụng cá nhân.
+Lịch sử thay đổi của dự án theo từng phiên bản.
+
+---
+
+# 🎯 Mục tiêu của bộ tài liệu
+
+- Ghi lại toàn bộ quá trình phát triển.
+- Làm tài liệu tham khảo cho chính mình trong tương lai.
+- Dễ dàng tái sử dụng khi xây dựng các web app tương tự.
+- Lưu lại các kinh nghiệm, quyết định và bài học đã tích lũy.
