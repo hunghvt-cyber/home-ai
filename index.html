@@ -152,36 +152,28 @@ placeholder="📝 Mô tả">
 <button
 id="saveButton"
 onclick="saveItem()">
-
 💾 Lưu
-
 </button>
 
 <button
 id="addPhotoButton"
 onclick="openExtraPicker()"
 style="display:none;">
-
 ➕ Thêm ảnh
-
 </button>
 
 <button
 id="skipButton"
 onclick="skipItem()"
 style="display:none;">
-
-❌ Bỏ qua
-
+⏭️ Bỏ qua
 </button>
 
 <button
 id="cancelButton"
 onclick="cancelEdit()"
 style="display:none;">
-
 ❌ Hủy
-
 </button>
 
 </div>
@@ -210,15 +202,17 @@ placeholder="🔍 Tìm kiếm">
 <script src="js/database/message.js"></script>
 <script src="js/database/render.js"></script>
 <script src="js/database/load.js"></script>
-
-<script src="js/database/storage.js"></script>
-<script src="js/database/upload.js"></script>
-<script src="js/database/extra-images.js"></script>
+<script src="js/database/image-gallery.js"></script>
 <script src="js/database/form.js"></script>
-<script src="js/database/save.js"></script>
 
 <script src="js/database/delete.js"></script>
 <script src="js/database/edit.js"></script>
+
+<script src="js/database/save-utils.js"></script>
+<script src="js/database/save-upload.js"></script>
+<script src="js/database/save-extra.js"></script>
+<script src="js/database/save-item.js"></script>
+<script src="js/database/save.js"></script>
 
 <script src="js/rooms/rooms.js"></script>
 <script src="js/rooms/stats.js"></script>
