@@ -1,11 +1,23 @@
-// Tải danh sách ảnh phụ của 1 món đồ
+// js/database/image-gallery.js
+
+let pendingExtraImages = [];
+
+let previewUrls = [];
+
+let existingExtraImagesCount = 0;
+
+
+
 async function loadItemImages(itemId) {
 
     const result =
         await db
             .from("item_images")
             .select("*")
-            .eq("item_id", itemId)
+            .eq(
+                "item_id",
+                itemId
+            )
             .order(
                 "sort_order",
                 {
@@ -16,7 +28,6 @@ async function loadItemImages(itemId) {
     if (result.error) {
 
         console.warn(
-            "Không tải được ảnh phụ:",
             result.error
         );
 
@@ -29,50 +40,170 @@ async function loadItemImages(itemId) {
 }
 
 
-// Lưu 1 ảnh phụ
-async function insertItemImage(
-    itemId,
-    imageUrl,
-    sortOrder
-) {
 
-    const result =
-        await db
-            .from("item_images")
-            .insert([
+async function deleteAllItemImagesStorage(itemId) {
 
-                {
-                    item_id: itemId,
-                    image_url: imageUrl,
-                    sort_order: sortOrder
-                }
+    const images =
+        await loadItemImages(
+            itemId
+        );
 
-            ]);
+    for (const img of images) {
 
-    if (result.error) {
-
-        throw result.error;
+        await deleteOldImage(
+            img.image_url
+        );
 
     }
 
 }
 
 
-// Xóa toàn bộ bản ghi ảnh phụ
-async function deleteItemImages(itemId) {
 
-    const result =
-        await db
-            .from("item_images")
-            .delete()
-            .eq(
-                "item_id",
-                itemId
+function renderExistingExtraImages(images) {
+
+    const strip =
+        document.getElementById(
+            "existingExtraStrip"
+        );
+
+    if (!strip) {
+
+        return;
+
+    }
+
+    let html = "";
+
+    images.forEach(function(img) {
+
+        html +=
+            '<div class="extraThumb">' +
+            '<img src="' +
+            img.image_url +
+            '">' +
+            "</div>";
+
+    });
+
+    strip.innerHTML =
+        html;
+
+}
+
+
+
+function renderPendingExtraImages() {
+
+    const strip =
+        document.getElementById(
+            "pendingExtraStrip"
+        );
+
+    if (!strip) {
+
+        return;
+
+    }
+
+    previewUrls.forEach(
+        function(url) {
+
+            URL.revokeObjectURL(
+                url
             );
 
-    if (result.error) {
+        }
+    );
 
-        throw result.error;
+    previewUrls = [];
+
+    let html = "";
+
+    pendingExtraImages.forEach(
+
+        function(file, index) {
+
+            const url =
+                URL.createObjectURL(
+                    file
+                );
+
+            previewUrls.push(
+                url
+            );
+
+            html +=
+                '<div class="extraThumb">' +
+                '<img src="' +
+                url +
+                '">' +
+                '<button type="button" onclick="removePendingExtraImage(' +
+                index +
+                ')">✖</button>' +
+                "</div>";
+
+        }
+
+    );
+
+    strip.innerHTML =
+        html;
+
+}
+
+
+
+function removePendingExtraImage(index) {
+
+    pendingExtraImages.splice(
+        index,
+        1
+    );
+
+    renderPendingExtraImages();
+
+}
+
+
+
+function resetExtraImages() {
+
+    pendingExtraImages = [];
+
+    previewUrls.forEach(
+        function(url) {
+
+            URL.revokeObjectURL(
+                url
+            );
+
+        }
+    );
+
+    previewUrls = [];
+
+    const pending =
+        document.getElementById(
+            "pendingExtraStrip"
+        );
+
+    if (pending) {
+
+        pending.innerHTML =
+            "";
+
+    }
+
+    const existing =
+        document.getElementById(
+            "existingExtraStrip"
+        );
+
+    if (existing) {
+
+        existing.innerHTML =
+            "";
 
     }
 
