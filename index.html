@@ -97,6 +97,14 @@ accept="image/*"
 style="display:none;">
 
 
+<input
+id="extraImageInput"
+type="file"
+accept="image/*"
+multiple
+style="display:none;">
+
+
 
 <div class="buttonRow">
 
@@ -124,6 +132,18 @@ style="display:none;">
 id="preview"
 src=""
 style="display:none;">
+
+
+<div
+id="existingExtraStrip"
+class="extraStrip">
+</div>
+
+
+<div
+id="pendingExtraStrip"
+class="extraStrip">
+</div>
 
 
 
@@ -189,6 +209,25 @@ onclick="saveItem()">
 </button>
 
 
+<button
+id="addPhotoButton"
+onclick="openExtraPicker()"
+style="display:none;">
+
+➕ Thêm ảnh
+
+</button>
+
+
+<button
+id="skipButton"
+onclick="skipItem()"
+style="display:none;">
+
+⏭️ Bỏ qua
+
+</button>
+
 
 <button
 id="cancelButton"
@@ -240,6 +279,12 @@ placeholder="🔍 Tìm kiếm">
 <script src="js/database/message.js"></script>
 <script src="js/database/render.js"></script>
 <script src="js/database/load.js"></script>
+
+<script src="js/database/storage.js"></script>
+<script src="js/database/upload.js"></script>
+<script src="js/database/form.js"></script>
+<script src="js/database/images.js"></script>
+
 <script src="js/database/delete.js"></script>
 <script src="js/database/edit.js"></script>
 <script src="js/database/save.js"></script>
