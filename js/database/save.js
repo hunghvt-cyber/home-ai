@@ -119,7 +119,7 @@ async function saveItem() {
                     selectedFile.name
                         .replace(/\s/g, "_")
                         .replace(/\.[^/.]+$/, "") +
-                    ".jpg";
+                    ".webp";
 
 
 
@@ -131,7 +131,7 @@ async function saveItem() {
                             resizedBlob,
                             {
                                 contentType:
-                                    "image/jpeg"
+                                    "image/webp"
                             }
                         );
 
@@ -231,7 +231,7 @@ async function saveItem() {
                 selectedFile.name
                     .replace(/\s/g, "_")
                     .replace(/\.[^/.]+$/, "") +
-                ".jpg";
+                ".webp";
 
 
 
@@ -243,7 +243,7 @@ async function saveItem() {
                         resizedBlob,
                         {
                             contentType:
-                                "image/jpeg"
+                                "image/webp"
                         }
                     );
 
