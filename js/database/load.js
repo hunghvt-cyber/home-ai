@@ -28,6 +28,17 @@ async function loadItems() {
         result.data || [];
 
 
+    const extraImagesMap =
+        await loadAllExtraImagesMap();
+
+    allItems.forEach(function(item) {
+
+        item.extraImages =
+            extraImagesMap[item.id] || [];
+
+    });
+
+
     renderItems();
 
 
