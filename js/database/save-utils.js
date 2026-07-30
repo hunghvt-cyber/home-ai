@@ -1,30 +1,86 @@
+// js/database/save-utils.js
+
 let isSaving = false;
 
 
-async function saveItem() {
 
-    if (isSaving) {
+function extractStoragePath(imageUrl) {
+
+    if (!imageUrl) {
+
+        return null;
+
+    }
+
+    const marker =
+        "/images/";
+
+    const index =
+        imageUrl.indexOf(
+            marker
+        );
+
+    if (index === -1) {
+
+        return null;
+
+    }
+
+    return imageUrl.slice(
+        index +
+        marker.length
+    );
+
+}
+
+
+
+async function deleteOldImage(imageUrl) {
+
+    const path =
+        extractStoragePath(
+            imageUrl
+        );
+
+    if (!path) {
 
         return;
 
     }
 
-    const data =
-        getFormData();
+    try {
 
-    if (
-        !validateForm(data)
-    ) {
+        const result =
+            await db.storage
+                .from(
+                    "images"
+                )
+                .remove([
+                    path
+                ]);
 
-        return;
+        if (result.error) {
 
-    }
-
-    const saveButton =
-        document
-            .getElementById(
-                "saveButton"
+            console.warn(
+                result.error
             );
+
+        }
+
+    }
+    catch (error) {
+
+        console.warn(
+            error
+        );
+
+    }
+
+}
+
+
+
+function showSaving(saveButton) {
 
     isSaving = true;
 
@@ -34,218 +90,84 @@ async function saveItem() {
     saveButton.innerHTML =
         "⏳ Đang lưu...";
 
-    try {
+}
 
-        if (editingItem) {
 
-            let imageUrl =
-                editingItem.image_url;
 
-            const oldImageUrl =
-                editingItem.image_url;
+function hideSaving(saveButton) {
 
-            if (selectedFile) {
+    isSaving = false;
 
-                imageUrl =
-                    await uploadImage(
-                        selectedFile
-                    );
+    saveButton.disabled =
+        false;
 
-            }
-
-            const update =
-                await db
-                    .from("items")
-                    .update({
-
-                        name:
-                            data.name,
-
-                        location:
-                            data.location,
-
-                        room:
-                            data.room,
-
-                        tags:
-                            data.tags,
-
-                        description:
-                            data.description,
-
-                        image_url:
-                            imageUrl
-
-                    })
-                    .eq(
-                        "id",
-                        editingItem.id
-                    );
-
-            if (update.error) {
-
-                throw update.error;
-
-            }
-
-            if (
-                selectedFile &&
-                oldImageUrl
-            ) {
-
-                await deleteOldImage(
-                    oldImageUrl
-                );
-
-            }
-
-            if (
-                pendingExtraImages.length >
-                0
-            ) {
-
-                await uploadExtraImages(
-
-                    editingItem.id,
-
-                    pendingExtraImages,
-
-                    existingExtraImagesCount
-
-                );
-
-            }
-
-            clearForm();
-
-            showMessage(
-                "✅ Đã cập nhật."
-            );
-
-            await loadItems();
-
-        }
-        else {
-
-            if (
-                !selectedFile
-            ) {
-
-                showMessage(
-                    "❌ Vui lòng chọn ảnh."
-                );
-
-                return;
-
-            }
-
-            const imageUrl =
-                await uploadImage(
-                    selectedFile
-                );
-
-            const insert =
-                await db
-                    .from("items")
-                    .insert([{
-
-                        name:
-                            data.name,
-
-                        location:
-                            data.location,
-
-                        room:
-                            data.room,
-
-                        tags:
-                            data.tags,
-
-                        description:
-                            data.description,
-
-                        image_url:
-                            imageUrl
-
-                    }])
-                    .select();
-
-            if (insert.error) {
-
-                throw insert.error;
-
-            }
-
-            const newItem =
-                insert.data[0];
-
-            if (
-                pendingExtraImages.length >
-                0
-            ) {
-
-                await uploadExtraImages(
-
-                    newItem.id,
-
-                    pendingExtraImages,
-
-                    0
-
-                );
-
-            }
-
-            clearForm();
-
-            showMessage(
-                "✅ Đã lưu."
-            );
-
-            await loadItems();
-
-        }
-
-    }
-    catch (error) {
-
-        showMessage(
-            "❌ " +
-            error.message
-        );
-
-    }
-    finally {
-
-        isSaving = false;
-
-        saveButton.disabled =
-            false;
-
-        saveButton.innerHTML =
-            "💾 Lưu";
-
-    }
+    saveButton.innerHTML =
+        "💾 Lưu";
 
 }
 
 
-function skipItem() {
 
-    if (editingItem) {
+function getFormData() {
 
-        cancelEdit();
+    const tagsInput =
+        document
+            .getElementById(
+                "tags"
+            )
+            .value
+            .trim();
 
-        return;
+    return {
 
-    }
+        name:
+            document
+                .getElementById(
+                    "name"
+                )
+                .value
+                .trim(),
 
-    clearForm();
+        location:
+            document
+                .getElementById(
+                    "location"
+                )
+                .value
+                .trim(),
 
-    showMessage(
-        "⏭️ Đã bỏ qua."
-    );
+        room:
+            document
+                .getElementById(
+                    "room"
+                )
+                .value,
 
-    openCamera();
+        description:
+            document
+                .getElementById(
+                    "description"
+                )
+                .value
+                .trim(),
+
+        tags:
+
+            tagsInput
+
+                ? tagsInput
+                    .split(",")
+                    .map(
+                        t =>
+                            t.trim()
+                    )
+                    .filter(
+                        t =>
+                            t !== ""
+                    )
+
+                : []
+
+    };
 
 }
