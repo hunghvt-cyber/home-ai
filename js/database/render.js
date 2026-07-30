@@ -82,6 +82,41 @@ function renderTags(tags) {
 
 
 
+function renderCardExtraImages(images) {
+
+    if (
+        !images ||
+        images.length === 0
+    ) {
+
+        return "";
+
+    }
+
+    let html =
+        '<div class="cardExtraStrip">';
+
+    images.forEach(function(img) {
+
+        html +=
+            '<img src="' +
+            img.image_url +
+            '" loading="lazy" onclick="window.open(\'' +
+            img.image_url +
+            '\',\'_blank\')">';
+
+    });
+
+    html += "</div>";
+
+    return html;
+
+}
+
+
+
+
+
 function renderItems(items = allItems) {
 
     const list =
@@ -102,6 +137,11 @@ function renderItems(items = allItems) {
         const tags =
             renderTags(
                 item.tags
+            );
+
+        const extraImages =
+            renderCardExtraImages(
+                item.extraImages
             );
 
         html += `
@@ -130,6 +170,8 @@ onclick="window.open('${item.image_url}','_blank')">
 ${item.description || ""}
 
 </p>
+
+${extraImages}
 
 <p class="meta">
 
