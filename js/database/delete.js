@@ -11,16 +11,12 @@ async function deleteItem(id) {
 
     }
 
-
-
     try {
 
         const item =
             allItems.find(
                 x => x.id == id
             );
-
-
 
         if (!item) {
 
@@ -30,70 +26,21 @@ async function deleteItem(id) {
 
         }
 
-
-
+        // Xóa ảnh đại diện
         if (item.image_url) {
 
-            try {
-
-                const url =
-                    new URL(
-                        item.image_url
-                    );
-
-
-
-                const parts =
-                    url.pathname.split(
-                        "/"
-                    );
-
-
-
-                const bucketIndex =
-                    parts.indexOf(
-                        "images"
-                    );
-
-
-
-                if (
-                    bucketIndex >= 0
-                ) {
-
-                    const filePath =
-                        parts
-                            .slice(
-                                bucketIndex + 1
-                            )
-                            .join("/");
-
-
-
-                    await db.storage
-                        .from("images")
-                        .remove([
-                            decodeURIComponent(
-                                filePath
-                            )
-                        ]);
-
-                }
-
-            }
-            catch (e) {
-
-                console.warn(
-                    "Không xóa được ảnh:",
-                    e
-                );
-
-            }
+            await deleteOldImage(
+                item.image_url
+            );
 
         }
 
+        // Xóa toàn bộ ảnh phụ
+        await deleteAllItemImagesStorage(
+            id
+        );
 
-
+        // Xóa dữ liệu
         const result =
             await db
                 .from("items")
@@ -103,19 +50,13 @@ async function deleteItem(id) {
                     id
                 );
 
-
-
         if (result.error) {
 
             throw result.error;
 
         }
 
-
-
         await loadItems();
-
-
 
         showMessage(
             "🗑 Đã xóa."
