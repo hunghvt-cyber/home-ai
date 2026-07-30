@@ -1,3 +1,4 @@
+// js/database/image-storage.js
 
 function extractStoragePath(imageUrl) {
 
@@ -29,8 +30,8 @@ function extractStoragePath(imageUrl) {
 }
 
 
-// Xóa 1 ảnh trong Supabase Storage
-async function deleteOldImage(imageUrl) {
+
+async function deleteStorageImage(imageUrl) {
 
     const path =
         extractStoragePath(
@@ -45,18 +46,21 @@ async function deleteOldImage(imageUrl) {
 
     try {
 
-        const { error } =
+        const result =
             await db.storage
-                .from("images")
+
+                .from(
+                    "images"
+                )
+
                 .remove([
                     path
                 ]);
 
-        if (error) {
+        if (result.error) {
 
             console.warn(
-                "Không xoá được ảnh:",
-                error
+                result.error
             );
 
         }
@@ -65,7 +69,6 @@ async function deleteOldImage(imageUrl) {
     catch (error) {
 
         console.warn(
-            "Không xoá được ảnh:",
             error
         );
 
@@ -74,19 +77,27 @@ async function deleteOldImage(imageUrl) {
 }
 
 
-// Xóa toàn bộ ảnh phụ của 1 món
+
 async function deleteAllItemImagesStorage(itemId) {
 
     const result =
+
         await db
-            .from("item_images")
+
+            .from(
+                "item_images"
+            )
+
             .select(
                 "image_url"
             )
+
             .eq(
                 "item_id",
                 itemId
             );
+
+
 
     if (result.error) {
 
@@ -98,9 +109,11 @@ async function deleteAllItemImagesStorage(itemId) {
 
     }
 
+
+
     for (const image of result.data) {
 
-        await deleteOldImage(
+        await deleteStorageImage(
             image.image_url
         );
 
