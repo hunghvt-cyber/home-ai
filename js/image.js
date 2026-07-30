@@ -92,7 +92,7 @@ async function resizeImage(file) {
                         );
 
                     const maxSize =
-                        1280;
+                        800;
 
                     let width =
                         img.width;
@@ -100,31 +100,37 @@ async function resizeImage(file) {
                     let height =
                         img.height;
 
+                    // Chỉ resize khi ảnh lớn hơn maxSize,
+                    // không phóng to ảnh vốn đã nhỏ hơn 800px
                     if (
-                        width > height &&
-                        width > maxSize
-                    ) {
-
-                        height =
-                            height *
-                            maxSize /
-                            width;
-
-                        width =
-                            maxSize;
-
-                    }
-                    else if (
+                        width > maxSize ||
                         height > maxSize
                     ) {
 
-                        width =
-                            width *
-                            maxSize /
-                            height;
+                        if (
+                            width > height
+                        ) {
 
-                        height =
-                            maxSize;
+                            height =
+                                height *
+                                maxSize /
+                                width;
+
+                            width =
+                                maxSize;
+
+                        }
+                        else {
+
+                            width =
+                                width *
+                                maxSize /
+                                height;
+
+                            height =
+                                maxSize;
+
+                        }
 
                     }
 
@@ -152,9 +158,9 @@ async function resizeImage(file) {
 
                         },
 
-                        "image/jpeg",
+                        "image/webp",
 
-                        0.8
+                        0.65
 
                     );
 
