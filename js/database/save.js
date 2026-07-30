@@ -1,6 +1,128 @@
 let isSaving = false;
 
 
+// Tách logic resize + upload + lấy public URL thành 1 hàm dùng chung
+async function uploadImage(file) {
+
+    const resizedBlob =
+        await resizeImage(file);
+
+    const randomSuffix =
+        Math.random()
+            .toString(36)
+            .slice(2, 8);
+
+    const fileName =
+        Date.now() +
+        "_" +
+        randomSuffix +
+        "_" +
+        file.name
+            .replace(/\s/g, "_")
+            .replace(/\.[^/.]+$/, "") +
+        ".webp";
+
+    const upload =
+        await db.storage
+            .from("images")
+            .upload(
+                fileName,
+                resizedBlob,
+                {
+                    contentType:
+                        "image/webp"
+                }
+            );
+
+    if (upload.error) {
+
+        throw upload.error;
+
+    }
+
+    const imageUrl =
+        db.storage
+            .from("images")
+            .getPublicUrl(
+                fileName
+            )
+            .data
+            .publicUrl;
+
+    return imageUrl;
+
+}
+
+
+// Lấy đúng tên file (path trong bucket) từ public URL để xoá
+function extractStoragePath(imageUrl) {
+
+    if (!imageUrl) {
+
+        return null;
+
+    }
+
+    const marker =
+        "/images/";
+
+    const index =
+        imageUrl.indexOf(marker);
+
+    if (index === -1) {
+
+        return null;
+
+    }
+
+    return imageUrl.slice(
+        index + marker.length
+    );
+
+}
+
+
+// Xoá ảnh cũ trong Storage, không chặn luồng chính nếu lỗi
+async function deleteOldImage(imageUrl) {
+
+    const path =
+        extractStoragePath(imageUrl);
+
+    if (!path) {
+
+        return;
+
+    }
+
+    try {
+
+        const { error } =
+            await db.storage
+                .from("images")
+                .remove([path]);
+
+        if (error) {
+
+            console.warn(
+                "Không xoá được ảnh cũ:",
+                error
+            );
+
+        }
+
+    }
+    catch (error) {
+
+        console.warn(
+            "Không xoá được ảnh cũ:",
+            error
+        );
+
+    }
+
+}
+
+
 async function saveItem() {
 
 
@@ -101,58 +223,17 @@ async function saveItem() {
             let imageUrl =
                 editingItem.image_url;
 
+            const oldImageUrl =
+                editingItem.image_url;
+
 
 
             if (selectedFile) {
 
-
-                const resizedBlob =
-                    await resizeImage(
+                imageUrl =
+                    await uploadImage(
                         selectedFile
                     );
-
-
-
-                const fileName =
-                    Date.now() +
-                    "_" +
-                    selectedFile.name
-                        .replace(/\s/g, "_")
-                        .replace(/\.[^/.]+$/, "") +
-                    ".webp";
-
-
-
-                const upload =
-                    await db.storage
-                        .from("images")
-                        .upload(
-                            fileName,
-                            resizedBlob,
-                            {
-                                contentType:
-                                    "image/webp"
-                            }
-                        );
-
-
-
-                if (upload.error) {
-
-                    throw upload.error;
-
-                }
-
-
-
-                imageUrl =
-                    db.storage
-                        .from("images")
-                        .getPublicUrl(
-                            fileName
-                        )
-                        .data
-                        .publicUrl;
 
             }
 
@@ -197,6 +278,21 @@ async function saveItem() {
 
 
 
+            // Chỉ xoá ảnh cũ sau khi update thành công,
+            // và chỉ khi thực sự có ảnh mới thay thế
+            if (
+                selectedFile &&
+                oldImageUrl
+            ) {
+
+                await deleteOldImage(
+                    oldImageUrl
+                );
+
+            }
+
+
+
             clearForm();
 
             showMessage(
@@ -221,50 +317,10 @@ async function saveItem() {
 
 
 
-            const resizedBlob =
-                await resizeImage(
+            const imageUrl =
+                await uploadImage(
                     selectedFile
                 );
-            const fileName =
-                Date.now() +
-                "_" +
-                selectedFile.name
-                    .replace(/\s/g, "_")
-                    .replace(/\.[^/.]+$/, "") +
-                ".webp";
-
-
-
-            const upload =
-                await db.storage
-                    .from("images")
-                    .upload(
-                        fileName,
-                        resizedBlob,
-                        {
-                            contentType:
-                                "image/webp"
-                        }
-                    );
-
-
-
-            if (upload.error) {
-
-                throw upload.error;
-
-            }
-
-
-
-            const imageUrl =
-                db.storage
-                    .from("images")
-                    .getPublicUrl(
-                        fileName
-                    )
-                    .data
-                    .publicUrl;
 
 
 
@@ -411,6 +467,17 @@ function clearForm() {
         document.getElementById(
             "preview"
         );
+
+    if (
+        preview.src &&
+        preview.src.startsWith("blob:")
+    ) {
+
+        URL.revokeObjectURL(
+            preview.src
+        );
+
+    }
 
     preview.src = "";
 
