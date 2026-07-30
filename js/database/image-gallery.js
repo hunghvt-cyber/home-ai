@@ -41,25 +41,6 @@ async function loadItemImages(itemId) {
 
 
 
-async function deleteAllItemImagesStorage(itemId) {
-
-    const images =
-        await loadItemImages(
-            itemId
-        );
-
-    for (const img of images) {
-
-        await deleteOldImage(
-            img.image_url
-        );
-
-    }
-
-}
-
-
-
 function renderExistingExtraImages(images) {
 
     const strip =
