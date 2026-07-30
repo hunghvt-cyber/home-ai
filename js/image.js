@@ -20,6 +20,16 @@ function openGallery() {
 
 }
 
+function openExtraPicker() {
+
+    document
+        .getElementById(
+            "extraImageInput"
+        )
+        .click();
+
+}
+
 function initImage() {
 
     document
@@ -40,12 +50,23 @@ function initImage() {
             handleImage
         );
 
+    document
+        .getElementById(
+            "extraImageInput"
+        )
+        .addEventListener(
+            "change",
+            handleExtraImage
+        );
+
 }
 
 function handleImage(event) {
 
     const file =
         event.target.files[0];
+
+    event.target.value = "";
 
     if (!file) {
 
@@ -60,6 +81,17 @@ function handleImage(event) {
             "preview"
         );
 
+    if (
+        preview.src &&
+        preview.src.startsWith("blob:")
+    ) {
+
+        URL.revokeObjectURL(
+            preview.src
+        );
+
+    }
+
     preview.src =
         URL.createObjectURL(file);
 
@@ -72,6 +104,97 @@ function handleImage(event) {
         )
         .innerHTML =
         "📷 " + file.name;
+
+    // Bắt đầu 1 món mới (chưa lưu) -> hiện nút Thêm ảnh / Bỏ qua
+    if (!editingItem) {
+
+        showActionButtons({
+            addPhoto: true,
+            skip: true,
+            cancel: false
+        });
+
+    }
+    else {
+
+        showActionButtons({
+            addPhoto: true,
+            skip: false,
+            cancel: true
+        });
+
+    }
+
+}
+
+function handleExtraImage(event) {
+
+    const files =
+        Array.from(
+            event.target.files || []
+        );
+
+    event.target.value = "";
+
+    if (files.length === 0) {
+
+        return;
+
+    }
+
+    files.forEach(function(file) {
+
+        pendingExtraImages.push(file);
+
+    });
+
+    renderPendingExtraImages();
+
+}
+
+function showActionButtons(opts) {
+
+    const addBtn =
+        document.getElementById(
+            "addPhotoButton"
+        );
+
+    const skipBtn =
+        document.getElementById(
+            "skipButton"
+        );
+
+    const cancelBtn =
+        document.getElementById(
+            "cancelButton"
+        );
+
+    if (addBtn) {
+
+        addBtn.style.display =
+            opts.addPhoto
+                ? "inline-block"
+                : "none";
+
+    }
+
+    if (skipBtn) {
+
+        skipBtn.style.display =
+            opts.skip
+                ? "inline-block"
+                : "none";
+
+    }
+
+    if (cancelBtn) {
+
+        cancelBtn.style.display =
+            opts.cancel
+                ? "inline-block"
+                : "none";
+
+    }
 
 }
 
