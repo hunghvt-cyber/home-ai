@@ -1,81 +1,52 @@
-// js/database/save-upload.js
+// js/database/save-extra.js
 
-async function uploadImage(file) {
+async function uploadExtraImages(
+    itemId,
+    files,
+    startOrder
+) {
 
-    const resizedBlob =
-        await resizeImage(
-            file
-        );
+    for (
+        let i = 0;
+        i < files.length;
+        i++
+    ) {
 
-    const randomSuffix =
-        Math.random()
-            .toString(36)
-            .slice(2, 8);
-
-    const fileName =
-
-        Date.now() +
-
-        "_" +
-
-        randomSuffix +
-
-        "_" +
-
-        file.name
-            .replace(
-                /\s/g,
-                "_"
-            )
-            .replace(
-                /\.[^/.]+$/,
-                ""
-            ) +
-
-        ".webp";
-
-
-
-    const upload =
-        await db.storage
-            .from(
-                "images"
-            )
-            .upload(
-
-                fileName,
-
-                resizedBlob,
-
-                {
-
-                    contentType:
-                        "image/webp"
-
-                }
-
+        const imageUrl =
+            await uploadImage(
+                files[i]
             );
 
+        const result =
+            await db
+                .from(
+                    "item_images"
+                )
+                .insert([
 
+                    {
 
-    if (upload.error) {
+                        item_id:
+                            itemId,
 
-        throw upload.error;
+                        image_url:
+                            imageUrl,
+
+                        sort_order:
+                            startOrder + i
+
+                    }
+
+                ]);
+
+        if (result.error) {
+
+            console.warn(
+                result.error
+            );
+
+        }
 
     }
-
-
-
-    return db.storage
-
-        .from("images")
-
-        .getPublicUrl(
-            fileName
-        )
-
-        .data
-
-        .publicUrl;
 
 }
