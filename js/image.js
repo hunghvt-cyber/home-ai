@@ -83,8 +83,17 @@ async function resizeImage(file) {
             const img =
                 new Image();
 
+            const objectUrl =
+                URL.createObjectURL(
+                    file
+                );
+
             img.onload =
                 function() {
+
+                    URL.revokeObjectURL(
+                        objectUrl
+                    );
 
                     const canvas =
                         document.createElement(
@@ -154,6 +163,16 @@ async function resizeImage(file) {
 
                         function(blob) {
 
+                            // Nếu resize lỗi (blob null hiếm gặp),
+                            // vẫn upload được ảnh gốc thay vì crash
+                            if (!blob) {
+
+                                resolve(file);
+
+                                return;
+
+                            }
+
                             resolve(blob);
 
                         },
@@ -167,9 +186,7 @@ async function resizeImage(file) {
                 };
 
             img.src =
-                URL.createObjectURL(
-                    file
-                );
+                objectUrl;
 
         }
 
