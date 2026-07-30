@@ -41,6 +41,55 @@ async function loadItemImages(itemId) {
 
 
 
+// Tải TOÀN BỘ ảnh phụ của mọi món trong 1 lần gọi (dùng cho màn hình danh sách,
+// tránh phải query riêng cho từng món -> đỡ tốn request)
+async function loadAllExtraImagesMap() {
+
+    const result =
+        await db
+            .from("item_images")
+            .select("*")
+            .order(
+                "sort_order",
+                {
+                    ascending: true
+                }
+            );
+
+    if (result.error) {
+
+        console.warn(
+            result.error
+        );
+
+        return {};
+
+    }
+
+    const map = {};
+
+    (result.data || []).forEach(
+        function(img) {
+
+            if (!map[img.item_id]) {
+
+                map[img.item_id] = [];
+
+            }
+
+            map[img.item_id].push(
+                img
+            );
+
+        }
+    );
+
+    return map;
+
+}
+
+
+
 function renderExistingExtraImages(images) {
 
     const strip =
