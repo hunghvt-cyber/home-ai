@@ -1,9 +1,88 @@
-// js/database/save-extra.js
+// js/database/image-upload.js
+
+async function uploadImage(file) {
+
+    const resizedBlob =
+        await resizeImage(
+            file
+        );
+
+    const randomSuffix =
+        Math.random()
+            .toString(36)
+            .slice(2, 8);
+
+    const extension =
+        ".webp";
+
+    const fileName =
+
+        Date.now() +
+
+        "_" +
+
+        randomSuffix +
+
+        "_" +
+
+        file.name
+            .replace(/\s/g, "_")
+            .replace(/\.[^/.]+$/, "") +
+
+        extension;
+
+
+
+    const upload =
+
+        await db.storage
+
+            .from("images")
+
+            .upload(
+
+                fileName,
+
+                resizedBlob,
+
+                {
+
+                    contentType:
+                        "image/webp"
+
+                }
+
+            );
+
+
+
+    if (upload.error) {
+
+        throw upload.error;
+
+    }
+
+
+
+    return db.storage
+
+        .from("images")
+
+        .getPublicUrl(
+            fileName
+        )
+
+        .data
+        .publicUrl;
+
+}
+
+
 
 async function uploadExtraImages(
     itemId,
     files,
-    startOrder
+    startOrder = 0
 ) {
 
     for (
@@ -18,10 +97,13 @@ async function uploadExtraImages(
             );
 
         const result =
+
             await db
+
                 .from(
                     "item_images"
                 )
+
                 .insert([
 
                     {
@@ -38,6 +120,8 @@ async function uploadExtraImages(
                     }
 
                 ]);
+
+
 
         if (result.error) {
 
