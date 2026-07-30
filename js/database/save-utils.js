@@ -1,88 +1,13 @@
-// js/database/save-utils.js
+// js/database/save-utils.js -> Hàm tiện ích
 
 let isSaving = false;
 
 
 
-function extractStoragePath(imageUrl) {
-
-    if (!imageUrl) {
-
-        return null;
-
-    }
-
-    const marker =
-        "/images/";
-
-    const index =
-        imageUrl.indexOf(
-            marker
-        );
-
-    if (index === -1) {
-
-        return null;
-
-    }
-
-    return imageUrl.slice(
-        index +
-        marker.length
-    );
-
-}
-
-
-
-async function deleteOldImage(imageUrl) {
-
-    const path =
-        extractStoragePath(
-            imageUrl
-        );
-
-    if (!path) {
-
-        return;
-
-    }
-
-    try {
-
-        const result =
-            await db.storage
-                .from(
-                    "images"
-                )
-                .remove([
-                    path
-                ]);
-
-        if (result.error) {
-
-            console.warn(
-                result.error
-            );
-
-        }
-
-    }
-    catch (error) {
-
-        console.warn(
-            error
-        );
-
-    }
-
-}
-
-
-
 function showSaving(saveButton) {
 
-    isSaving = true;
+    isSaving =
+        true;
 
     saveButton.disabled =
         true;
@@ -96,7 +21,8 @@ function showSaving(saveButton) {
 
 function hideSaving(saveButton) {
 
-    isSaving = false;
+    isSaving =
+        false;
 
     saveButton.disabled =
         false;
@@ -169,5 +95,83 @@ function getFormData() {
                 : []
 
     };
+
+}
+
+
+
+// Lấy đúng tên file (path trong bucket Storage) từ public URL
+function extractStoragePath(imageUrl) {
+
+    if (!imageUrl) {
+
+        return null;
+
+    }
+
+    const marker =
+        "/images/";
+
+    const index =
+        imageUrl.indexOf(
+            marker
+        );
+
+    if (index === -1) {
+
+        return null;
+
+    }
+
+    return imageUrl.slice(
+        index +
+        marker.length
+    );
+
+}
+
+
+
+// Xoá 1 file ảnh trong Storage theo public URL
+async function deleteStorageImage(imageUrl) {
+
+    const path =
+        extractStoragePath(
+            imageUrl
+        );
+
+    if (!path) {
+
+        return;
+
+    }
+
+    try {
+
+        const result =
+            await db.storage
+                .from(
+                    "images"
+                )
+                .remove([
+                    path
+                ]);
+
+        if (result.error) {
+
+            console.warn(
+                result.error
+            );
+
+        }
+
+    }
+    catch (error) {
+
+        console.warn(
+            error
+        );
+
+    }
 
 }
