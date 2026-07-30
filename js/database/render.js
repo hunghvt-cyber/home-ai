@@ -57,33 +57,6 @@ function formatDate(dateString) {
 
 
 
-function filterByRoom(roomName) {
-
-    const items =
-        allItems.filter(
-            item =>
-                item.room === roomName
-        );
-
-    renderItems(items);
-
-    const search =
-        document.getElementById(
-            "search"
-        );
-
-    if (search) {
-
-        search.value = "";
-
-    }
-
-}
-
-
-
-
-
 function renderTags(tags) {
 
     if (
