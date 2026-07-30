@@ -29,7 +29,7 @@ async function deleteItem(id) {
         // Xóa ảnh đại diện
         if (item.image_url) {
 
-            await deleteOldImage(
+            await deleteStorageImage(
                 item.image_url
             );
 
