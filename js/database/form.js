@@ -136,7 +136,9 @@ function clearForm() {
 
         showActionButtons({
 
-            addPhoto: false,
+            addCamera: false,
+
+            addGallery: false,
 
             skip: false,
 
