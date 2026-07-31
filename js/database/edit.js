@@ -84,7 +84,9 @@ function enterEditMode() {
 
     showActionButtons({
 
-        addPhoto: true,
+        addCamera: true,
+
+        addGallery: true,
 
         skip: false,
 
