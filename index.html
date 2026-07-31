@@ -89,7 +89,7 @@ style="display:none;">
 </button>
 
 <button onclick="openGallery()">
-🖼 Album
+🖼️ Album
 </button>
 
 <button onclick="analyzeImage()">
@@ -156,10 +156,17 @@ onclick="saveItem()">
 </button>
 
 <button
-id="addPhotoButton"
-onclick="openExtraPicker()"
+id="addCameraButton"
+onclick="openExtraCamera()"
 style="display:none;">
-➕ Thêm ảnh
+📷 Chụp thêm
+</button>
+
+<button
+id="addGalleryButton"
+onclick="openExtraGallery()"
+style="display:none;">
+🖼️ Thêm từ album
 </button>
 
 <button
@@ -177,7 +184,6 @@ style="display:none;">
 </button>
 
 </div>
-
 <input
 id="search"
 type="text"
