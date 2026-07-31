@@ -20,13 +20,34 @@ function openGallery() {
 
 }
 
-function openExtraPicker() {
+function openExtraCamera() {
 
-    document
-        .getElementById(
+    const input =
+        document.getElementById(
             "extraImageInput"
-        )
-        .click();
+        );
+
+    input.setAttribute(
+        "capture",
+        "environment"
+    );
+
+    input.click();
+
+}
+
+function openExtraGallery() {
+
+    const input =
+        document.getElementById(
+            "extraImageInput"
+        );
+
+    input.removeAttribute(
+        "capture"
+    );
+
+    input.click();
 
 }
 
@@ -105,11 +126,12 @@ function handleImage(event) {
         .innerHTML =
         "📷 " + file.name;
 
-    // Bắt đầu 1 món mới (chưa lưu) -> hiện nút Thêm ảnh / Bỏ qua
+    // Bắt đầu 1 món mới (chưa lưu) -> hiện nút Chụp thêm / Thêm album / Bỏ qua
     if (!editingItem) {
 
         showActionButtons({
-            addPhoto: true,
+            addCamera: true,
+            addGallery: true,
             skip: true,
             cancel: false
         });
@@ -118,7 +140,8 @@ function handleImage(event) {
     else {
 
         showActionButtons({
-            addPhoto: true,
+            addCamera: true,
+            addGallery: true,
             skip: false,
             cancel: true
         });
@@ -154,9 +177,14 @@ function handleExtraImage(event) {
 
 function showActionButtons(opts) {
 
-    const addBtn =
+    const addCameraBtn =
         document.getElementById(
-            "addPhotoButton"
+            "addCameraButton"
+        );
+
+    const addGalleryBtn =
+        document.getElementById(
+            "addGalleryButton"
         );
 
     const skipBtn =
@@ -169,10 +197,19 @@ function showActionButtons(opts) {
             "cancelButton"
         );
 
-    if (addBtn) {
+    if (addCameraBtn) {
 
-        addBtn.style.display =
-            opts.addPhoto
+        addCameraBtn.style.display =
+            opts.addCamera
+                ? "inline-block"
+                : "none";
+
+    }
+
+    if (addGalleryBtn) {
+
+        addGalleryBtn.style.display =
+            opts.addGallery
                 ? "inline-block"
                 : "none";
 
