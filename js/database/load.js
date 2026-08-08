@@ -1,5 +1,14 @@
 async function loadItems() {
 
+    if (
+        typeof runTrashAutoClean === "function"
+    ) {
+
+        await runTrashAutoClean();
+
+    }
+
+
     const result =
         await db
             .from("items")
