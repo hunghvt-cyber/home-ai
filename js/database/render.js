@@ -117,7 +117,7 @@ function renderCardExtraImages(images) {
 
 
 
-function renderItems(items = allItems) {
+function renderItems(items) {
 
     const list =
         document.getElementById(
@@ -130,9 +130,20 @@ function renderItems(items = allItems) {
 
     }
 
+    // Không truyền items -> mặc định KHÔNG hiện món trong Thùng rác
+    const source =
+        items ||
+        allItems.filter(
+            item =>
+                item.room !== TRASH_ROOM_NAME
+        );
+
     let html = "";
 
-    items.forEach(item => {
+    source.forEach(item => {
+
+        const isTrash =
+            item.room === TRASH_ROOM_NAME;
 
         const tags =
             renderTags(
@@ -143,6 +154,19 @@ function renderItems(items = allItems) {
             renderCardExtraImages(
                 item.extraImages
             );
+
+        const actionButtons =
+            isTrash
+                ? `
+<button onclick="restoreItem('${item.id}')">♻️</button>
+
+<button onclick="permanentlyDeleteItem('${item.id}')">❌</button>
+`
+                : `
+<button onclick="editItem('${item.id}')">✏️</button>
+
+<button onclick="deleteItem('${item.id}')">🗑</button>
+`;
 
         html += `
 
@@ -204,19 +228,7 @@ ${tags}
 
 <div class="buttonRow">
 
-<button
-onclick="editItem('${item.id}')">
-
-✏️
-
-</button>
-
-<button
-onclick="deleteItem('${item.id}')">
-
-🗑
-
-</button>
+${actionButtons}
 
 </div>
 
