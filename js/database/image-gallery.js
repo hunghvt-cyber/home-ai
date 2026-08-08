@@ -110,7 +110,7 @@ function renderExistingExtraImages(images) {
         html +=
             '<div class="extraThumb">' +
             '<img src="' +
-            img.image_url +
+            escapeHtml(img.image_url) +
             '">' +
             "</div>";
 
@@ -166,7 +166,7 @@ function renderPendingExtraImages() {
             html +=
                 '<div class="extraThumb">' +
                 '<img src="' +
-                url +
+                escapeHtml(url) +
                 '">' +
                 '<button type="button" onclick="removePendingExtraImage(' +
                 index +
