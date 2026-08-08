@@ -124,7 +124,6 @@ function getFormData() {
 
 
 
-// Lấy đúng tên file (path trong bucket Storage) từ public URL
 function extractStoragePath(imageUrl) {
 
     if (!imageUrl) {
@@ -156,7 +155,7 @@ function extractStoragePath(imageUrl) {
 
 
 
-// Xoá 1 file ảnh trong Storage theo public URL
+// Xoá 1 file ảnh trong Storage theo public URL, có log chi tiết lỗi nếu thất bại
 async function deleteStorageImage(imageUrl) {
 
     const path =
@@ -165,6 +164,11 @@ async function deleteStorageImage(imageUrl) {
         );
 
     if (!path) {
+
+        console.warn(
+            "⚠️ [Storage Delete Skipped]: Không trích xuất được path từ URL ->",
+            imageUrl
+        );
 
         return;
 
@@ -183,7 +187,9 @@ async function deleteStorageImage(imageUrl) {
 
         if (result.error) {
 
-            console.warn(
+            console.error(
+                "❌ [Storage Delete Failed]: Lỗi khi xóa file ->",
+                path,
                 result.error
             );
 
@@ -192,7 +198,9 @@ async function deleteStorageImage(imageUrl) {
     }
     catch (error) {
 
-        console.warn(
+        console.error(
+            "❌ [Storage Delete Exception]: Lỗi ngoại lệ khi xóa file ->",
+            path,
             error
         );
 
