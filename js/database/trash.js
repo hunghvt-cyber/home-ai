@@ -202,7 +202,7 @@ async function emptyTrash() {
 
 
 // Tự động dọn các món đã nằm trong Thùng rác quá 30 ngày.
-// Gọi mỗi khi mở app / tải danh sách (không có cron thật vì đây là site tĩnh).
+// Tối ưu gộp query bằng .in() tránh N+1.
 async function runTrashAutoClean() {
 
     const cutoff =
@@ -238,33 +238,47 @@ async function runTrashAutoClean() {
     const oldItems =
         result.data || [];
 
-    for (const row of oldItems) {
+    if (oldItems.length === 0) {
+
+        return;
+
+    }
+
+    const ids = oldItems.map(row => row.id);
+
+    // Lấy toàn bộ thông tin các món cần dọn trong 1 query duy nhất
+    const detailsResult =
+        await db
+            .from("items")
+            .select("*")
+            .in("id", ids);
+
+    if (detailsResult.error) {
+
+        console.warn(
+            detailsResult.error
+        );
+
+        return;
+
+    }
+
+    const itemsToDelete = detailsResult.data || [];
+
+    for (const item of itemsToDelete) {
 
         try {
 
-            const detail =
-                await db
-                    .from("items")
-                    .select("*")
-                    .eq(
-                        "id",
-                        row.id
-                    )
-                    .single();
-
-            if (
-                detail.data &&
-                detail.data.image_url
-            ) {
+            if (item.image_url) {
 
                 await deleteStorageImage(
-                    detail.data.image_url
+                    item.image_url
                 );
 
             }
 
             await deleteAllItemImagesStorage(
-                row.id
+                item.id
             );
 
             await db
@@ -272,7 +286,7 @@ async function runTrashAutoClean() {
                 .delete()
                 .eq(
                     "id",
-                    row.id
+                    item.id
                 );
 
         }
