@@ -91,12 +91,12 @@ function renderRoomStats() {
 
 <div
 class="buttonRow"
-onclick="filterByRoom('${room}')"
+onclick="filterByRoom('${escapeHtml(room)}')"
 style="cursor:pointer">
 
 
 <span>
-🏠 ${room}
+🏠 ${escapeHtml(room)}
 </span>
 
 
