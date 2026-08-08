@@ -72,7 +72,7 @@ function renderTags(tags) {
     return tags
         .map(
             tag =>
-                `<span class="tag">${tag}</span>`
+                `<span class="tag">${escapeHtml(tag)}</span>`
         )
         .join("");
 
@@ -100,9 +100,9 @@ function renderCardExtraImages(images) {
 
         html +=
             '<img src="' +
-            img.image_url +
+            escapeHtml(img.image_url) +
             '" loading="lazy" onclick="window.open(\'' +
-            img.image_url +
+            escapeHtml(img.image_url) +
             '\',\'_blank\')">';
 
     });
@@ -158,14 +158,14 @@ function renderItems(items) {
         const actionButtons =
             isTrash
                 ? `
-<button onclick="restoreItem('${item.id}')">♻️</button>
+<button onclick="restoreItem('${escapeHtml(item.id)}')">♻️</button>
 
-<button onclick="permanentlyDeleteItem('${item.id}')">❌</button>
+<button onclick="permanentlyDeleteItem('${escapeHtml(item.id)}')">❌</button>
 `
                 : `
-<button onclick="editItem('${item.id}')">✏️</button>
+<button onclick="editItem('${escapeHtml(item.id)}')">✏️</button>
 
-<button onclick="deleteItem('${item.id}')">🗑</button>
+<button onclick="deleteItem('${escapeHtml(item.id)}')">🗑</button>
 `;
 
         html += `
@@ -175,9 +175,9 @@ function renderItems(items) {
 <div class="cardImage">
 
 <img
-src="${item.image_url}"
+src="${escapeHtml(item.image_url)}"
 loading="lazy"
-onclick="window.open('${item.image_url}','_blank')">
+onclick="window.open('${escapeHtml(item.image_url)}','_blank')">
 
 </div>
 
@@ -185,13 +185,13 @@ onclick="window.open('${item.image_url}','_blank')">
 
 <h3>
 
-📦 ${item.name}
+📦 ${escapeHtml(item.name)}
 
 </h3>
 
 <p class="description">
 
-${item.description || ""}
+${escapeHtml(item.description || "")}
 
 </p>
 
@@ -202,15 +202,15 @@ ${extraImages}
 🏠
 <span
 class="roomBadge"
-onclick="filterByRoom('${item.room}')">
+onclick="filterByRoom('${escapeHtml(item.room)}')">
 
-${item.room || "Chưa có phòng"}
+${escapeHtml(item.room || "Chưa có phòng")}
 
 </span>
 
 &nbsp;&nbsp;
 
-📍 ${item.location || "-"}
+📍 ${escapeHtml(item.location || "-")}
 
 </p>
 
