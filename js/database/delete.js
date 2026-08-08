@@ -1,8 +1,17 @@
+// js/database/delete.js
+// Xoá 1 món = chuyển vào phòng "Thùng rác" (xoá mềm),
+// không xoá thật dữ liệu/ảnh. Xoá vĩnh viễn nằm ở trash.js
+
+const TRASH_ROOM_NAME =
+    "Thùng rác";
+
+
+
 async function deleteItem(id) {
 
     const ok =
         confirm(
-            "Xóa món đồ này?"
+            "Chuyển món này vào Thùng rác?"
         );
 
     if (!ok) {
@@ -26,25 +35,21 @@ async function deleteItem(id) {
 
         }
 
-        // Xóa ảnh đại diện
-        if (item.image_url) {
-
-            await deleteStorageImage(
-                item.image_url
-            );
-
-        }
-
-        // Xóa toàn bộ ảnh phụ
-        await deleteAllItemImagesStorage(
-            id
-        );
-
-        // Xóa dữ liệu
         const result =
             await db
                 .from("items")
-                .delete()
+                .update({
+
+                    previous_room:
+                        item.room || "",
+
+                    room:
+                        TRASH_ROOM_NAME,
+
+                    trashed_at:
+                        new Date().toISOString()
+
+                })
                 .eq(
                     "id",
                     id
@@ -59,7 +64,7 @@ async function deleteItem(id) {
         await loadItems();
 
         showMessage(
-            "🗑 Đã xóa."
+            "🗑 Đã chuyển vào Thùng rác."
         );
 
     }
