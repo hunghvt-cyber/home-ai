@@ -1,5 +1,5 @@
 // js/database/trash.js
-// Khôi phục / Xoá vĩnh viễn / Làm sạch / Tự động dọn Thùng rác
+// Khôi phục / Xoá vĩnh viễn / Làm sạch / Tự động dọn Thùng rác & File rác Storage
 
 
 // Xoá vĩnh viễn 1 món (ảnh đại diện + ảnh phụ + bản ghi item)
@@ -141,7 +141,117 @@ async function restoreItem(id) {
 }
 
 
-// Xoá vĩnh viễn TOÀN BỘ món trong Thùng rác
+// Quét và xóa toàn bộ file ảnh tồn đọng trên Storage không còn liên kết với món đồ nào
+async function cleanOrphanedStorageFiles() {
+
+    try {
+
+        // 1. Lấy toàn bộ URL ảnh đang sử dụng trong bảng items và item_images
+        const { data: mainItems } =
+            await db
+                .from("items")
+                .select("image_url");
+
+        const { data: extraItems } =
+            await db
+                .from("item_images")
+                .select("image_url");
+
+        const activePaths = new Set();
+
+        (mainItems || []).forEach(item => {
+
+            const path = extractStoragePath(item.image_url);
+
+            if (path) {
+
+                activePaths.add(path);
+
+            }
+
+        });
+
+        (extraItems || []).forEach(item => {
+
+            const path = extractStoragePath(item.image_url);
+
+            if (path) {
+
+                activePaths.add(path);
+
+            }
+
+        });
+
+        // 2. Lấy danh sách file đang có trong bucket 'images' trên Storage
+        const storageList =
+            await db.storage
+                .from("images")
+                .list("", { limit: 1000 });
+
+        if (storageList.error || !storageList.data) {
+
+            console.warn(
+                "⚠️ Không lấy được danh sách file Storage:",
+                storageList.error
+            );
+
+            return 0;
+
+        }
+
+        // 3. Lọc ra các file mồ côi (có trên Storage nhưng không có trong DB)
+        const orphanedPaths =
+            storageList.data
+                .map(file => file.name)
+                .filter(fileName => !activePaths.has(fileName));
+
+        if (orphanedPaths.length === 0) {
+
+            return 0;
+
+        }
+
+        // 4. Tiến hành xóa các file rác khỏi Storage
+        const deleteResult =
+            await db.storage
+                .from("images")
+                .remove(orphanedPaths);
+
+        if (deleteResult.error) {
+
+            console.warn(
+                "⚠️ Lỗi khi dọn file rác Storage:",
+                deleteResult.error
+            );
+
+            return 0;
+
+        }
+
+        console.log(
+            `🧹 [Storage Clean]: Đã dọn ${orphanedPaths.length} file rác mồ côi:`,
+            orphanedPaths
+        );
+
+        return orphanedPaths.length;
+
+    }
+    catch (error) {
+
+        console.warn(
+            "⚠️ Ngoại lệ khi quét file rác Storage:",
+            error
+        );
+
+        return 0;
+
+    }
+
+}
+
+
+// Xoá vĩnh viễn TOÀN BỘ món trong Thùng rác + Dọn sạch file rác đọng trên Storage
 async function emptyTrash() {
 
     const trashedItems =
@@ -150,21 +260,9 @@ async function emptyTrash() {
                 item.room === TRASH_ROOM_NAME
         );
 
-    if (trashedItems.length === 0) {
-
-        showMessage(
-            "🧹 Thùng rác đang trống."
-        );
-
-        return;
-
-    }
-
     const ok =
         confirm(
-            "Xoá vĩnh viễn toàn bộ " +
-            trashedItems.length +
-            " món trong Thùng rác?"
+            "Xoá vĩnh viễn toàn bộ món trong Thùng rác và quét dọn toàn bộ ảnh rác tồn đọng trên Storage?"
         );
 
     if (!ok) {
@@ -173,6 +271,9 @@ async function emptyTrash() {
 
     }
 
+    let deletedCount = 0;
+
+    // 1. Xóa toàn bộ các món nằm trong Thùng rác
     for (const item of trashedItems) {
 
         try {
@@ -180,6 +281,8 @@ async function emptyTrash() {
             await hardDeleteById(
                 item.id
             );
+
+            deletedCount++;
 
         }
         catch (error) {
@@ -192,11 +295,21 @@ async function emptyTrash() {
 
     }
 
+    // 2. Quét dọn các file ảnh rác tồn đọng trên Storage
+    const cleanedFilesCount =
+        await cleanOrphanedStorageFiles();
+
     await loadItems();
 
-    showMessage(
-        "🧹 Đã làm sạch Thùng rác."
-    );
+    let msg = "🧹 Đã làm sạch Thùng rác.";
+
+    if (deletedCount > 0 || cleanedFilesCount > 0) {
+
+        msg += `\n- Đã xóa ${deletedCount} món đồ.\n- Đã dọn ${cleanedFilesCount} file rác đọng trên Storage.`;
+
+    }
+
+    showMessage(msg);
 
 }
 
