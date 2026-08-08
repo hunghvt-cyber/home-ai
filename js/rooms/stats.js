@@ -16,6 +16,13 @@ function getRoomStats() {
     allItems.forEach(item => {
 
 
+        if (item.room === TRASH_ROOM_NAME) {
+
+            return;
+
+        }
+
+
         const room =
             item.room &&
             item.room.trim() !== ""
