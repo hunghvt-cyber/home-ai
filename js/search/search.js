@@ -63,6 +63,15 @@ function initSearch() {
                 renderItems(items);
 
 
+                if (
+                    typeof updateEmptyTrashButtonVisibility === "function"
+                ) {
+
+                    updateEmptyTrashButtonVisibility();
+
+                }
+
+
             }
 
         );
