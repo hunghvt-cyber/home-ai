@@ -88,6 +88,15 @@ ${r.name}
 
         });
 
+        // Thùng rác luôn có sẵn, không nằm trong bảng rooms
+        // -> không xoá/đổi tên được, chỉ chọn để xem
+        roomFilter.innerHTML +=
+        `
+<option value="${TRASH_ROOM_NAME}">
+🗑️ Thùng rác
+</option>
+`;
+
     }
 
 }
@@ -231,6 +240,17 @@ async function addRoom() {
     }
 
 
+    if (name === TRASH_ROOM_NAME) {
+
+        showMessage(
+            "❌ Tên phòng này được dùng riêng cho Thùng rác."
+        );
+
+        return;
+
+    }
+
+
 
     const result =
         await db
@@ -311,6 +331,17 @@ async function renameRoom(id) {
 
     const name =
         newName.trim();
+
+
+    if (name === TRASH_ROOM_NAME) {
+
+        showMessage(
+            "❌ Tên phòng này được dùng riêng cho Thùng rác."
+        );
+
+        return;
+
+    }
 
 
 
