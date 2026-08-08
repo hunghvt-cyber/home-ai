@@ -62,9 +62,9 @@ function filterItems(keyword) {
 
 
         const matchRoom =
-            roomFilter === "" ||
-
-            item.room === roomFilter;
+            roomFilter === ""
+                ? item.room !== TRASH_ROOM_NAME
+                : item.room === roomFilter;
 
 
 
