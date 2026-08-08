@@ -57,8 +57,8 @@ function updateRoomSelects() {
 
             room.innerHTML +=
             `
-<option value="${r.name}">
-${r.name}
+<option value="${escapeHtml(r.name)}">
+${escapeHtml(r.name)}
 </option>
 `;
 
@@ -81,8 +81,8 @@ ${r.name}
 
             roomFilter.innerHTML +=
             `
-<option value="${r.name}">
-${r.name}
+<option value="${escapeHtml(r.name)}">
+${escapeHtml(r.name)}
 </option>
 `;
 
@@ -92,7 +92,7 @@ ${r.name}
         // -> không xoá/đổi tên được, chỉ chọn để xem
         roomFilter.innerHTML +=
         `
-<option value="${TRASH_ROOM_NAME}">
+<option value="${escapeHtml(TRASH_ROOM_NAME)}">
 🗑️ Thùng rác
 </option>
 `;
@@ -133,12 +133,12 @@ function renderRoomManager() {
 
 
 <span style="flex:1">
-🏠 ${r.name}
+🏠 ${escapeHtml(r.name)}
 </span>
 
 
 <button
-onclick="renameRoom('${r.id}')">
+onclick="renameRoom('${escapeHtml(r.id)}')">
 
 ✏️
 
@@ -146,7 +146,7 @@ onclick="renameRoom('${r.id}')">
 
 
 <button
-onclick="deleteRoom('${r.id}')">
+onclick="deleteRoom('${escapeHtml(r.id)}')">
 
 🗑
 
@@ -257,7 +257,7 @@ async function addRoom() {
             .from("rooms")
             .insert([
                 {
-                    name:name
+                    name: name
                 }
             ]);
 
@@ -351,7 +351,7 @@ async function renameRoom(id) {
             .from("items")
             .update({
 
-                room:name
+                room: name
 
             })
             .eq(
@@ -382,7 +382,7 @@ async function renameRoom(id) {
             .from("rooms")
             .update({
 
-                name:name
+                name: name
 
             })
             .eq(
