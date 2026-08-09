@@ -1,10 +1,16 @@
-// js/database/save-utils.js -> Hàm tiện ích
+// js/database/save-utils.js -> Hàm tiện ích & Bảo mật DOMPurify
 
 function escapeHtml(text) {
 
     if (text === null || text === undefined) {
 
         return "";
+
+    }
+
+    if (typeof DOMPurify !== "undefined") {
+
+        return DOMPurify.sanitize(String(text));
 
     }
 
@@ -155,7 +161,6 @@ function extractStoragePath(imageUrl) {
 
 
 
-// Xoá 1 file ảnh trong Storage theo public URL, có log chi tiết lỗi nếu thất bại
 async function deleteStorageImage(imageUrl) {
 
     const path =
