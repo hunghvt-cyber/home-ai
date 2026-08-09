@@ -51,6 +51,24 @@ button{
     gap:8px;
     align-items:center;
     margin-top:8px;
+    flex-wrap:wrap;
+}
+
+.btnHighlight{
+    background:#0288d1;
+    color:#fff;
+    font-weight:bold;
+}
+
+.btnSuccess{
+    background:#2e7d32;
+    color:#fff;
+    font-weight:bold;
+}
+
+.btnSecondary{
+    background:#757575;
+    color:#fff;
 }
 
 #room,
@@ -200,7 +218,8 @@ button{
         font-size:13px;
     }
 }
-/* ===== Ảnh phụ (nhiều ảnh cho 1 món) ===== */
+
+/* ===== Ảnh phụ ===== */
 
 .extraStrip{
     display:flex;
@@ -234,8 +253,6 @@ button{
     color:#fff;
 }
 
-/* ===== Ảnh phụ hiển thị trong thẻ danh sách (chỉ xem) ===== */
-
 .cardExtraStrip{
     display:flex;
     gap:6px;
@@ -250,4 +267,125 @@ button{
     border-radius:6px;
     cursor:pointer;
     flex:0 0 48px;
+}
+
+/* ===== Batch & Burst UI ===== */
+
+.batchLocationBox{
+    background:#e1f5fe;
+    padding:12px;
+    border-radius:10px;
+    margin:10px 0;
+    border:1px solid #b3e5fc;
+}
+
+.batchLocationBox label{
+    font-size:14px;
+    color:#0277bd;
+}
+
+.burstStatusBox{
+    background:#fff3e0;
+    border:1px solid #ffe0b2;
+    padding:10px;
+    border-radius:8px;
+    margin-top:8px;
+}
+
+#burstStatusText{
+    font-size:14px;
+    font-weight:bold;
+    color:#e65100;
+}
+
+.progressBar{
+    width:100%;
+    height:8px;
+    background:#ffe0b2;
+    border-radius:4px;
+    margin-top:6px;
+    overflow:hidden;
+}
+
+.progressFill{
+    height:100%;
+    width:0%;
+    background:#ff9800;
+    transition:width .3s ease;
+}
+
+/* Modal Overlay */
+
+.modalOverlay{
+    position:fixed;
+    top:0;
+    left:0;
+    right:0;
+    bottom:0;
+    background:rgba(0,0,0,0.6);
+    z-index:99999;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:15px;
+}
+
+.modalContent{
+    background:#fff;
+    width:100%;
+    max-width:550px;
+    max-height:85vh;
+    border-radius:14px;
+    padding:16px;
+    display:flex;
+    flex-direction:column;
+    box-shadow:0 8px 24px rgba(0,0,0,0.2);
+}
+
+.modalSubtext{
+    font-size:13px;
+    color:#666;
+    margin:-4px 0 10px;
+}
+
+.batchList{
+    overflow-y:auto;
+    flex:1;
+    margin:10px 0;
+    padding-right:4px;
+}
+
+.batchItemCard{
+    display:flex;
+    gap:10px;
+    align-items:center;
+    background:#f9f9f9;
+    padding:8px 10px;
+    border-radius:8px;
+    margin-bottom:8px;
+    border:1px solid #eee;
+}
+
+.batchItemCard img{
+    width:60px;
+    height:60px;
+    object-fit:cover;
+    border-radius:6px;
+}
+
+.batchItemInfo{
+    flex:1;
+}
+
+.batchItemInfo input{
+    margin:2px 0;
+    min-height:36px;
+    font-size:14px;
+}
+
+.modalFooter{
+    justify-content:flex-end;
+    margin-top:10px;
+    border-top:1px solid #eee;
+    padding-top:10px;
 }
