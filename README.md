@@ -1,73 +1,72 @@
-# Storage & Forget
+# 🏠 Home AI - Storage & Forget
 
-Storage & Forget là một web app giúp lưu trữ và quản lý vị trí đồ dùng trong nhà bằng AI.
+> **Ứng dụng quản lý đồ đạc gia đình thông minh hỗ trợ AI Vision đa chế độ, quét mã QR/Barcode và tối ưu dọn dẹp bộ nhớ.**
 
-Người dùng có thể chụp ảnh hoặc chọn ảnh, để AI nhận diện đồ vật, sau đó lưu thông tin vào cơ sở dữ liệu và tìm kiếm lại khi cần.
-
----
-
-## ✨ Tính năng
-
-- 📷 Chụp ảnh hoặc chọn ảnh từ thư viện
-- 🤖 AI Vision nhận diện đồ vật
-- 💬 AI Chat hỗ trợ hỏi đáp
-- 💾 Lưu dữ liệu lên Supabase
-- 🔍 Tìm kiếm theo tên hoặc vị trí
-- 🏷️ Quản lý phòng và vị trí lưu trữ
-- 🗑️ Chỉnh sửa và xóa dữ liệu
-- 📱 Giao diện tối ưu cho điện thoại
+Home AI (Storage & Forget) là ứng dụng web giúp bạn theo dõi vị trí cất giữ đồ đạc trong gia đình một cách nhanh chóng, trực quan. Nhờ sự hỗ trợ của Google Gemini Vision, ứng dụng có thể tự động phân tích tên đồ đạc, gợi ý vị trí, thẻ đánh dấu (tags) và sắp xếp vào phòng thích hợp.
 
 ---
 
-## 🛠️ Tech Stack
+## ✨ Tính năng nổi bật
 
-### Frontend
+### 🤖 AI Vision & Nhận diện thông minh
+- **Chụp 1 món (Single Scan)**: Nhận diện chi tiết món đồ, tự chọn phòng, gợi ý vị trí và tags.
+- **📸 Multi-Scan (Nhận diện đa vật thể)**: Tự động phát hiện và tách tối đa 10 món đồ riêng biệt từ một bức ảnh chụp chung (mặt bàn, hộc tủ). Dùng chung 1 file ảnh gốc để tối ưu dung lượng Storage.
+- **⚡ Burst Mode (Chụp liên tục song song)**: Chụp hàng loạt nhiều ảnh, xử lý ngầm song song theo cụm 3 ảnh (`BURST_CONCURRENCY = 3`) với thanh tiến trình trực quan.
+- **Duyệt Batch Modal**: Cho phép kiểm tra, đổi tên, chỉnh sửa tag/mô tả và chọn/bỏ chọn danh sách món đồ trước khi lưu hàng loạt vào vị trí mặc định.
 
-- HTML
-- CSS
-- JavaScript (Vanilla)
+### 📷 Quản lý ảnh & Trải nghiệm UX
+- **Compressor.js**: Tự động xoay chuẩn EXIF và nén ảnh định dạng `.webp` trước khi tải lên, tiết kiệm 80-90% dung lượng.
+- **Viewer.js**: Trình phóng to, xoay và xem chi tiết danh sách ảnh toàn màn hình mượt mà.
+- **SortableJS**: Kéo thả sắp xếp thứ tự danh sách ảnh phụ trực quan.
+- **Thêm nhiều ảnh phụ**: Cho phép chụp/thêm nhiều ảnh góc quay khác nhau cho cùng một món đồ.
 
-### Backend
+### 🔍 Tìm kiếm & Quản lý vị trí
+- **📷 Quét mã QR / Barcode**: Tích hợp camera quét mã vạch hoặc mã QR để tìm kiếm nhanh sản phẩm.
+- **Tìm kiếm & Lọc tức thì**: Tìm kiếm theo tên, tag, vị trí và lọc danh sách theo từng phòng hoặc Thùng rác.
+- **Quản lý phòng & Thống kê**: Thêm, sửa tên, xóa phòng và xem số lượng món đồ đang cất giữ theo từng khu vực.
 
-- Supabase Database
-- Supabase Storage
-- Vercel Serverless Function (gọi Gemini API)
-
-### AI
-
-- Google Gemini API
-
-### Deployment
-
-- GitHub Pages (Frontend)
-- Vercel (Backend / AI)
-
----
-
-## 📚 Documentation
-
-Toàn bộ tài liệu nằm trong thư mục `docs/`.
-
-- README_INDEX.md
-- ARCHITECTURE.md
-- DEVELOPMENT.md
-- LESSONS_LEARNED.md
-- CHANGELOG.md
-- ROADMAP.md
-- DATABASE.md
-- AI.md
-- DEPLOYMENT.md
+### 🗑️ Thùng rác & Dọn dẹp tự động
+- **Soft Delete**: Chuyển món đồ vào Thùng rác và lưu vết phòng cũ (`previous_room`) để dễ dàng khôi phục.
+- **Dọn dẹp file mồ côi (`cleanOrphanedStorageFiles`)**: Tự động quét dọn toàn bộ tệp ảnh dư thừa trên Supabase Storage không còn liên kết với dữ liệu.
+- **Xóa tự động 30 ngày**: Tự động dọn dẹp các mục nằm trong Thùng rác quá 30 ngày.
 
 ---
 
-## 🚀 Roadmap
+## 🏗️ Kiến trúc ứng dụng
 
-Xem tại:
-
-`docs/ROADMAP.md`
+Frontend (GitHub Pages - HTML5/CSS3/Vanilla JS)
+│
+├─► Supabase Client ──────► PostgreSQL Database + Storage
+│
+└─► Secret Header Proxy ──► Vercel Serverless Function (api/gemini.js)
+│
+▼
+Google Gemini API
 
 ---
 
-## 📄 License
+## 🛠️ Công nghệ sử dụng
 
-Dự án phục vụ mục đích học tập và sử dụng cá nhân.
+- **Frontend**: Vanilla JavaScript (ES6+), HTML5, CSS3.
+- **Thư viện UI/UX**:
+  - `Toastify.js` & `SweetAlert2`: Hộp thoại và thông báo toast hiện đại.
+  - `DOMPurify`: Bảo mật chống Stored XSS tuyệt đối.
+  - `Compressor.js`: Nén ảnh WebP phía Client.
+  - `Viewer.js`: Trình xem gallery ảnh.
+  - `SortableJS`: Kéo thả re-order ảnh.
+  - `html5-qrcode`: Quét mã QR/Barcode qua Camera.
+- **Backend AI Proxy**: Vercel Serverless Function (Node.js).
+- **AI Model**: Google Gemini (`gemini-flash-latest`).
+- **Database & Storage**: Supabase (PostgreSQL & Storage Buckets).
+
+---
+
+## 🚀 Hướng dẫn cài đặt & Triển khai
+
+### 1. Cấu hình Frontend
+Sửa file `js/config.js` với thông tin Supabase và secret header proxy của bạn:
+```javascript
+const SUPABASE_URL = "[https://your-supabase-project.supabase.co](https://your-supabase-project.supabase.co)";
+const SUPABASE_KEY = "your-supabase-publishable-key";
+const GEMINI_API_URL = "[https://your-vercel-domain.vercel.app/api/gemini](https://your-vercel-domain.vercel.app/api/gemini)";
+const APP_SECRET = "your-app-secret-key"; // Phải trùng với biến môi trường Vercel
