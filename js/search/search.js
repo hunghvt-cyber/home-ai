@@ -1,5 +1,7 @@
 // js/search/search.js
 
+let html5QrCodeScanner = null;
+
 function debounce(func, delay = 250) {
 
     let timeout;
@@ -16,8 +18,6 @@ function debounce(func, delay = 250) {
     };
 
 }
-
-
 
 function initSearch() {
 
@@ -74,6 +74,86 @@ function initSearch() {
 
             }
         );
+
+    }
+
+}
+
+function startQRScanner() {
+
+    const modal =
+        document.getElementById("qrModal");
+
+    if (modal) {
+
+        modal.style.display = "flex";
+
+    }
+
+    if (typeof Html5Qrcode !== "undefined") {
+
+        if (!html5QrCodeScanner) {
+
+            html5QrCodeScanner = new Html5Qrcode("qrReader");
+
+        }
+
+        html5QrCodeScanner.start(
+            { facingMode: "environment" },
+            {
+                fps: 10,
+                qrbox: { width: 220, height: 220 }
+            },
+            (decodedText) => {
+
+                const searchInput = document.getElementById("search");
+
+                if (searchInput) {
+
+                    searchInput.value = decodedText;
+
+                    const items = filterItems(decodedText);
+
+                    renderItems(items);
+
+                }
+
+                stopQRScanner();
+
+                showMessage("📷 Đã quét: " + decodedText);
+
+            },
+
+            (errorMessage) => {
+
+                // Đang quét ngầm
+
+            }
+        ).catch(err => {
+
+            showMessage("❌ Không mở được camera: " + err, "error");
+
+            stopQRScanner();
+
+        });
+
+    }
+
+}
+
+function stopQRScanner() {
+
+    const modal = document.getElementById("qrModal");
+
+    if (modal) {
+
+        modal.style.display = "none";
+
+    }
+
+    if (html5QrCodeScanner) {
+
+        html5QrCodeScanner.stop().catch(err => console.warn(err));
 
     }
 
