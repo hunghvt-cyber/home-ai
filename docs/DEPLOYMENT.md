@@ -1,182 +1,53 @@
-# Deployment
+# Deployment Guide
 
-Storage & Forget được thiết kế để có thể triển khai hoàn toàn miễn phí và có thể quản lý ngay trên điện thoại.
-
-Trong quá trình phát triển, kiến trúc triển khai đã thay đổi nhiều lần để cân bằng giữa chi phí, bảo mật và sự tiện lợi.
+Storage & Forget được thiết kế để triển khai hoàn toàn miễn phí, dễ quản lý và cập nhật nhanh chóng ngay cả trên thiết bị di động.
 
 ---
 
 # Kiến trúc triển khai
-
-```
-GitHub
-      │
-      ▼
-GitHub Pages
-      │
-      ▼
-Browser
-      │
-      ├──────────────────────┐
-      ▼                      ▼
-Supabase               Vercel Serverless Function
-      │                      │
-PostgreSQL + Storage         ▼
-                        Google Gemini
-```
+GitHub Repository (hunghvt-cyber-home-ai)
+│
+├──────────────────────────────┐
+▼                              ▼
+GitHub Pages                    Vercel Platform
+(Web tĩnh Frontend)             (Serverless Proxy api/gemini.js)
+│                              │
+├─► Supabase (PostgreSQL/Storage)
+└─► Vercel Proxy ────────────► Google Gemini API
 
 ---
 
-# Frontend
+# 1. Triển khai Frontend (GitHub Pages)
 
-Frontend được deploy bằng GitHub Pages.
-
-Ưu điểm:
-
-- Miễn phí.
-- Dễ cập nhật.
-- Chỉ cần push lên GitHub.
-- Không cần máy chủ riêng.
-- Phù hợp với ứng dụng HTML, CSS và JavaScript.
+1. Đẩy toàn bộ mã nguồn lên nhánh chính (`main` hoặc `master`) trên GitHub.
+2. Tại GitHub Repository, truy cập **Settings** -> **Pages**.
+3. Ở mục **Source**, chọn **Deploy from a branch** và chọn nhánh `main` / thư mục `root`.
+4. Bấm **Save**. Trang web sẽ được cập nhật tại địa chỉ: `https://<username>.github.io/<repo-name>/`.
 
 ---
 
-# Backend
+# 2. Triển khai Backend AI Proxy (Vercel)
 
-Backend AI sử dụng Vercel Serverless Function (`api/gemini.js`).
-
-Vai trò:
-
-- Gọi Gemini API.
-- Bảo vệ API Key.
-- Xử lý Prompt.
-- Chuẩn hóa phản hồi.
-- Làm cầu nối giữa Frontend và AI.
+1. Đăng nhập vào [Vercel Dashboard](https://vercel.com) và chọn **Add New** -> **Project**.
+2. Kết nối với GitHub Repository `hunghvt-cyber-home-ai`.
+3. Vercel sẽ tự động nhận diện thư mục `api/` dưới dạng các Node.js Serverless Functions.
+4. Vào mục **Environment Variables** trên Vercel và thiết lập 2 biến môi trường bắt buộc:
+   - `GEMINI_API_KEY`: API Key lấy từ Google AI Studio.
+   - `APP_SECRET`: Mã bí mật tùy chọn do bạn đặt để chống spam endpoint.
+5. Nhấn **Deploy**.
 
 ---
 
-# Vercel
+# 3. Cấu hình file `js/config.js` ở Frontend
 
-Vercel là nền tảng chính để triển khai backend AI.
+Mở file `js/config.js` trên repo và cập nhật chính xác các giá trị tương ứng:
 
-Lý do:
+```javascript
+const SUPABASE_URL = "[https://dypqawaqlrthhfxnmxom.supabase.co](https://dypqawaqlrthhfxnmxom.supabase.co)";
+const SUPABASE_KEY = "sb_publishable_tZwvgJDIo89qG7sqp5oIJg_GoFa8qMG";
 
-- Có thể deploy ngay trên điện thoại, không cần máy tính.
-- Thiết lập nhanh, chỉ cần push lên GitHub là tự deploy.
-- Dashboard quản lý biến môi trường (API Key) dễ dùng trên trình duyệt điện thoại.
+// URL trang Vercel sau khi deploy thành công
+const GEMINI_API_URL = "[https://your-vercel-app.vercel.app/api/gemini](https://your-vercel-app.vercel.app/api/gemini)";
 
-Dự án từng thử nghiệm chuyển backend sang Supabase Edge Functions (dùng CLI để deploy), nhưng vì toàn bộ quá trình phát triển diễn ra trên điện thoại (không có PC), quy trình đó bất tiện hơn so với Vercel. Vì vậy Vercel được giữ lại làm backend chính, và phần code thử nghiệm trên Supabase Edge Functions đã được gỡ bỏ khỏi repo để tránh gây nhầm lẫn.
-
----
-
-# Supabase
-
-Supabase là nền tảng trung tâm cho dữ liệu của ứng dụng.
-
-Bao gồm:
-
-- PostgreSQL Database
-- Storage
-
-Backend AI (Gemini) không nằm trên Supabase mà nằm trên Vercel — xem phần "Vercel" ở trên.
-
----
-
-# Quy trình triển khai
-
-```
-Code
-
-↓
-
-GitHub
-
-↓
-
-GitHub Pages
-
-↓
-
-Người dùng
-```
-
-Đối với AI:
-
-```
-Frontend
-
-↓
-
-Vercel Serverless Function
-
-↓
-
-Gemini
-
-↓
-
-Frontend
-```
-
----
-
-# Quy trình cập nhật
-
-Mỗi lần cập nhật:
-
-1. Chỉnh sửa mã nguồn.
-2. Commit lên GitHub.
-3. GitHub Pages tự động cập nhật Frontend.
-4. Vercel tự động deploy lại nếu thư mục `api/` thay đổi.
-
----
-
-# Triển khai bằng điện thoại
-
-Một mục tiêu quan trọng của dự án là hạn chế phụ thuộc vào máy tính.
-
-Trong quá trình phát triển:
-
-- Quản lý GitHub trên điện thoại.
-- Chỉnh sửa mã nguồn trên điện thoại hoặc máy tính bảng.
-- Quản lý Supabase (Database, Storage) trên trình duyệt.
-- Quản lý Vercel (biến môi trường, deploy log) trên trình duyệt — không cần CLI hay PC.
-
-Điều này giúp việc phát triển linh hoạt hơn.
-
----
-
-# Kinh nghiệm
-
-Những kinh nghiệm rút ra:
-
-- Frontend và Backend nên tách riêng.
-- API Key không nên xuất hiện trong Frontend.
-- GitHub Pages rất phù hợp cho web tĩnh.
-- Chọn nền tảng backend dựa trên quy trình phát triển thực tế (ở đây là không có PC), không chỉ dựa trên "kiến trúc lý tưởng".
-- Kiến trúc càng đơn giản thì càng dễ bảo trì.
-- Khi thử nghiệm một nền tảng mới rồi quyết định không dùng, nên xóa code thử nghiệm khỏi repo ngay, tránh để lại 2 phiên bản backend không đồng bộ.
-
----
-
-# Có thể cải thiện
-
-Trong tương lai có thể bổ sung:
-
-- Môi trường Development và Production riêng.
-- Tự động kiểm tra trước khi deploy.
-- CI/CD hoàn chỉnh.
-- Domain riêng.
-- Theo dõi lỗi và hiệu năng.
-
----
-
-# Tổng kết
-
-Kiến trúc triển khai hiện tại đáp ứng tốt các mục tiêu của dự án:
-
-- Chi phí thấp.
-- Dễ triển khai.
-- Dễ bảo trì.
-- Có thể quản lý ngay trên điện thoại.
-- Đủ khả năng mở rộng cho các phiên bản tiếp theo.
+// Giá trị APP_SECRET PHẢI KHỚP KHÔNG SAI MỘT KÝ TỰ với APP_SECRET trên Vercel
+const APP_SECRET = "Joker@x93";
