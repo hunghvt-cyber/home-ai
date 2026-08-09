@@ -1,5 +1,5 @@
-import { createVisionPrompt } from "./prompt.js";
-import { cleanGeminiResponse } from "./response.js";
+import { createVisionPrompt, createMultiVisionPrompt } from "./prompt.js";
+import { cleanGeminiResponse, cleanMultiGeminiResponse } from "./response.js";
 
 const MODEL = "gemini-flash-latest";
 
@@ -112,7 +112,9 @@ export default async function handler(req, res) {
 
             mimeType,
 
-            rooms
+            rooms,
+
+            mode = "single"
 
         } = req.body;
 
@@ -127,6 +129,10 @@ export default async function handler(req, res) {
 
         }
 
+        const promptText = mode === "multi"
+            ? createMultiVisionPrompt()
+            : createVisionPrompt(rooms || []);
+
         const url =
             `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${GEMINI_API_KEY}`;
 
@@ -140,10 +146,7 @@ export default async function handler(req, res) {
 
                         {
 
-                            text:
-                                createVisionPrompt(
-                                    rooms || []
-                                )
+                            text: promptText
 
                         },
 
@@ -230,10 +233,9 @@ export default async function handler(req, res) {
                 ?.parts?.[0]
                 ?.text || "";
 
-        const ai =
-            cleanGeminiResponse(
-                text
-            );
+        const ai = mode === "multi"
+            ? cleanMultiGeminiResponse(text)
+            : cleanGeminiResponse(text);
 
         return res
             .status(200)
