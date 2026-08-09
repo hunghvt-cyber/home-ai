@@ -124,9 +124,8 @@ function handleImage(event) {
             "selectedImage"
         )
         .innerHTML =
-        "📷 " + file.name;
+        "📷 " + escapeHtml(file.name);
 
-    // Bắt đầu 1 món mới (chưa lưu) -> hiện nút Chụp thêm / Thêm album / Bỏ qua
     if (!editingItem) {
 
         showActionButtons({
@@ -235,121 +234,40 @@ function showActionButtons(opts) {
 
 }
 
+// Dùng Compressor.js tự động nén ảnh + xoay đúng chiều EXIF
 async function resizeImage(file) {
 
-    return new Promise(
-        function(resolve) {
+    return new Promise(function(resolve) {
 
-            const img =
-                new Image();
+        if (typeof Compressor !== "undefined") {
 
-            const objectUrl =
-                URL.createObjectURL(
-                    file
-                );
+            new Compressor(file, {
+                quality: 0.7,
+                maxWidth: 1000,
+                maxHeight: 1000,
+                mimeType: "image/webp",
 
-            img.onload =
-                function() {
+                success(result) {
 
-                    URL.revokeObjectURL(
-                        objectUrl
-                    );
+                    resolve(result);
 
-                    const canvas =
-                        document.createElement(
-                            "canvas"
-                        );
+                },
 
-                    const maxSize =
-                        800;
+                error(err) {
 
-                    let width =
-                        img.width;
+                    console.warn("Compressor.js error, fallback file:", err);
 
-                    let height =
-                        img.height;
+                    resolve(file);
 
-                    // Chỉ resize khi ảnh lớn hơn maxSize,
-                    // không phóng to ảnh vốn đã nhỏ hơn 800px
-                    if (
-                        width > maxSize ||
-                        height > maxSize
-                    ) {
+                }
+            });
 
-                        if (
-                            width > height
-                        ) {
+        } else {
 
-                            height =
-                                height *
-                                maxSize /
-                                width;
-
-                            width =
-                                maxSize;
-
-                        }
-                        else {
-
-                            width =
-                                width *
-                                maxSize /
-                                height;
-
-                            height =
-                                maxSize;
-
-                        }
-
-                    }
-
-                    canvas.width =
-                        width;
-
-                    canvas.height =
-                        height;
-
-                    canvas
-                        .getContext("2d")
-                        .drawImage(
-                            img,
-                            0,
-                            0,
-                            width,
-                            height
-                        );
-
-                    canvas.toBlob(
-
-                        function(blob) {
-
-                            // Nếu resize lỗi (blob null hiếm gặp),
-                            // vẫn upload được ảnh gốc thay vì crash
-                            if (!blob) {
-
-                                resolve(file);
-
-                                return;
-
-                            }
-
-                            resolve(blob);
-
-                        },
-
-                        "image/webp",
-
-                        0.65
-
-                    );
-
-                };
-
-            img.src =
-                objectUrl;
+            resolve(file);
 
         }
 
-    );
+    });
 
 }
