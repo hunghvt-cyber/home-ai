@@ -6,7 +6,8 @@
 async function permanentlyDeleteItem(id) {
 
     const ok =
-        confirm(
+        await asyncConfirm(
+            "Xóa vĩnh viễn",
             "Xoá vĩnh viễn món này? Không thể khôi phục."
         );
 
@@ -31,7 +32,8 @@ async function permanentlyDeleteItem(id) {
 
         showMessage(
             "❌ " +
-            error.message
+            error.message,
+            "error"
         );
 
     }
@@ -261,7 +263,8 @@ async function emptyTrash() {
         );
 
     const ok =
-        confirm(
+        await asyncConfirm(
+            "Làm sạch Thùng rác",
             "Xoá vĩnh viễn toàn bộ món trong Thùng rác và quét dọn toàn bộ ảnh rác tồn đọng trên Storage?"
         );
 
@@ -315,7 +318,6 @@ async function emptyTrash() {
 
 
 // Tự động dọn các món đã nằm trong Thùng rác quá 30 ngày.
-// Tối ưu gộp query bằng .in() tránh N+1.
 async function runTrashAutoClean() {
 
     const cutoff =
@@ -359,7 +361,6 @@ async function runTrashAutoClean() {
 
     const ids = oldItems.map(row => row.id);
 
-    // Lấy toàn bộ thông tin các món cần dọn trong 1 query duy nhất
     const detailsResult =
         await db
             .from("items")
