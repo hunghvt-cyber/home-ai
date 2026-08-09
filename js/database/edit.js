@@ -55,7 +55,7 @@ function fillForm(item) {
             "selectedImage"
         )
         .innerHTML =
-        item.name ||
+        escapeHtml(item.name) ||
         "Đang sửa";
 
 }
