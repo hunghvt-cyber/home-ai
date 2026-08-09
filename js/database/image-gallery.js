@@ -6,6 +6,7 @@ let previewUrls = [];
 
 let existingExtraImagesCount = 0;
 
+let pendingSortableInstance = null;
 
 
 async function loadItemImages(itemId) {
@@ -40,9 +41,6 @@ async function loadItemImages(itemId) {
 }
 
 
-
-// Tải TOÀN BỘ ảnh phụ của mọi món trong 1 lần gọi (dùng cho màn hình danh sách,
-// tránh phải query riêng cho từng món -> đỡ tốn request)
 async function loadAllExtraImagesMap() {
 
     const result =
@@ -89,7 +87,6 @@ async function loadAllExtraImagesMap() {
 }
 
 
-
 function renderExistingExtraImages(images) {
 
     const strip =
@@ -120,7 +117,6 @@ function renderExistingExtraImages(images) {
         html;
 
 }
-
 
 
 function renderPendingExtraImages() {
@@ -164,7 +160,7 @@ function renderPendingExtraImages() {
             );
 
             html +=
-                '<div class="extraThumb">' +
+                '<div class="extraThumb" data-id="' + index + '">' +
                 '<img src="' +
                 escapeHtml(url) +
                 '">' +
@@ -180,8 +176,41 @@ function renderPendingExtraImages() {
     strip.innerHTML =
         html;
 
-}
+    // Tích hợp SortableJS cho phép kéo thả sắp xếp ảnh phụ
+    if (typeof Sortable !== "undefined") {
 
+        if (pendingSortableInstance) {
+
+            pendingSortableInstance.destroy();
+
+        }
+
+        pendingSortableInstance = new Sortable(strip, {
+            animation: 150,
+            onEnd: function() {
+
+                const newOrder = [];
+
+                Array.from(strip.children).forEach(child => {
+
+                    const oldIdx = parseInt(child.getAttribute('data-id'));
+
+                    if (!isNaN(oldIdx) && pendingExtraImages[oldIdx]) {
+
+                        newOrder.push(pendingExtraImages[oldIdx]);
+
+                    }
+
+                });
+
+                pendingExtraImages = newOrder;
+
+            }
+        });
+
+    }
+
+}
 
 
 function removePendingExtraImage(index) {
@@ -194,7 +223,6 @@ function removePendingExtraImage(index) {
     renderPendingExtraImages();
 
 }
-
 
 
 function resetExtraImages() {
