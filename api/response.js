@@ -130,3 +130,52 @@ export function cleanGeminiResponse(text) {
     }
 
 }
+
+
+
+export function cleanMultiGeminiResponse(text) {
+
+    try {
+
+        if (!text) {
+
+            return { items: [] };
+
+        }
+
+        let json = text.trim();
+
+        json = json.replace(/^```json/i, "").replace(/^```/, "").replace(/```$/, "");
+
+        const parsed = JSON.parse(json.trim());
+
+        if (!parsed || !Array.isArray(parsed.items)) {
+
+            return { items: [] };
+
+        }
+
+        const items = parsed.items.map(item => ({
+
+            name: typeof item.name === "string" ? item.name.trim() : "",
+
+            tags: Array.isArray(item.tags)
+                ? item.tags.filter(t => typeof t === "string").map(t => t.trim())
+                : [],
+
+            description: typeof item.description === "string" ? item.description.trim() : ""
+
+        })).filter(item => item.name !== "");
+
+        return { items };
+
+    }
+    catch (error) {
+
+        console.error("Multi JSON Parse Error:", error, text);
+
+        return { items: [] };
+
+    }
+
+}
