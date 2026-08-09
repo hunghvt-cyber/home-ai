@@ -84,7 +84,7 @@ export default async function handler(req, res) {
 
     res.setHeader(
         "Access-Control-Allow-Headers",
-        "Content-Type"
+        "Content-Type, x-app-secret"
     );
 
     if (req.method === "OPTIONS") {
@@ -99,6 +99,23 @@ export default async function handler(req, res) {
 
             error:
                 "Method not allowed"
+
+        });
+
+    }
+
+    const appSecret =
+        process.env.APP_SECRET;
+
+    if (
+        appSecret &&
+        req.headers["x-app-secret"] !== appSecret
+    ) {
+
+        return res.status(401).json({
+
+            error:
+                "Unauthorized"
 
         });
 
