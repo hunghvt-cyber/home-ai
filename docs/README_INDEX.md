@@ -1,113 +1,31 @@
-# Documentation
+# Documentation Index
 
-Chào mừng đến với tài liệu của dự án **Storage & Forget**.
-
-Thư mục `docs/` lưu toàn bộ tài liệu kỹ thuật, kinh nghiệm phát triển và các ghi chú trong suốt quá trình xây dựng dự án.
+Chào mừng bạn đến với hệ thống tài liệu kỹ thuật của dự án **Home AI (Storage & Forget)**. Thư mục `docs/` chứa toàn bộ thông tin chi tiết về kiến trúc, cơ sở dữ liệu, quy trình triển khai và kiểm thử chất lượng.
 
 ---
 
 # 📚 Danh mục tài liệu
 
-## 🏗️ ARCHITECTURE.md
+### 1. 🏗️ [ARCHITECTURE.md](./ARCHITECTURE.md)
+Chi tiết kiến trúc hệ thống, cấu trúc thư mục module-based, sơ đồ luồng dữ liệu giữa Frontend, Vercel Serverless Function và Supabase.
 
-Mô tả kiến trúc của dự án.
+### 2. 🤖 [AI.md](./AI.md)
+Tài liệu tích hợp AI Vision: Phân tích chi tiết 3 chế độ Single Scan, Multi-Scan, Burst Mode, prompt engineering và dịch vụ `gemini-client.js`.
 
-Bao gồm:
+### 3. 🗄️ [DATABASE.md](./DATABASE.md)
+Cơ sở dữ liệu Supabase PostgreSQL: Cấu trúc các bảng `items`, `rooms`, `item_images`, quy trình upload ảnh WebP và dọn dẹp file Storage mồ côi.
 
-- Cấu trúc thư mục
-- Luồng hoạt động
-- Cách các module giao tiếp với nhau
-- Quy tắc tổ chức source code
+### 4. 🚀 [DEPLOYMENT.md](./DEPLOYMENT.md)
+Hướng dẫn triển khai từng bước: Triển khai web tĩnh trên GitHub Pages, triển khai Proxy backend trên Vercel và cấu hình biến môi trường.
 
----
+### 5. 📝 [DEVELOPMENT.md](./DEVELOPMENT.md)
+Lịch sử phát triển và các giai đoạn tiến hóa của dự án từ phiên bản Google Sheets ban đầu cho đến kiến trúc hiện tại.
 
-## 📝 DEVELOPMENT.md
+### 6. 📖 [LESSONS_LEARNED.md](./LESSONS_LEARNED.md)
+Những bài học kinh nghiệm thực tế về bảo mật Stored XSS, tối ưu hóa Storage, xử lý query Database và bảo vệ API credit.
 
-Nhật ký phát triển của dự án.
+### 7. 🧪 [QA_TEST_PLAN.md](./QA_TEST_PLAN.md)
+Kế hoạch và ma trận kịch bản kiểm thử (Test Cases) đảm bảo chất lượng phần mềm về bảo mật, tính năng AI và UI/UX.
 
-Bao gồm:
-
-- Ý tưởng ban đầu
-- Các phiên bản
-- Những thay đổi lớn
-- Các quyết định kỹ thuật
-- Những vấn đề từng gặp và cách giải quyết
-
----
-
-## 🤖 AI.md
-
-Tài liệu về hệ thống AI.
-
-Bao gồm:
-
-- Gemini Vision
-- Gemini Chat
-- Prompt Engineering
-- Image Resize
-- Model đã sử dụng
-- Kinh nghiệm tối ưu
-
----
-
-## 🗄️ DATABASE.md
-
-Tài liệu về Supabase.
-
-Bao gồm:
-
-- Database Schema
-- Storage
-- Bucket
-- RLS
-- SQL Script
-- Chính sách bảo mật
-
----
-
-## 🚀 DEPLOYMENT.md
-
-Hướng dẫn triển khai dự án.
-
-Bao gồm:
-
-- GitHub Pages
-- Vercel Serverless Function
-- Triển khai bằng điện thoại
-- Những lỗi thường gặp
-
----
-
-## 📖 LESSONS_LEARNED.md
-
-Những bài học rút ra trong quá trình phát triển.
-
-Đây là tài liệu quan trọng nhất để áp dụng cho các dự án sau.
-
----
-
-## 🛣️ ROADMAP.md
-
-Kế hoạch phát triển dự án.
-
-Bao gồm:
-
-- Hoàn thành
-- Đang thực hiện
-- Dự định
-- Ý tưởng tương lai
-
----
-
-## 📜 CHANGELOG.md
-
-Lịch sử thay đổi của dự án theo từng phiên bản.
-
----
-
-# 🎯 Mục tiêu của bộ tài liệu
-
-- Ghi lại toàn bộ quá trình phát triển.
-- Làm tài liệu tham khảo cho chính mình trong tương lai.
-- Dễ dàng tái sử dụng khi xây dựng các web app tương tự.
-- Lưu lại các kinh nghiệm, quyết định và bài học đã tích lũy.
+### 8. 📜 [CHANGELOG.md](./CHANGELOG.md)
+Lịch sử cập nhật mã nguồn chi tiết qua từng phiên bản phát hành.
