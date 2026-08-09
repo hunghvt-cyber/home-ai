@@ -1,369 +1,88 @@
 # Architecture
 
-Storage & Forget được thiết kế theo hướng **Module-based Architecture** sử dụng HTML, CSS và Vanilla JavaScript.
+Storage & Forget được thiết kế theo hướng **Module-based Architecture** sử dụng HTML, CSS và Vanilla JavaScript thuần, kết hợp với Backend Proxy nhẹ trên Vercel.
 
-Mục tiêu là giữ mã nguồn đơn giản, dễ đọc, dễ bảo trì và có thể mở rộng mà không cần framework.
+Mục tiêu là giữ mã nguồn đơn giản, dễ đọc, dễ bảo trì và có thể mở rộng mà không phụ thuộc vào các framework phức tạp.
 
 ---
 
-# Tổng quan
-
-```
-User
- │
- ▼
-UI (index.html)
- │
- ▼
-Application (app.js)
- │
- ├──────────────┬──────────────┬──────────────┬──────────────┐
- ▼              ▼              ▼              ▼              ▼
+# Sơ đồ tổng quan kiến trúc
+Browser
+│
+▼
+UI (index.html + css/style.css)
+│
+▼
+Application Controller (app.js)
+│
+├──────────────┬──────────────┬──────────────┬──────────────┐
+▼              ▼              ▼              ▼              ▼
 Image       Database       Search         Rooms          AI
- │              │              │              │              │
- └──────────────┴──────────────┴──────────────┴──────────────┘
-                         │
-                         ▼
-                    Supabase
-                Database + Storage
-                         │
-                         ▼
-                 Vercel Serverless Function (Gemini)
-                         │
-                         ▼
-                    Google Gemini
-```
+(image.js) (database/)   (search/)    (rooms/)     (ai/)
+│              │              │              │              │
+└──────────────┴──────────────┴──────────────┴──────────────┘
+│
+├────────────────────────┐
+▼                        ▼
+Supabase                 Vercel Proxy
+Database + Storage          (api/gemini.js)
+│
+▼
+Google Gemini
+
 
 ---
 
-# Thư mục
+# Cấu trúc thư mục
+hunghvt-cyber-home-ai/
+├── README.md
+├── index.html
+├── api/                   # Backend Vercel Serverless Functions
+│   ├── gemini.js          # API Endpoint Proxy
+│   ├── prompt.js          # Khai báo Prompt AI
+│   └── response.js        # Parser & Cleaner dữ liệu JSON trả về
+├── css/
+│   └── style.css          # Style toàn bộ giao diện app
+├── docs/                  # Tài liệu kỹ thuật dự án
+├── js/
+│   ├── app.js             # Khởi tạo ứng dụng & bắt lỗi toàn cục
+│   ├── config.js          # Cấu hình hằng số Supabase, URL API, APP_SECRET
+│   ├── image.js           # Xử lý chọn ảnh, preview, nén Compressor.js
+│   ├── ai/                # Các module xử lý AI
+│   │   ├── burst-capture.js # Chụp liên tục song song
+│   │   ├── chat.js          # Chatbot trợ lý (định hướng)
+│   │   ├── gemini-client.js # Service gọi API Gemini dùng chung
+│   │   ├── multi-scan.js    # Nhận diện đa vật thể trong 1 ảnh
+│   │   ├── suggest.js      # Gợi ý thông minh (định hướng)
+│   │   └── vision.js       # Phân tích 1 ảnh đơn
+│   ├── database/          # Trung tâm thao tác dữ liệu Supabase
+│   │   ├── delete.js       # Xóa mềm (chuyển vào Thùng rác)
+│   │   ├── edit.js         # Đưa dữ liệu lên form chỉnh sửa
+│   │   ├── form.js         # Reset và quản lý trạng thái form
+│   │   ├── image-gallery.js# Quản lý ảnh phụ (Viewer.js, SortableJS)
+│   │   ├── load.js         # Load dữ liệu items & map ảnh phụ
+│   │   ├── message.js      # Toastify & SweetAlert2 thông báo
+│   │   ├── render.js       # Render thẻ Card danh sách món đồ
+│   │   ├── save-extra.js   # Upload & dọn dẹp ảnh phụ
+│   │   ├── save-item.js    # Insert/Update món đồ trong DB
+│   │   ├── save-upload.js  # Upload ảnh chính lên Storage WebP
+│   │   ├── save-utils.js   # Hàm escapeHtml (DOMPurify), dọn Storage
+│   │   ├── save.js         # Luồng lưu chính (Save / Skip)
+│   │   └── trash.js        # Khôi phục, dọn file rác, xóa 30 ngày
+│   ├── rooms/             # Quản lý phòng & Thống kê
+│   │   ├── rooms.js        # CRUD danh sách phòng
+│   │   └── stats.js        # Thống kê số lượng món theo phòng
+│   └── search/            # Tìm kiếm & Lọc
+│       ├── filter.js       # Lọc theo từ khóa & phòng trên RAM
+│       └── search.js       # Debounce input & Quét camera QR/Barcode
 
-```
-api/
-```
-
-Chứa các thành phần liên quan đến AI.
-
-- gemini.js
-- prompt.js
-- response.js
-
-Đây là lớp giao tiếp giữa Frontend và AI.
-
----
-
-```
-css/
-```
-
-Chứa toàn bộ giao diện.
-
----
-
-```
-js/
-```
-
-Là thư mục chính của ứng dụng.
-
-Được chia theo từng chức năng thay vì chia theo loại file.
-
-```
-js/
-├── ai/
-├── database/
-├── rooms/
-├── search/
-├── app.js
-├── config.js
-├── image.js
-└── message.js
-```
-
----
-
-# app.js
-
-Điểm khởi động của toàn bộ ứng dụng.
-
-Chịu trách nhiệm:
-
-- Khởi tạo module
-- Điều phối luồng khởi động
-- Bắt lỗi toàn cục
-
-Không chứa business logic.
 
 ---
 
-# config.js
-
-Quản lý cấu hình.
-
-Bao gồm:
-
-- Supabase
-- Storage
-- URL
-- Các hằng số dùng chung
-
----
-
-# image.js
-
-Quản lý vòng đời của ảnh.
-
-Bao gồm:
-
-- Chọn ảnh
-- Preview
-- Resize
-- Chuẩn bị upload
-
-Không xử lý Database.
-
-Không xử lý AI.
-
----
-
-# message.js
-
-Hiển thị thông báo.
-
-Toàn bộ project sử dụng chung một hệ thống Message.
-
----
-
-# database/
-
-Đây là trung tâm của ứng dụng.
-
-Các file được tách theo từng nghiệp vụ.
-
-```
-save.js
-```
-
-Lưu dữ liệu.
-
-```
-load.js
-```
-
-Đọc dữ liệu.
-
-```
-render.js
-```
-
-Hiển thị dữ liệu.
-
-```
-edit.js
-```
-
-Chỉnh sửa.
-
-```
-delete.js
-```
-
-Xóa dữ liệu.
-
-Việc tách từng thao tác thành từng file giúp mã nguồn dễ đọc hơn rất nhiều.
-
----
-
-# search/
-
-Chứa toàn bộ chức năng tìm kiếm và lọc.
-
-Không truy cập trực tiếp Database.
-
-Hoạt động trên dữ liệu đã được tải.
-
----
-
-# rooms/
-
-Quản lý:
-
-- Danh sách phòng
-- Thống kê
-
-Được tách riêng khỏi Database để dễ mở rộng.
-
----
-
-# ai/
-
-Chứa các chức năng AI.
-
-Bao gồm:
-
-- Vision
-- Chat
-- Suggest
-
-Các module AI độc lập với Database.
-
----
-
-# api/
-
-Chứa Prompt và xử lý dữ liệu AI.
-
-Giúp Frontend không phải xây dựng Prompt trực tiếp.
-
----
-
-# Vercel Serverless Function
-
-Frontend không gọi Gemini trực tiếp.
-
-Luồng hoạt động:
-
-```
-Browser
-      │
-      ▼
-Vercel Serverless Function
-      │
-      ▼
-Gemini API
-      │
-      ▼
-Browser
-```
-
-Điều này giúp:
-
-- Bảo mật API Key.
-- Dễ đổi model.
-- Dễ bổ sung xác thực.
-- Quản lý request tập trung.
-
----
-
-# Luồng lưu đồ vật
-
-```
-User
-
-↓
-
-Chọn ảnh
-
-↓
-
-Resize
-
-↓
-
-Upload Storage
-
-↓
-
-Lưu Database
-
-↓
-
-Reload danh sách
-
-↓
-
-Render giao diện
-```
-
----
-
-# Luồng AI Vision
-
-```
-Chọn ảnh
-
-↓
-
-Resize
-
-↓
-
-Vercel Serverless Function
-
-↓
-
-Gemini
-
-↓
-
-JSON
-
-↓
-
-Điền dữ liệu vào Form
-```
-
----
-
-# Luồng tìm kiếm
-
-```
-Supabase
-
-↓
-
-allItems
-
-↓
-
-Search
-
-↓
-
-Filter
-
-↓
-
-Render
-```
-
-Không query lại Database.
-
----
-
-# Nguyên tắc thiết kế
-
-Storage & Forget được xây dựng dựa trên các nguyên tắc:
-
-- Một file chỉ đảm nhiệm một trách nhiệm chính.
-- Tách giao diện và xử lý nghiệp vụ.
-- Hạn chế lặp mã.
-- Ưu tiên module nhỏ.
-- Dễ refactor.
-- Dễ mở rộng.
-
----
-
-# Điểm mạnh
-
-- Module rõ ràng.
-- Luồng dữ liệu đơn giản.
-- AI tách riêng.
-- Database tách riêng.
-- Có lớp backend riêng (Vercel Serverless Function) bảo vệ API Key.
-- Dễ bảo trì.
-- Dễ bổ sung tính năng.
-
----
-
-# Có thể cải thiện
-
-Trong tương lai có thể xem xét:
-
-- ES Modules.
-- Event Bus.
-- TypeScript.
-- State Management.
-- Unit Test.
-
-Tuy nhiên với quy mô hiện tại, kiến trúc hiện tại đã đáp ứng tốt yêu cầu của dự án.
+# Các nguyên tắc thiết kế quan trọng
+
+1. **Single Responsibility**: Mỗi file JS chỉ đảm nhiệm một nhóm tác vụ duy nhất (ví dụ: `save-upload.js` chỉ xử lý tải ảnh lên Storage, `message.js` chỉ hiển thị thông báo).
+2. **In-Memory Filtering**: Dữ liệu sau khi tải từ Supabase được lưu vào mảng `allItems[]`. Việc tìm kiếm, lọc phòng, thống kê đều tính toán trực tiếp trên RAM phía Browser, giảm tối đa số request truy vấn DB.
+3. **Data Sanitization**: Toàn bộ dữ liệu hiển thị ra HTML đều đi qua hàm `escapeHtml()` tích hợp thư viện `DOMPurify` để ngăn chặn lỗ hổng Stored XSS.
+4. **Proxy Protection**: Endpoint AI trên Vercel yêu cầu secret header `x-app-secret` khớp với biến môi trường `APP_SECRET` để chống bot/scanner tự động lạm dụng API credit.
+5. **Shared Resource Optimization**: Chế độ Multi-Scan chỉ upload đúng 1 ảnh gốc và gán link `image_url` chung cho toàn bộ danh sách các món đồ tách ra từ bức ảnh đó.
