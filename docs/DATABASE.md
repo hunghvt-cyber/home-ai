@@ -1,279 +1,56 @@
-# Database
+# Database & Storage
 
-Storage & Forget sử dụng Supabase PostgreSQL làm cơ sở dữ liệu chính.
-
-Ảnh được lưu trên Supabase Storage.
-
-Database chỉ lưu thông tin mô tả và đường dẫn ảnh.
+Storage & Forget sử dụng Supabase PostgreSQL làm cơ sở dữ liệu chính và Supabase Storage Bucket để lưu trữ tệp hình ảnh.
 
 ---
 
-# Kiến trúc
+# Bảng dữ liệu (Database Schema)
 
-```
-Browser
-    │
-    ▼
-Supabase Client
-    │
-    ▼
-PostgreSQL
-```
+### 1. Bảng `items` (Lưu danh sách đồ đạc)
 
-Ảnh:
+| Tên cột | Kiểu dữ liệu | Ràng buộc | Mô tả |
+|---|---|---|---|
+| `id` | `bigint` / `uuid` | Primary Key, Auto Increment | ID định danh duy nhất cho món đồ |
+| `name` | `text` | NOT NULL | Tên đồ đạc |
+| `location` | `text` | Nullable | Vị trí chi tiết (ví dụ: Hộc tủ 2, Kệ sách) |
+| `room` | `text` | Nullable | Tên phòng cất giữ (ví dụ: Phòng khách) |
+| `tags` | `text[]` / `jsonb` | Nullable | Mảng chứa các thẻ đánh dấu |
+| `description` | `text` | Nullable | Mô tả chi tiết món đồ |
+| `image_url` | `text` | Nullable | URL công khai của ảnh đại diện chính |
+| `created_at` | `timestamptz` | Default `now()` | Thời gian tạo bản ghi |
+| `previous_room`| `text` | Nullable | Lưu vết phòng cũ trước khi bị đưa vào Thùng rác |
+| `trashed_at` | `timestamptz` | Nullable | Thời điểm món đồ bị đưa vào Thùng rác |
 
-```
-Browser
+### 2. Bảng `rooms` (Danh sách phòng)
 
-↓
+| Tên cột | Kiểu dữ liệu | Ràng buộc | Mô tả |
+|---|---|---|---|
+| `id` | `bigint` / `uuid` | Primary Key, Auto Increment | ID phòng |
+| `name` | `text` | UNIQUE, NOT NULL | Tên phòng (ví dụ: Phòng ngủ, Bếp) |
 
-Storage Bucket
+### 3. Bảng `item_images` (Danh sách ảnh phụ)
 
-↓
-
-Public URL
-
-↓
-
-Database
-```
-
----
-
-# Bảng chính
-
-Hiện tại ứng dụng sử dụng một bảng chính để lưu đồ vật.
-
-Mỗi bản ghi gồm các thông tin như:
-
-- Tên
-- Phòng
-- Vị trí
-- URL ảnh
-- Thời gian tạo
-
-Khóa chính sử dụng ID tự tăng.
+| Tên cột | Kiểu dữ liệu | Ràng buộc | Mô tả |
+|---|---|---|---|
+| `id` | `bigint` / `uuid` | Primary Key, Auto Increment | ID bản ghi ảnh phụ |
+| `item_id` | `bigint` / `uuid` | FK `items(id)` ON DELETE CASCADE | Liên kết tới món đồ thuộc bảng `items` |
+| `image_url` | `text` | NOT NULL | URL công khai của ảnh phụ |
+| `sort_order` | `integer` | Default `0` | Thứ tự sắp xếp ảnh phụ |
 
 ---
 
-# Storage
+# Quy trình Upload & Quản lý Storage
+Client (Compressor.js) ──► Nén WebP ──► Tải lên Storage Bucket ('images') ──► Trả về publicUrl
 
-Ảnh không lưu trong Database.
 
-Quy trình:
-
-```
-Resize
-
-↓
-
-Upload
-
-↓
-
-Public URL
-
-↓
-
-INSERT Database
-```
-
-Điều này giúp:
-
-- Database nhỏ hơn.
-- Backup dễ hơn.
-- Truy cập ảnh nhanh hơn.
-- Không làm tăng kích thước bản ghi.
+- **Quy tắc đặt tên file**: `Date.now() + "_" + randomSuffix + "_" + cleanFileName + ".webp"`.
+- **Định dạng tối ưu**: Tất cả ảnh tải lên đều được nén về định dạng WebP với chất lượng 0.7 và kích thước tối đa 1000px.
 
 ---
 
-# Luồng Save
-
-```
-Form
-
-↓
-
-Validate
-
-↓
-
-Upload Image
-
-↓
-
-Insert Item
-
-↓
-
-Reload
-
-↓
-
-Render
-```
-
----
-
-# Luồng Load
-
-```
-SELECT
-
-↓
-
-allItems
-
-↓
-
-Search
-
-↓
-
-Filter
-
-↓
-
-Render
-```
-
-Dữ liệu sau khi tải sẽ được lưu trong bộ nhớ (`allItems`) để các chức năng khác sử dụng.
-
----
-
-# Luồng Edit
-
-```
-Chọn Item
-
-↓
-
-Cập nhật dữ liệu
-
-↓
-
-UPDATE
-
-↓
-
-Reload
-
-↓
-
-Render
-```
-
----
-
-# Luồng Delete
-
-```
-Chọn Item
-
-↓
-
-DELETE Database
-
-↓
-
-DELETE Storage
-
-↓
-
-Reload
-
-↓
-
-Render
-```
-
-Việc xóa cần đảm bảo cả bản ghi và ảnh được đồng bộ.
-
----
-
-# Caching
-
-Ứng dụng chỉ tải dữ liệu khi cần.
-
-Sau khi tải:
-
-```
-Supabase
-
-↓
-
-allItems[]
-
-↓
-
-Search
-
-↓
-
-Filter
-
-↓
-
-Rooms
-
-↓
-
-Statistics
-```
-
-Điều này giúp giảm số lượng request.
-
----
-
-# Thiết kế
-
-Database chỉ chịu trách nhiệm:
-
-- Lưu.
-- Đọc.
-- Cập nhật.
-- Xóa.
-
-Không xử lý:
-
-- AI
-- Search
-- Render
-- UI
-
----
-
-# Ưu điểm
-
-- Kiến trúc đơn giản.
-- Ít bảng.
-- Dễ mở rộng.
-- Dễ backup.
-- Dễ bảo trì.
-
----
-
-# Kinh nghiệm
-
-Trong quá trình phát triển rút ra một số kinh nghiệm:
-
-- Upload ảnh trước khi INSERT.
-- Chỉ lưu URL ảnh.
-- Không lưu Base64 trong Database.
-- Tách từng thao tác CRUD thành từng module.
-- Hạn chế query lặp lại.
-
----
-
-# Có thể cải thiện
-
-Trong tương lai có thể bổ sung:
-
-- Soft Delete.
-- Audit Log.
-- Version History.
-- Đồng bộ ngoại tuyến.
-- Batch Update.
-- Pagination khi số lượng dữ liệu lớn.
-
-Với quy mô hiện tại, cấu trúc Database đáp ứng tốt yêu cầu của dự án và vẫn còn nhiều khả năng mở rộng.
+# Dọn dẹp Storage Mồ côi (`cleanOrphanedStorageFiles`)
+
+Khi xóa vĩnh viễn món đồ hoặc khi làm sạch thùng rác:
+1. Ứng dụng trích xuất danh sách tất cả các `image_url` đang được liên kết trong bảng `items` và `item_images`.
+2. Truy vấn danh sách toàn bộ file thực tế đang lưu trữ trên Bucket `images`.
+3. So sánh và lọc ra các file "mồ côi" (có trên Storage nhưng không tồn tại trong DB) và thực hiện xoá triệt để khỏi Storage, giải phóng dung lượng.
