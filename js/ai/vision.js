@@ -117,89 +117,25 @@ async function sendImageToAI() {
 
 
 
-    const controller =
-        new AbortController();
-
-
-
-    const timeout =
-        setTimeout(
-            () =>
-                controller.abort(),
-            60000
-        );
-
-
-
-    const response =
-        await fetch(
-
-            GEMINI_API_URL,
-
-            {
-
-                method: "POST",
-
-                headers: {
-
-                    "Content-Type":
-                        "application/json"
-
-                },
-
-                signal:
-                    controller.signal,
-
-                body: JSON.stringify({
-
-                    imageBase64:
-                        cleanBase64,
-
-                    mimeType:
-                        selectedFile.type,
-
-                    rooms:
-                        roomList
-
-                })
-
-            }
-
-        );
-
-
-
-    clearTimeout(timeout);
-
-
-
     const ai =
-        await response.json();
+        await callGeminiAPI({
+
+            imageBase64:
+                cleanBase64,
+
+            mimeType:
+                selectedFile.type,
+
+            rooms:
+                roomList,
+
+            mode:
+                "single"
+
+        });
 
 
 
-    if (!response.ok) {
-
-        throw new Error(
-
-            ai.error ||
-
-            JSON.stringify(
-                ai,
-                null,
-                2
-            )
-
-        );
-
-    }
-
-
-
-    console.log(
-        "AI RESULT:",
-        ai
-    );
     if (ai.name) {
 
         document
@@ -347,6 +283,9 @@ async function selectRoom(aiRoom) {
     }
 
 }
+
+
+
 function fileToBase64(file) {
 
     return new Promise(
@@ -385,12 +324,6 @@ function fileToBase64(file) {
 
 
 function initAI() {
-
-    console.log(
-        "🤖 AI Ready"
-    );
-
-
 
     window.addEventListener(
 
