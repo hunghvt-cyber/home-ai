@@ -1,202 +1,78 @@
-# AI
-
-Storage & Forget sử dụng Google Gemini để hỗ trợ người dùng nhập liệu và tìm kiếm thông minh.
-
-AI được thiết kế là một thành phần hỗ trợ, không thay thế người dùng trong việc quyết định dữ liệu cuối cùng.
 
 ---
 
-# Kiến trúc
+### 📄 FILE 2: `docs/AI.md`
 
-```
-Browser
-      │
-      ▼
-Vercel Serverless Function
-      │
-      ▼
-Gemini API
-      │
-      ▼
-JSON
-      │
-      ▼
-Frontend
-```
+```markdown
+# AI Architecture & Implementation
 
-Frontend không giao tiếp trực tiếp với Gemini.
+Storage & Forget sử dụng Google Gemini làm nhân tố hỗ trợ người dùng nhập liệu và tự động phân loại đồ đạc.
+
+AI được thiết kế đóng vai trò trợ lý nhập liệu, không quyết định hoàn toàn dữ liệu mà luôn cho phép người dùng xem lại và chỉnh sửa trước khi lưu.
 
 ---
 
-# Mục tiêu
+# Kiến trúc xử lý AI
+Browser (Client)
+│
+├─ (Request + Header: x-app-secret)
+▼
+Vercel Serverless Function (api/gemini.js)
+│
+├─ (Prompt + Image Base64)
+▼
+Gemini API (gemini-flash-latest)
+│
+├─ (Raw Response)
+▼
+Response Cleaner (api/response.js)
+│
+▼
+JSON Output ──► Form / Batch Review Modal (Frontend)
 
-AI được sử dụng để:
 
-- Nhận diện đồ vật.
-- Gợi ý tên.
-- Gợi ý vị trí lưu.
-- Hỗ trợ nhập liệu.
-- Trả lời câu hỏi về dữ liệu.
-
----
-
-# Vision
-
-Luồng hoạt động:
-
-```
-Chọn ảnh
-
-↓
-
-Resize
-
-↓
-
-Base64
-
-↓
-
-Vercel Serverless Function
-
-↓
-
-Gemini Vision
-
-↓
-
-JSON
-
-↓
-
-Điền Form
-```
-
-Vision giúp giảm thời gian nhập liệu.
-
-Người dùng vẫn có thể chỉnh sửa trước khi lưu.
+Frontend không giao tiếp trực tiếp với Gemini API để bảo mật khóa `GEMINI_API_KEY` và tránh rò rỉ token.
 
 ---
 
-# Chat
+# Chế độ AI Vision Supported
 
-AI Chat được xây dựng để trả lời các câu hỏi liên quan đến dữ liệu trong ứng dụng.
+### 1. Single Vision (`js/ai/vision.js`)
+- Nhận diện 1 đồ vật chính trong ảnh.
+- Gợi ý: Tên đồ đạc, Vị trí cất, Tags, Mô tả và Phòng phù hợp trong danh sách phòng hiện có.
 
-Ví dụ:
+### 2. Multi-Scan (`js/ai/multi-scan.js`)
+- Nhận diện tối đa 10 đồ vật riêng biệt trong cùng một bức ảnh (ví dụ: chụp toàn bộ bàn làm việc, hộc tủ).
+- Trả về danh sách mảng JSON `items: [...]`.
+- Hiển thị trên Batch Review Modal cho phép kiểm tra, tick chọn/bỏ chọn món đồ.
+- **Tối ưu Storage**: Tải duy nhất 1 tệp ảnh gốc lên Supabase Storage và chia sẻ chung `image_url` cho mọi món đồ được chọn.
 
-- Đồ vật này là gì?
-- Nên cất ở đâu?
-- Công dụng của vật này?
-
-Chat không truy cập trực tiếp Database.
-
----
-
-# Suggest
-
-AI Suggest hỗ trợ:
-
-- Gợi ý tên đồ vật.
-- Gợi ý phòng.
-- Gợi ý vị trí.
-- Chuẩn hóa dữ liệu nhập.
+### 3. Burst Mode (`js/ai/burst-capture.js`)
+- Hỗ trợ chụp/chọn hàng loạt ảnh cùng lúc.
+- Sử dụng mô hình xử lý song song theo cụm 3 ảnh (`BURST_CONCURRENCY = 3`) với `Promise.all()` giúp phân tích nhanh mà không làm sập request.
+- Tích hợp thanh tiến trình (ProgressBar) hiển thị phần trăm tiến độ xử lý.
 
 ---
 
-# Prompt
+# Client Service (`js/ai/gemini-client.js`)
 
-Prompt được tách riêng khỏi giao diện.
-
-Điều này giúp:
-
-- Dễ chỉnh sửa.
-- Dễ thử nghiệm.
-- Không ảnh hưởng Frontend.
-- Có thể tái sử dụng.
+Toàn bộ các module AI phía Client (`vision.js`, `multi-scan.js`, `burst-capture.js`) đều tái sử dụng hàm trung gian `callGeminiAPI(payload)` với các đặc tính:
+- Đích thân gắn header bảo mật `x-app-secret` lấy từ `APP_SECRET` trong `config.js`.
+- Cấu hình `AbortController` ngắt kết nối tự động nếu quá 60 giây (Timeout 60s).
 
 ---
 
-# Response
+# Prompt Engineering (`api/prompt.js`)
 
-Kết quả từ Gemini được chuẩn hóa trước khi trả về Frontend.
-
-Ưu điểm:
-
-- Dễ xử lý.
-- Dễ kiểm tra lỗi.
-- Hạn chế AI trả về định dạng không mong muốn.
+Prompt được tách độc lập thành module riêng trên Backend Vercel Serverless Function:
+- **`createVisionPrompt(rooms)`**: Ép AI chọn phòng duy nhất có sẵn trong DB, trả về JSON chuẩn gồm `name`, `location`, `room`, `tags`, `description`.
+- **`createMultiVisionPrompt()`**: Yêu cầu AI tách biệt danh sách vật thể, trả về đối tượng `{"items": [...]}`.
 
 ---
 
-# Vercel Serverless Function
+# Tối ưu hóa ảnh trước khi gửi AI
 
-Vercel Serverless Function (`api/gemini.js`) là lớp trung gian giữa ứng dụng và Gemini.
-
-Vai trò:
-
-- Bảo vệ API Key.
-- Gọi Gemini API.
-- Xử lý Prompt.
-- Chuẩn hóa phản hồi.
-- Dễ thay đổi model.
-
-Đây là một quyết định kiến trúc quan trọng của dự án.
-
-Lưu ý: dự án từng thử nghiệm chuyển sang Supabase Edge Functions, nhưng vì phát triển hoàn toàn trên điện thoại (không có PC), quy trình deploy của Vercel thuận tiện hơn nên Vercel được giữ làm backend chính. Xem `DEPLOYMENT.md` và `LESSONS_LEARNED.md`.
-
----
-
-# Image Optimization
-
-Trước khi gửi AI:
-
-- Resize ảnh.
-- Giảm dung lượng.
-- Chuyển sang định dạng phù hợp.
-
-Lợi ích:
-
-- Phản hồi nhanh hơn.
-- Tiết kiệm băng thông.
-- Giảm chi phí xử lý.
-- Giảm token.
-
----
-
-# Kinh nghiệm
-
-Trong quá trình phát triển đã rút ra một số kinh nghiệm:
-
-- Không gọi AI trực tiếp từ Frontend.
-- Prompt nên được chuẩn hóa.
-- Luôn kiểm tra dữ liệu AI trả về.
-- Không phụ thuộc vào một model cố định.
-- Thiết kế để dễ thay đổi model khi cần.
-
----
-
-# Có thể cải thiện
-
-Trong tương lai có thể bổ sung:
-
-- Streaming Response.
-- Function Calling.
-- Embedding.
-- Semantic Search.
-- OCR.
-- Nhận diện nhiều đồ vật trong một ảnh.
-- Hội thoại có ngữ cảnh.
-
----
-
-# Tổng kết
-
-AI là một thành phần hỗ trợ giúp giảm thao tác nhập liệu và nâng cao trải nghiệm người dùng.
-
-Thiết kế hiện tại đảm bảo:
-
-- Bảo mật.
-- Dễ mở rộng.
-- Dễ thay đổi model.
-- Dễ bảo trì.
-- Có thể tái sử dụng cho các dự án AI khác.
+Trước khi chuyển đổi sang Base64 để gửi sang Serverless Proxy:
+- Resize ảnh về độ phân giải phù hợp (`maxWidth/maxHeight: 1000px`).
+- Nén chất lượng ảnh phía Client bằng `Compressor.js`.
+- Giảm dung lượng file giúp gửi AI nhanh hơn, tiết kiệm token và giảm thời gian chờ đợi phản hồi.
