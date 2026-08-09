@@ -76,24 +76,85 @@ accept="image/*"
 style="display:none;">
 
 <input
+id="multiScanInput"
+type="file"
+accept="image/*"
+capture="environment"
+style="display:none;">
+
+<input
+id="burstCaptureInput"
+type="file"
+accept="image/*"
+multiple
+style="display:none;">
+
+<input
 id="extraImageInput"
 type="file"
 accept="image/*"
 multiple
 style="display:none;">
 
+<!-- Chế độ chụp & Vị trí gom nhóm -->
+<div class="batchLocationBox">
+
+<label><b>📍 Vị trí cất chung (Multi/Burst Mode):</b></label>
+
+<div class="buttonRow">
+
+<select id="batchRoomSelect">
+
+<option value="">
+-- Chọn phòng mặc định --
+</option>
+
+</select>
+
+<input
+id="batchLocationInput"
+type="text"
+placeholder="Vị trí (ví dụ: Hộc tủ 2, Kệ sách)">
+
+</div>
+
+</div>
+
 <div class="buttonRow">
 
 <button onclick="openCamera()">
-📷 Chụp ảnh
+📷 Chụp 1 món
 </button>
 
 <button onclick="openGallery()">
 🖼️ Album
 </button>
 
+<button onclick="openMultiScanCamera()" class="btnHighlight">
+📸 Multi-Scan
+</button>
+
+<button onclick="openBurstCapture()" class="btnHighlight">
+⚡ Burst Mode
+</button>
+
+</div>
+
+<!-- Status Hàng đợi Burst Capture -->
+<div id="burstStatusBox" class="burstStatusBox" style="display:none;">
+
+<span id="burstStatusText">⚡ Đang xử lý...</span>
+
+<div class="progressBar">
+<div id="burstProgressBar" class="progressFill"></div>
+</div>
+
+</div>
+
+<div class="buttonRow" style="margin-top:8px;">
+
 <button onclick="analyzeImage()">
-🤖 AI
+🤖 AI Phân tích (1 món)
 </button>
 
 </div>
@@ -210,6 +271,33 @@ style="display:none;">
 
 </div>
 
+<!-- Modal Duyệt Batch (Multi-Scan & Burst Capture) -->
+<div id="batchModal" class="modalOverlay" style="display:none;">
+
+<div class="modalContent">
+
+<h3>📋 Duyệt danh sách nhận diện</h3>
+
+<p class="modalSubtext">Bỏ chọn những món không muốn lưu hoặc chỉnh sửa lại tên trước khi lưu hàng loạt.</p>
+
+<div id="batchItemsList" class="batchList"></div>
+
+<div class="buttonRow modalFooter">
+
+<button onclick="saveBatchItems()" class="btnSuccess">
+💾 Lưu toàn bộ đã chọn
+</button>
+
+<button onclick="closeBatchModal()" class="btnSecondary">
+✖ Hủy
+</button>
+
+</div>
+
+</div>
+
+</div>
+
 <script src="js/config.js"></script>
 
 <script src="js/database/message.js"></script>
@@ -239,6 +327,8 @@ style="display:none;">
 <script src="js/ai/vision.js"></script>
 <script src="js/ai/chat.js"></script>
 <script src="js/ai/suggest.js"></script>
+<script src="js/ai/multi-scan.js"></script>
+<script src="js/ai/burst-capture.js"></script>
 
 <script src="js/app.js"></script>
 
