@@ -8,7 +8,7 @@ const GEMINI_TIMEOUT_MS = 60000;
 // KHÔNG phải bảo mật tuyệt đối vì đây là code client-side (ai xem source cũng thấy được).
 // Phải khớp với APP_SECRET đặt trong Vercel Environment Variables.
 const APP_SECRET_HEADER =
-    "x-app-secret";
+    "Joker@x93";
 
 const APP_SECRET_VALUE =
     typeof APP_SECRET !== "undefined"
