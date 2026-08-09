@@ -1,16 +1,13 @@
 // js/database/delete.js
-// Xoá 1 món = chuyển vào phòng "Thùng rác" (xoá mềm),
-// không xoá thật dữ liệu/ảnh. Xoá vĩnh viễn nằm ở trash.js
 
 const TRASH_ROOM_NAME =
     "Thùng rác";
 
-
-
 async function deleteItem(id) {
 
     const ok =
-        confirm(
+        await asyncConfirm(
+            "Xác nhận xóa",
             "Chuyển món này vào Thùng rác?"
         );
 
@@ -72,7 +69,8 @@ async function deleteItem(id) {
 
         showMessage(
             "❌ " +
-            error.message
+            error.message,
+            "error"
         );
 
     }
