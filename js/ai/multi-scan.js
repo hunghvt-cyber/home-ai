@@ -60,50 +60,19 @@ async function handleMultiScanImage(event) {
         const cleanBase64 =
             base64.split(",")[1];
 
-        const response =
-            await fetch(
-
-                GEMINI_API_URL,
-
-                {
-
-                    method: "POST",
-
-                    headers: {
-
-                        "Content-Type":
-                            "application/json"
-
-                    },
-
-                    body: JSON.stringify({
-
-                        imageBase64:
-                            cleanBase64,
-
-                        mimeType:
-                            file.type,
-
-                        mode:
-                            "multi"
-
-                    })
-
-                }
-
-            );
-
         const data =
-            await response.json();
+            await callGeminiAPI({
 
-        if (!response.ok) {
+                imageBase64:
+                    cleanBase64,
 
-            throw new Error(
-                data.error ||
-                "Lỗi khi gọi AI Multi-Scan"
-            );
+                mimeType:
+                    file.type,
 
-        }
+                mode:
+                    "multi"
+
+            });
 
         const items =
             data.items || [];
@@ -354,18 +323,19 @@ async function saveBatchItems() {
 
     try {
 
+        // Toàn bộ món trong 1 lượt Multi-Scan đều tách ra từ CÙNG 1 ảnh gốc
+        // (selectedItems[0].file === selectedItems[i].file) -> chỉ upload
+        // đúng 1 lần, dùng chung image_url cho mọi món, tránh tốn Storage
+        // và thời gian upload N lần cùng 1 ảnh.
+        const sharedFile =
+            selectedItems[0].file;
+
+        const sharedImageUrl =
+            sharedFile
+                ? await uploadImage(sharedFile)
+                : "";
+
         for (const item of selectedItems) {
-
-            let imageUrl = "";
-
-            if (item.file) {
-
-                imageUrl =
-                    await uploadImage(
-                        item.file
-                    );
-
-            }
 
             await insertItem({
 
@@ -385,7 +355,7 @@ async function saveBatchItems() {
                     item.description,
 
                 image_url:
-                    imageUrl
+                    sharedImageUrl
 
             });
 
