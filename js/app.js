@@ -11,7 +11,11 @@ function showError(error) {
 
     message.innerHTML =
         "❌ " +
-        (error.message || error);
+        (
+            typeof escapeHtml === "function"
+                ? escapeHtml(error.message || error)
+                : (error.message || error)
+        );
 
     message.style.color =
         "red";
