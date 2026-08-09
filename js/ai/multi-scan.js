@@ -63,7 +63,7 @@ async function handleMultiScanImage(event) {
         const response =
             await fetch(
 
-                "https://home-ai-two-topaz.vercel.app/api/gemini",
+                GEMINI_API_URL,
 
                 {
 
