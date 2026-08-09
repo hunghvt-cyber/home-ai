@@ -1,129 +1,87 @@
-// js/database/message.js -> Thông báo
+// js/database/message.js -> Thông báo Toastify & SweetAlert2
 
 function showMessage(text, type = "info") {
 
-    let box =
-        document.getElementById(
-            "messageBox"
-        );
+    if (typeof Toastify !== "undefined") {
 
-    if (!box) {
+        let bg = "#1976d2";
 
-        box =
-            document.createElement(
-                "div"
-            );
+        if (type === "success" || text.startsWith("✅") || text.startsWith("♻️")) {
 
-        box.id =
-            "messageBox";
+            bg = "#2e7d32";
 
-        box.style.position =
-            "fixed";
+        } else if (type === "error" || text.startsWith("❌") || text.startsWith("🗑")) {
 
-        box.style.left =
-            "12px";
+            bg = "#d32f2f";
 
-        box.style.right =
-            "12px";
+        } else if (text.startsWith("🤖") || text.startsWith("⚡")) {
 
-        box.style.bottom =
-            "12px";
+            bg = "#e65100";
 
-        box.style.zIndex =
-            "99999";
+        }
 
-        box.style.background =
-            "#222";
+        Toastify({
+            text: text,
+            duration: 3000,
+            gravity: "bottom",
+            position: "center",
+            stopOnFocus: true,
+            style: {
+                background: bg,
+                borderRadius: "10px",
+                fontSize: "15px",
+                fontWeight: "bold"
+            }
+        }).showToast();
 
-        box.style.color =
-            "#fff";
-
-        box.style.padding =
-            "14px";
-
-        box.style.borderRadius =
-            "12px";
-
-        box.style.whiteSpace =
-            "pre-wrap";
-
-        box.style.wordBreak =
-            "break-word";
-
-        box.style.boxShadow =
-            "0 4px 16px rgba(0,0,0,.3)";
-
-        document.body.appendChild(
-            box
-        );
+        return;
 
     }
 
-    let color =
-        "#1976d2";
-
-    if (type === "success")
-        color = "#2e7d32";
-
-    if (type === "error")
-        color = "#d32f2f";
-
-    if (
-        text.startsWith("❌")
-    )
-        color = "#d32f2f";
-
-    if (
-        text.startsWith("✅")
-    )
-        color = "#2e7d32";
-
-    box.style.borderLeft =
-        "6px solid " +
-        color;
-
-    box.innerHTML =
-
-        "<div style='margin-bottom:12px'>" +
-
-        text +
-
-        "</div>" +
-
-        "<button onclick='copyMessage()'>📋 Copy</button> " +
-
-        "<button onclick='closeMessage()'>❌ Đóng</button>";
-
-    window.lastMessage =
-        text;
+    alert(text);
 
 }
 
+async function asyncConfirm(title, text) {
 
+    if (typeof Swal !== "undefined") {
 
-function copyMessage() {
+        const res = await Swal.fire({
+            title: title,
+            text: text,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d32f2f',
+            cancelButtonColor: '#757575',
+            confirmButtonText: 'Đồng ý',
+            cancelButtonText: 'Hủy'
+        });
 
-    navigator.clipboard.writeText(
-
-        window.lastMessage || ""
-
-    );
-
-}
-
-
-
-function closeMessage() {
-
-    const box =
-        document.getElementById(
-            "messageBox"
-        );
-
-    if (box) {
-
-        box.remove();
+        return res.isConfirmed;
 
     }
+
+    return confirm(`${title}\n${text}`);
+
+}
+
+async function asyncPrompt(title, defaultValue = "") {
+
+    if (typeof Swal !== "undefined") {
+
+        const { value } = await Swal.fire({
+            title: title,
+            input: 'text',
+            inputValue: defaultValue,
+            showCancelButton: true,
+            confirmButtonText: 'Lưu',
+            cancelButtonText: 'Hủy'
+        });
+
+        return value;
+
+    }
+
+    return prompt(title, defaultValue);
 
 }
