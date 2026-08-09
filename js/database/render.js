@@ -1,5 +1,5 @@
 let allItems = [];
-
+let viewerInstance = null;
 
 
 function formatDate(dateString) {
@@ -54,9 +54,6 @@ function formatDate(dateString) {
 }
 
 
-
-
-
 function renderTags(tags) {
 
     if (
@@ -79,9 +76,6 @@ function renderTags(tags) {
 }
 
 
-
-
-
 function renderCardExtraImages(images) {
 
     if (
@@ -101,9 +95,7 @@ function renderCardExtraImages(images) {
         html +=
             '<img src="' +
             escapeHtml(img.image_url) +
-            '" loading="lazy" onclick="window.open(\'' +
-            escapeHtml(img.image_url) +
-            '\',\'_blank\')">';
+            '" loading="lazy">';
 
     });
 
@@ -112,9 +104,6 @@ function renderCardExtraImages(images) {
     return html;
 
 }
-
-
-
 
 
 function renderItems(items) {
@@ -130,7 +119,6 @@ function renderItems(items) {
 
     }
 
-    // Không truyền items -> mặc định KHÔNG hiện món trong Thùng rác
     const source =
         items ||
         allItems.filter(
@@ -176,8 +164,7 @@ function renderItems(items) {
 
 <img
 src="${escapeHtml(item.image_url)}"
-loading="lazy"
-onclick="window.open('${escapeHtml(item.image_url)}','_blank')">
+loading="lazy">
 
 </div>
 
@@ -242,5 +229,23 @@ ${actionButtons}
 
     list.innerHTML =
         html;
+
+    // Tích hợp Viewer.js cho toàn bộ danh sách ảnh
+    if (typeof Viewer !== "undefined") {
+
+        if (viewerInstance) {
+
+            viewerInstance.destroy();
+
+        }
+
+        viewerInstance = new Viewer(list, {
+            selector: 'img',
+            toolbar: true,
+            navbar: true,
+            title: false
+        });
+
+    }
 
 }
