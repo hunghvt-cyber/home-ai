@@ -70,3 +70,12 @@ const SUPABASE_URL = "[https://your-supabase-project.supabase.co](https://your-s
 const SUPABASE_KEY = "your-supabase-publishable-key";
 const GEMINI_API_URL = "[https://your-vercel-domain.vercel.app/api/gemini](https://your-vercel-domain.vercel.app/api/gemini)";
 const APP_SECRET = "your-app-secret-key"; // Phải trùng với biến môi trường Vercel
+
+2. Cấu hình Vercel Serverless Function
+​Đặt các biến môi trường trên Vercel Dashboard:
+​GEMINI_API_KEY: API Key lấy từ Google AI Studio.
+​APP_SECRET: Mã bí mật chống spam endpoint (Khớp với APP_SECRET ở client).
+​🔒 Bảo mật
+​Chống Stored XSS: Mọi dữ liệu do người dùng hoặc AI tạo ra trước khi chèn vào DOM đều qua hàm escapeHtml() tích hợp DOMPurify.
+​Bảo vệ API Key: GEMINI_API_KEY nằm hoàn toàn ở môi trường server-side trên Vercel, không lộ ra Client.
+​Xác thực Endpoint AI: Serverless Proxy yêu cầu header x-app-secret để ngăn chặn bot/scanner lợi dụng spam tốn chi phí.
