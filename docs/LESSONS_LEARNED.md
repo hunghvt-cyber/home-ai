@@ -1,190 +1,38 @@
 # Lessons Learned
 
-Tài liệu này ghi lại những bài học quan trọng rút ra trong quá trình phát triển Storage & Forget.
-
-Đây là những kinh nghiệm thực tế để áp dụng cho các dự án sau.
+Tổng hợp những bài học kinh nghiệm xương máu rút ra từ quá trình phát triển và refactor dự án Storage & Forget.
 
 ---
 
-# 1. Chia module càng sớm càng tốt
+# 1. Bảo vệ API Endpoint & Tài nguyên AI
 
-Ban đầu việc gom nhiều chức năng vào một file giúp phát triển nhanh.
-
-Tuy nhiên khi dự án lớn hơn:
-
-- Khó đọc.
-- Khó sửa.
-- Khó mở rộng.
-
-Sau khi tách thành các module:
-
-- Database
-- AI
-- Search
-- Rooms
-- Image
-
-việc phát triển trở nên dễ dàng hơn rất nhiều.
+- **Bài học**: Khi mở rộng các tính năng AI xử lý số lượng lớn (như Multi-Scan hay Burst Mode), bề mặt tấn công sẽ tăng lên đáng kể. Nếu endpoint Serverless Function không có xác thực, kẻ xấu có thể gửi request lặp lại làm cạn kiệt API credit rất nhanh.
+- **Giải pháp**: Thiết lập header bí mật `x-app-secret` truyền giữa Client và Server Proxy. Nếu header này không hợp lệ, Proxy lập tức từ chối request với mã lỗi `401 Unauthorized`.
 
 ---
 
-# 2. Một file chỉ nên có một trách nhiệm
+# 2. Tối ưu hóa Lưu trữ Storage (Shared Resources)
 
-Ví dụ:
-
-- save.js chỉ lưu dữ liệu.
-- load.js chỉ đọc dữ liệu.
-- render.js chỉ hiển thị.
-- image.js chỉ xử lý ảnh.
-- message.js chỉ hiển thị thông báo.
-
-Đây là nguyên tắc giúp code dễ bảo trì.
+- **Bài học**: Ở tính năng Multi-Scan, khi AI tách 1 bức ảnh ra thành N món đồ, nếu không chú ý sẽ dễ dẫn đến việc upload lại chính bức ảnh gốc đó N lần riêng biệt lên Storage, gây lãng phí dung lượng và thời gian upload.
+- **Giải pháp**: Tải bức ảnh gốc lên duy nhất 1 lần trước vòng lặp, lấy URL công khai (`sharedImageUrl`) và gán lại cho tất cả các bản ghi món đồ được chọn.
 
 ---
 
-# 3. Không để Frontend gọi AI trực tiếp
+# 3. Vá lỗ hổng Stored XSS bằng Sanitization Chuẩn
 
-Ban đầu Frontend gọi Gemini API trực tiếp.
-
-Sau đó chuyển sang Edge Function.
-
-Lợi ích:
-
-- Bảo vệ API Key.
-- Dễ thay đổi model.
-- Dễ bảo trì.
-- Dễ kiểm soát request.
-
-Đây là một trong những quyết định đúng nhất của dự án.
+- **Bài học**: Sử dụng Template Literals và `innerHTML` trong Vanilla JS rất tiện lợi để render giao diện, nhưng nếu dữ liệu người dùng (tên đồ, mô tả, vị trí) hoặc dữ liệu AI trả về không qua hàm escape sẽ dẫn đến rủi ro Stored XSS nghiêm trọng.
+- **Giải pháp**: Tạo hàm `escapeHtml()` dùng thư viện `DOMPurify` và ép buộc áp dụng lên 100% các giá trị động trước khi đưa vào DOM.
 
 ---
 
-# 4. Resize ảnh trước khi xử lý
+# 4. Tránh Lỗi N+1 Query trong Database Thao Tác Mảng
 
-Resize ảnh trước khi upload hoặc gửi AI giúp:
-
-- Giảm dung lượng.
-- Tăng tốc xử lý.
-- Giảm băng thông.
-- Tiết kiệm token.
-
-Đây là một bước tối ưu quan trọng.
+- **Bài học**: Việc thực hiện vòng lặp `for...of` gọi query Supabase riêng lẻ cho từng ID bản ghi sẽ làm tăng số lượng request không cần thiết.
+- **Giải pháp**: Gom tất cả danh sách ID và thực hiện query 1 lần bằng cú pháp `.in("id", ids)`.
 
 ---
 
-# 5. Chỉ lưu URL ảnh
+# 5. Tái sử dụng Code (DRY) cho các Module AI
 
-Không lưu Base64 trong Database.
-
-Ưu điểm:
-
-- Database nhỏ.
-- Backup nhanh.
-- Truy vấn hiệu quả hơn.
-- Dễ thay đổi Storage.
-
----
-
-# 6. Hạn chế query lặp
-
-Dữ liệu được tải một lần và lưu trong bộ nhớ.
-
-Các chức năng như:
-
-- Search
-- Filter
-- Rooms
-- Statistics
-
-đều sử dụng lại dữ liệu đã tải.
-
-Điều này giúp giảm request đến Database.
-
----
-
-# 7. Refactor định kỳ
-
-Không nên đợi dự án hoàn thành mới refactor.
-
-Việc cải thiện cấu trúc sau mỗi giai đoạn giúp:
-
-- Code sạch hơn.
-- Ít lỗi hơn.
-- Dễ bổ sung tính năng mới.
-
----
-
-# 8. Viết tài liệu sớm
-
-Đây là bài học lớn nhất.
-
-Nếu viết tài liệu ngay từ đầu sẽ:
-
-- Dễ nhớ quyết định thiết kế.
-- Dễ quay lại dự án sau thời gian dài.
-- Dễ tái sử dụng cho dự án khác.
-
----
-
-# 9. GitHub là một phần của dự án
-
-Không chỉ dùng để lưu mã nguồn.
-
-GitHub còn giúp:
-
-- Theo dõi lịch sử.
-- Quản lý phiên bản.
-- Đồng bộ giữa các thiết bị.
-- Triển khai GitHub Pages.
-
----
-
-# 10. Thiết kế để có thể thay đổi
-
-Trong quá trình phát triển đã thay đổi:
-
-- Model AI.
-- Backend.
-- Kiến trúc triển khai.
-
-Việc tách module giúp các thay đổi này không ảnh hưởng toàn bộ dự án.
-
----
-
-# 11. Xóa code thử nghiệm ngay khi không dùng nữa
-
-Dự án từng thử viết lại backend AI bằng Supabase Edge Functions song song với bản Vercel đang chạy.
-
-Vì không xóa ngay, 2 bản backend dần lệch nhau (khác model, khác tính năng) mà không ai nhận ra cho đến khi đọc lại toàn bộ code.
-
-Bài học:
-
-- Nhánh/bản thử nghiệm không dùng nữa nên xóa khỏi repo chính ngay, hoặc để ở branch riêng.
-- Không giữ lại "phòng khi cần" — vì code cũ không ai bảo trì rất dễ gây hiểu nhầm là đang được dùng thật.
-
----
-
-# Những điều sẽ làm khác nếu bắt đầu lại
-
-- Thiết kế cấu trúc thư mục ngay từ đầu.
-- Dùng ES Modules ngay từ phiên bản đầu tiên.
-- Chuẩn hóa quy tắc đặt tên.
-- Viết tài liệu song song với quá trình phát triển.
-- Tách các service dùng chung sớm hơn.
-
----
-
-# Tổng kết
-
-Storage & Forget không chỉ là một ứng dụng lưu đồ vật.
-
-Đây là một dự án giúp tích lũy kinh nghiệm về:
-
-- Thiết kế kiến trúc.
-- Quản lý mã nguồn.
-- Tổ chức module.
-- AI.
-- Supabase.
-- Triển khai ứng dụng web.
-
-Những bài học này có thể áp dụng trực tiếp cho các dự án web AI trong tương lai.
+- **Bài học**: Việc từng file AI (`vision.js`, `multi-scan.js`, `burst-capture.js`) tự viết lại đoạn mã `fetch()` API sẽ gây lặp mã và khó bảo trì khi cần thay đổi timeout hay đính kèm header mới.
+- **Giải pháp**: Tạo module trung tâm `js/ai/gemini-client.js` chứa hàm `callGeminiAPI()` dùng chung cho toàn hệ thống.
