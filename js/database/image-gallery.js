@@ -176,7 +176,6 @@ function renderPendingExtraImages() {
     strip.innerHTML =
         html;
 
-    // Tích hợp SortableJS cho phép kéo thả sắp xếp ảnh phụ
     if (typeof Sortable !== "undefined") {
 
         if (pendingSortableInstance) {
@@ -204,6 +203,8 @@ function renderPendingExtraImages() {
                 });
 
                 pendingExtraImages = newOrder;
+
+                renderPendingExtraImages();
 
             }
         });
