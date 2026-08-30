@@ -1,31 +1,12 @@
 // js/firebase.js
-// Firestore + ImageKit compatibility adapter for Home AI
-//
-// Mục tiêu:
-// - Giữ nguyên toàn bộ code hiện tại đang gọi db.from(...)
-// - Thay Supabase Database bằng Firestore
-// - Thay Supabase Storage bằng ImageKit
-//
-// Không chứa ImageKit Private Key.
 
 const FIREBASE_CONFIG = {
-    apiKey:
-        "AIzaSyDVGwWuRpdoFJCGhYDG5drIKFqVJp0O3Ro",
-
-    authDomain:
-        "home-ai-55a88.firebaseapp.com",
-
-    projectId:
-        "home-ai-55a88",
-
-    storageBucket:
-        "home-ai-55a88.firebasestorage.app",
-
-    messagingSenderId:
-        "187947750301",
-
-    appId:
-        "1:187947750301:web:3c5b16b16352e0ab71d574"
+    apiKey: "AIzaSyDVGwWuRpdoFJCGhYDG5drIKFqVJp0O3Ro",
+    authDomain: "home-ai-55a88.firebaseapp.com",
+    projectId: "home-ai-55a88",
+    storageBucket: "home-ai-55a88.firebasestorage.app",
+    messagingSenderId: "187947750301",
+    appId: "1:187947750301:web:3c5b16b16352e0ab71d574"
 };
 
 const IMAGEKIT_PUBLIC_KEY =
@@ -45,7 +26,7 @@ const IMAGEKIT_FOLDER =
 
 
 /* =========================================================
-   FIREBASE INITIALIZATION
+   FIREBASE
    ========================================================= */
 
 if (!firebase.apps.length) {
@@ -86,9 +67,11 @@ function cloneValue(value) {
     if (
         typeof value === "object"
     ) {
+
         return JSON.parse(
             JSON.stringify(value)
         );
+
     }
 
     return value;
@@ -113,7 +96,7 @@ function normalizeFirestoreData(
                 if (
                     value &&
                     typeof value.toDate ===
-                        "function"
+                    "function"
                 ) {
 
                     result[key] =
@@ -197,7 +180,7 @@ function projectFields(
 
 
 /* =========================================================
-   FIRESTORE QUERY COMPATIBILITY
+   FIRESTORE QUERY
    ========================================================= */
 
 class FirestoreQuery {
@@ -238,15 +221,6 @@ class FirestoreQuery {
 
         this.selectedFields =
             fields;
-
-        if (
-            this.operation ===
-            "insert"
-        ) {
-
-            return this;
-
-        }
 
         this.operation =
             "select";
@@ -358,8 +332,7 @@ class FirestoreQuery {
             field;
 
         this.orderAscending =
-            options.ascending !==
-            false;
+            options.ascending !== false;
 
         return this;
 
@@ -379,6 +352,7 @@ class FirestoreQuery {
                     .executeInsert();
 
             }
+
 
             const collection =
                 firestore.collection(
@@ -431,40 +405,30 @@ class FirestoreQuery {
                         if (
                             av === bv
                         ) {
-
                             return 0;
-
                         }
 
                         if (
-                            av ===
-                            undefined ||
+                            av === undefined ||
                             av === null
                         ) {
-
                             return -1 *
                                 direction;
-
                         }
 
                         if (
-                            bv ===
-                            undefined ||
+                            bv === undefined ||
                             bv === null
                         ) {
-
                             return 1 *
                                 direction;
-
                         }
 
                         if (
                             av < bv
                         ) {
-
                             return -1 *
                                 direction;
-
                         }
 
                         return 1 *
@@ -513,13 +477,12 @@ class FirestoreQuery {
                     of rows
                 ) {
 
-                    const id =
-                        String(
-                            row.id
-                        );
-
                     await collectionRef
-                        .doc(id)
+                        .doc(
+                            String(
+                                row.id
+                            )
+                        )
                         .set(
                             this.updateData,
                             {
@@ -552,13 +515,12 @@ class FirestoreQuery {
                     of rows
                 ) {
 
-                    const id =
-                        String(
-                            row.id
-                        );
-
                     await collectionRef
-                        .doc(id)
+                        .doc(
+                            String(
+                                row.id
+                            )
+                        )
                         .delete();
 
                 }
@@ -611,16 +573,14 @@ class FirestoreQuery {
                 of this.insertRows
             ) {
 
-                const row =
-                    {
-                        ...original
-                    };
+                const row = {
+                    ...original
+                };
+
 
                 if (
-                    row.id ===
-                    undefined ||
-                    row.id ===
-                    null ||
+                    row.id === undefined ||
+                    row.id === null ||
                     row.id === ""
                 ) {
 
@@ -651,7 +611,9 @@ class FirestoreQuery {
 
                 await collection
                     .doc(
-                        String(row.id)
+                        String(
+                            row.id
+                        )
                     )
                     .set(row);
 
@@ -663,18 +625,15 @@ class FirestoreQuery {
             }
 
 
-            const data =
-                inserted.map(
-                    row =>
-                        projectFields(
-                            row,
-                            this.selectedFields
-                        )
-                );
-
-
             return {
-                data,
+                data:
+                    inserted.map(
+                        row =>
+                            projectFields(
+                                row,
+                                this.selectedFields
+                            )
+                    ),
                 error: null
             };
 
@@ -797,18 +756,10 @@ class FirestoreQuery {
 
 
 /* =========================================================
-   IMAGEKIT STORAGE COMPATIBILITY
+   IMAGEKIT STORAGE
    ========================================================= */
 
 class ImageKitStorage {
-
-    constructor() {
-
-        this.bucket =
-            "images";
-
-    }
-
 
     from() {
 
@@ -819,8 +770,7 @@ class ImageKitStorage {
 
     async upload(
         fileName,
-        blob,
-        options = {}
+        blob
     ) {
 
         try {
@@ -889,18 +839,15 @@ class ImageKitStorage {
                 "false"
             );
 
-            formData.append(
-                "overwriteFile",
-                "false"
-            );
-
 
             const response =
                 await fetch(
                     "https://upload.imagekit.io/api/v1/files/upload",
                     {
-                        method: "POST",
-                        body: formData
+                        method:
+                            "POST",
+                        body:
+                            formData
                     }
                 );
 
@@ -925,14 +872,11 @@ class ImageKitStorage {
                 data: {
                     path:
                         result.filePath,
-
                     url:
                         result.url,
-
                     fileId:
                         result.fileId
                 },
-
                 error: null
             };
 
@@ -991,29 +935,29 @@ class ImageKitStorage {
                 await fetch(
                     IMAGEKIT_STORAGE_URL,
                     {
-                        method: "POST",
+                        method:
+                            "POST",
 
                         headers: {
                             "Content-Type":
                                 "application/json",
 
                             "x-app-secret":
-                                getHomeAiAppSecret()
+                                window
+                                    .HOME_AI_APP_SECRET ||
+                                ""
                         },
 
                         body:
                             JSON.stringify({
                                 action:
                                     "delete",
-
                                 paths:
                                     Array.isArray(
                                         paths
                                     )
                                         ? paths
-                                        : [
-                                            paths
-                                        ]
+                                        : [paths]
                             })
                     }
                 );
@@ -1038,7 +982,6 @@ class ImageKitStorage {
             return {
                 data:
                     result,
-
                 error:
                     null
             };
@@ -1061,10 +1004,7 @@ class ImageKitStorage {
     }
 
 
-    async list(
-        path = "",
-        options = {}
-    ) {
+    async list() {
 
         try {
 
@@ -1072,13 +1012,12 @@ class ImageKitStorage {
                 await fetch(
                     IMAGEKIT_STORAGE_URL +
                     "?action=list",
-
                     {
-                        method: "GET",
-
                         headers: {
                             "x-app-secret":
-                                getHomeAiAppSecret()
+                                window
+                                    .HOME_AI_APP_SECRET ||
+                                ""
                         }
                     }
                 );
@@ -1103,7 +1042,6 @@ class ImageKitStorage {
             return {
                 data:
                     result.files || [],
-
                 error:
                     null
             };
@@ -1127,20 +1065,6 @@ class ImageKitStorage {
 
 }
 
-
-function getHomeAiAppSecret() {
-
-    return (
-        window.HOME_AI_APP_SECRET ||
-        ""
-    );
-
-}
-
-
-/* =========================================================
-   PUBLIC DB OBJECT
-   ========================================================= */
 
 const homeAiDb = {
 
