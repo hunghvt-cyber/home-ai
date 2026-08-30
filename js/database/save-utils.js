@@ -1,40 +1,59 @@
-// js/database/save-utils.js -> Hàm tiện ích & Bảo mật DOMPurify
+// js/database/save-utils.js
+// Hàm tiện ích & xử lý Storage ImageKit
 
 function escapeHtml(text) {
 
-    if (text === null || text === undefined) {
+    if (
+        text === null ||
+        text === undefined
+    ) {
 
         return "";
 
     }
 
-    if (typeof DOMPurify !== "undefined") {
+    if (
+        typeof DOMPurify !==
+        "undefined"
+    ) {
 
-        return DOMPurify.sanitize(String(text));
+        return DOMPurify.sanitize(
+            String(text)
+        );
 
     }
 
     return String(text)
-
-        .replace(/&/g, "&amp;")
-
-        .replace(/</g, "&lt;")
-
-        .replace(/>/g, "&gt;")
-
-        .replace(/"/g, "&quot;")
-
-        .replace(/'/g, "&#039;");
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+        .replace(
+            /</g,
+            "&lt;"
+        )
+        .replace(
+            />/g,
+            "&gt;"
+        )
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+        .replace(
+            /'/g,
+            "&#039;"
+        );
 
 }
-
 
 
 let isSaving = false;
 
 
-
-function showSaving(saveButton) {
+function showSaving(
+    saveButton
+) {
 
     isSaving =
         true;
@@ -48,8 +67,9 @@ function showSaving(saveButton) {
 }
 
 
-
-function hideSaving(saveButton) {
+function hideSaving(
+    saveButton
+) {
 
     isSaving =
         false;
@@ -61,7 +81,6 @@ function hideSaving(saveButton) {
         "💾 Lưu";
 
 }
-
 
 
 function getFormData() {
@@ -129,8 +148,13 @@ function getFormData() {
 }
 
 
+/* =========================================================
+   IMAGEKIT PATH EXTRACTION
+   ========================================================= */
 
-function extractStoragePath(imageUrl) {
+function extractStoragePath(
+    imageUrl
+) {
 
     if (!imageUrl) {
 
@@ -138,35 +162,102 @@ function extractStoragePath(imageUrl) {
 
     }
 
-    const marker =
-        "/images/";
 
-    const index =
-        imageUrl.indexOf(
-            marker
+    /*
+     * ImageKit:
+     *
+     * https://ik.imagekit.io/hunghvt/home-ai/file.webp
+     *
+     * -> home-ai/file.webp
+     */
+
+    try {
+
+        const url =
+            new URL(
+                imageUrl
+            );
+
+        const pathname =
+            decodeURIComponent(
+                url.pathname
+            );
+
+        const marker =
+            "/home-ai/";
+
+        const index =
+            pathname.indexOf(
+                marker
+            );
+
+        if (
+            index !== -1
+        ) {
+
+            return pathname.slice(
+                index +
+                1
+            );
+
+        }
+
+    }
+    catch (error) {
+
+        console.warn(
+            "⚠️ Không parse được ImageKit URL:",
+            imageUrl,
+            error
         );
-
-    if (index === -1) {
-
-        return null;
 
     }
 
-    return imageUrl.slice(
-        index +
-        marker.length
-    );
+
+    /*
+     * Fallback cho URL Supabase cũ.
+     * Không dùng cho dữ liệu mới nhưng giữ
+     * để tránh lỗi nếu sau này còn URL cũ.
+     */
+
+    const oldMarker =
+        "/images/";
+
+    const oldIndex =
+        imageUrl.indexOf(
+            oldMarker
+        );
+
+    if (
+        oldIndex !== -1
+    ) {
+
+        return imageUrl.slice(
+            oldIndex +
+            oldMarker.length
+        );
+
+    }
+
+
+    return null;
 
 }
 
 
+/* =========================================================
+   DELETE IMAGE
+   ========================================================= */
 
-async function deleteStorageImage(imageUrl) {
+async function deleteStorageImage(
+    imageUrl
+) {
 
     const path =
         extractStoragePath(
             imageUrl
         );
+
 
     if (!path) {
 
@@ -179,6 +270,7 @@ async function deleteStorageImage(imageUrl) {
 
     }
 
+
     try {
 
         const result =
@@ -190,10 +282,13 @@ async function deleteStorageImage(imageUrl) {
                     path
                 ]);
 
-        if (result.error) {
+
+        if (
+            result.error
+        ) {
 
             console.error(
-                "❌ [Storage Delete Failed]: Lỗi khi xóa file ->",
+                "❌ [Storage Delete Failed]:",
                 path,
                 result.error
             );
@@ -204,7 +299,7 @@ async function deleteStorageImage(imageUrl) {
     catch (error) {
 
         console.error(
-            "❌ [Storage Delete Exception]: Lỗi ngoại lệ khi xóa file ->",
+            "❌ [Storage Delete Exception]:",
             path,
             error
         );
