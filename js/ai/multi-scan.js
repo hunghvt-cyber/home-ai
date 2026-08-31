@@ -2,6 +2,11 @@
 
 let currentBatchItems = [];
 
+
+// ============================================================
+// MULTI-SCAN CAMERA
+// ============================================================
+
 function openMultiScanCamera() {
 
     const input =
@@ -16,6 +21,7 @@ function openMultiScanCamera() {
     }
 
 }
+
 
 function initMultiScan() {
 
@@ -35,7 +41,14 @@ function initMultiScan() {
 
 }
 
-async function handleMultiScanImage(event) {
+
+// ============================================================
+// MULTI-SCAN ANALYSIS
+// ============================================================
+
+async function handleMultiScanImage(
+    event
+) {
 
     const file =
         event.target.files[0];
@@ -48,9 +61,11 @@ async function handleMultiScanImage(event) {
 
     }
 
+
     showMessage(
         "🤖 AI đang phân tích ảnh Multi-Scan..."
     );
+
 
     try {
 
@@ -59,6 +74,7 @@ async function handleMultiScanImage(event) {
 
         const cleanBase64 =
             base64.split(",")[1];
+
 
         const data =
             await callGeminiAPI({
@@ -74,10 +90,14 @@ async function handleMultiScanImage(event) {
 
             });
 
+
         const items =
             data.items || [];
 
-        if (items.length === 0) {
+
+        if (
+            items.length === 0
+        ) {
 
             showMessage(
                 "⚠️ AI không nhận diện được món đồ nào trong ảnh."
@@ -87,27 +107,44 @@ async function handleMultiScanImage(event) {
 
         }
 
+
         const previewUrl =
             URL.createObjectURL(file);
 
+
         currentBatchItems =
-            items.map(item => ({
+            items.map(
+                item => ({
 
-                file: file,
+                    file:
+                        file,
 
-                previewUrl: previewUrl,
+                    previewUrl:
+                        previewUrl,
 
-                name: item.name || "",
+                    name:
+                        item.name || "",
 
-                tags: item.tags || [],
+                    tags:
+                        Array.isArray(
+                            item.tags
+                        )
+                            ? item.tags
+                            : [],
 
-                description: item.description || "",
+                    description:
+                        item.description ||
+                        "",
 
-                selected: true
+                    selected:
+                        true
 
-            }));
+                })
+            );
+
 
         renderBatchModal();
+
 
         showMessage(
             `📸 AI đã tách được ${items.length} món đồ từ ảnh!`
@@ -116,16 +153,26 @@ async function handleMultiScanImage(event) {
     }
     catch (error) {
 
+        console.error(
+            "Multi-Scan error:",
+            error
+        );
+
+
         showMessage(
             "❌ Lỗi Multi-Scan: " +
             error.message,
-
             "error"
         );
 
     }
 
 }
+
+
+// ============================================================
+// BATCH MODAL
+// ============================================================
 
 function renderBatchModal() {
 
@@ -139,115 +186,237 @@ function renderBatchModal() {
             "batchItemsList"
         );
 
-    if (!modal || !container) {
+
+    if (
+        !modal ||
+        !container
+    ) {
 
         return;
 
     }
 
+
     let html = "";
 
-    currentBatchItems.forEach((item, index) => {
 
-        const tagsStr =
-            Array.isArray(item.tags)
-                ? item.tags.join(", ")
-                : "";
+    currentBatchItems.forEach(
+        (item, index) => {
 
-        html += `
+            const tagsStr =
+                Array.isArray(
+                    item.tags
+                )
+                    ? item.tags.join(
+                        ", "
+                    )
+                    : "";
+
+
+            html += `
+
 <div class="batchItemCard">
 
-<input
-type="checkbox"
-id="batch_chk_${index}"
-${item.selected ? "checked" : ""}
-onchange="toggleBatchItem(${index}, this.checked)">
+    <div class="batchCheckBox">
 
-<img src="${item.previewUrl}">
+        <input
+            type="checkbox"
+            id="batch_chk_${index}"
+            ${
+                item.selected
+                    ? "checked"
+                    : ""
+            }
+            onchange="toggleBatchItem(
+                ${index},
+                this.checked
+            )">
 
-<div class="batchItemInfo">
+    </div>
 
-<input
-type="text"
-id="batch_name_${index}"
-value="${escapeHtml(item.name)}"
-placeholder="Tên món đồ"
-oninput="updateBatchItemName(${index}, this.value)">
 
-<input
-type="text"
-id="batch_tags_${index}"
-value="${escapeHtml(tagsStr)}"
-placeholder="Tags (cách nhau bởi dấu phẩy)"
-oninput="updateBatchItemTags(${index}, this.value)">
+    <img
+        class="batchItemImage"
+        src="${escapeHtml(
+            item.previewUrl
+        )}"
+        alt="${escapeHtml(
+            item.name ||
+            `Món ${index + 1}`
+        )}">
 
-<input
-type="text"
-id="batch_desc_${index}"
-value="${escapeHtml(item.description)}"
-placeholder="Mô tả"
-oninput="updateBatchItemDesc(${index}, this.value)">
+
+    <div class="batchItemInfo">
+
+        <div class="batchItemNumber">
+            Món ${index + 1}
+        </div>
+
+
+        <label
+            for="batch_name_${index}">
+            Tên
+        </label>
+
+        <input
+            type="text"
+            id="batch_name_${index}"
+            value="${escapeHtml(
+                item.name
+            )}"
+            placeholder="Tên món đồ"
+            oninput="
+                updateBatchItemName(
+                    ${index},
+                    this.value
+                )
+            ">
+
+
+        <label
+            for="batch_tags_${index}">
+            Tags
+        </label>
+
+        <input
+            type="text"
+            id="batch_tags_${index}"
+            value="${escapeHtml(
+                tagsStr
+            )}"
+            placeholder="Ví dụ: gia dụng, AQUA"
+            oninput="
+                updateBatchItemTags(
+                    ${index},
+                    this.value
+                )
+            ">
+
+
+        <label
+            for="batch_desc_${index}">
+            Mô tả
+        </label>
+
+        <textarea
+            id="batch_desc_${index}"
+            placeholder="Mô tả món đồ"
+            oninput="
+                updateBatchItemDesc(
+                    ${index},
+                    this.value
+                )
+            ">${escapeHtml(
+                item.description
+            )}</textarea>
+
+    </div>
 
 </div>
 
-</div>
 `;
 
-    });
+        }
+    );
+
 
     container.innerHTML =
         html;
+
 
     modal.style.display =
         "flex";
 
 }
 
-function toggleBatchItem(index, checked) {
 
-    if (currentBatchItems[index]) {
+// ============================================================
+// BATCH ITEM STATE
+// ============================================================
 
-        currentBatchItems[index].selected =
+function toggleBatchItem(
+    index,
+    checked
+) {
+
+    if (
+        currentBatchItems[index]
+    ) {
+
+        currentBatchItems[index]
+            .selected =
             checked;
 
     }
 
 }
 
-function updateBatchItemName(index, val) {
 
-    if (currentBatchItems[index]) {
+function updateBatchItemName(
+    index,
+    value
+) {
 
-        currentBatchItems[index].name =
-            val;
+    if (
+        currentBatchItems[index]
+    ) {
 
-    }
-
-}
-
-function updateBatchItemTags(index, val) {
-
-    if (currentBatchItems[index]) {
-
-        currentBatchItems[index].tags =
-            val.split(",")
-                .map(t => t.trim())
-                .filter(Boolean);
+        currentBatchItems[index]
+            .name =
+            value;
 
     }
 
 }
 
-function updateBatchItemDesc(index, val) {
 
-    if (currentBatchItems[index]) {
+function updateBatchItemTags(
+    index,
+    value
+) {
 
-        currentBatchItems[index].description =
-            val;
+    if (
+        currentBatchItems[index]
+    ) {
+
+        currentBatchItems[index]
+            .tags =
+            value
+                .split(",")
+                .map(
+                    tag =>
+                        tag.trim()
+                )
+                .filter(
+                    Boolean
+                );
 
     }
 
 }
+
+
+function updateBatchItemDesc(
+    index,
+    value
+) {
+
+    if (
+        currentBatchItems[index]
+    ) {
+
+        currentBatchItems[index]
+            .description =
+            value;
+
+    }
+
+}
+
+
+// ============================================================
+// CLOSE MODAL
+// ============================================================
 
 function closeBatchModal() {
 
@@ -256,6 +425,7 @@ function closeBatchModal() {
             "batchModal"
         );
 
+
     if (modal) {
 
         modal.style.display =
@@ -263,24 +433,85 @@ function closeBatchModal() {
 
     }
 
-    currentBatchItems.forEach(item => {
 
-        if (
-            item.previewUrl &&
-            item.previewUrl.startsWith("blob:")
-        ) {
+    currentBatchItems.forEach(
+        item => {
 
-            URL.revokeObjectURL(
+            if (
+                item.previewUrl &&
                 item.previewUrl
-            );
+                    .startsWith(
+                        "blob:"
+                    )
+            ) {
+
+                URL.revokeObjectURL(
+                    item.previewUrl
+                );
+
+            }
 
         }
+    );
 
-    });
 
     currentBatchItems = [];
 
 }
+
+
+// ============================================================
+// UPLOAD CACHE
+// ============================================================
+
+async function getBatchImageUrl(
+    item,
+    imageCache
+) {
+
+    if (!item.file) {
+
+        return "";
+
+    }
+
+
+    // File object làm key.
+    // Multi-Scan: tất cả item có cùng File.
+    // Burst: mỗi item có File riêng.
+    if (
+        imageCache.has(
+            item.file
+        )
+    ) {
+
+        return imageCache.get(
+            item.file
+        );
+
+    }
+
+
+    const imageUrl =
+        await uploadImage(
+            item.file
+        );
+
+
+    imageCache.set(
+        item.file,
+        imageUrl
+    );
+
+
+    return imageUrl;
+
+}
+
+
+// ============================================================
+// SAVE BATCH
+// ============================================================
 
 async function saveBatchItems() {
 
@@ -294,20 +525,32 @@ async function saveBatchItems() {
             "batchLocationInput"
         );
 
+
     const defaultRoom =
-        roomSelect ? roomSelect.value : "";
+        roomSelect
+            ? roomSelect.value
+            : "";
+
 
     const defaultLocation =
-        locationInput ? locationInput.value.trim() : "";
+        locationInput
+            ? locationInput.value.trim()
+            : "";
+
 
     const selectedItems =
         currentBatchItems.filter(
             item =>
                 item.selected &&
-                item.name.trim() !== ""
+                String(
+                    item.name || ""
+                ).trim() !== ""
         );
 
-    if (selectedItems.length === 0) {
+
+    if (
+        selectedItems.length === 0
+    ) {
 
         showMessage(
             "❌ Vui lòng chọn ít nhất 1 món có tên để lưu."
@@ -317,30 +560,56 @@ async function saveBatchItems() {
 
     }
 
+
     showMessage(
         `⏳ Đang lưu ${selectedItems.length} món...`
     );
 
+
     try {
 
-        // Toàn bộ món trong 1 lượt Multi-Scan đều tách ra từ CÙNG 1 ảnh gốc
-        // (selectedItems[0].file === selectedItems[i].file) -> chỉ upload
-        // đúng 1 lần, dùng chung image_url cho mọi món, tránh tốn Storage
-        // và thời gian upload N lần cùng 1 ảnh.
-        const sharedFile =
-            selectedItems[0].file;
+        /*
+         * Image cache rất quan trọng:
+         *
+         * Multi-Scan:
+         *   item 1 -> file A
+         *   item 2 -> file A
+         *   item 3 -> file A
+         *
+         *   => upload A đúng 1 lần.
+         *
+         * Burst:
+         *   item 1 -> file A
+         *   item 2 -> file B
+         *   item 3 -> file C
+         *
+         *   => upload A, B, C riêng.
+         */
 
-        const sharedImageUrl =
-            sharedFile
-                ? await uploadImage(sharedFile)
-                : "";
+        const imageCache =
+            new Map();
 
-        for (const item of selectedItems) {
+
+        let savedCount = 0;
+
+
+        for (
+            const item of selectedItems
+        ) {
+
+            const imageUrl =
+                await getBatchImageUrl(
+                    item,
+                    imageCache
+                );
+
 
             await insertItem({
 
                 name:
-                    item.name.trim(),
+                    String(
+                        item.name || ""
+                    ).trim(),
 
                 room:
                     defaultRoom,
@@ -349,43 +618,70 @@ async function saveBatchItems() {
                     defaultLocation,
 
                 tags:
-                    item.tags,
+                    Array.isArray(
+                        item.tags
+                    )
+                        ? item.tags
+                        : [],
 
                 description:
-                    item.description,
+                    item.description ||
+                    "",
 
                 image_url:
-                    sharedImageUrl
+                    imageUrl
 
             });
 
+
+            savedCount++;
+
         }
+
 
         closeBatchModal();
 
-        if (typeof loadItems === "function") {
+
+        if (
+            typeof loadItems ===
+            "function"
+        ) {
 
             await loadItems();
 
         }
 
+
         showMessage(
-            `✅ Đã lưu thành công ${selectedItems.length} món vào ${defaultRoom || "danh sách"}!`
+            `✅ Đã lưu thành công ${savedCount} món vào ${
+                defaultRoom ||
+                "danh sách"
+            }!`
         );
 
     }
     catch (error) {
 
+        console.error(
+            "Batch save error:",
+            error
+        );
+
+
         showMessage(
             "❌ Lỗi khi lưu danh sách: " +
             error.message,
-
             "error"
         );
 
     }
 
 }
+
+
+// ============================================================
+// INIT
+// ============================================================
 
 document.addEventListener(
     "DOMContentLoaded",
