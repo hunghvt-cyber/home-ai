@@ -1,15 +1,105 @@
-import { createVisionPrompt, createMultiVisionPrompt } from "./prompt.js";
-import { cleanGeminiResponse, cleanMultiGeminiResponse } from "./response.js";
+import {
+    createVisionPrompt,
+    createMultiVisionPrompt
+} from "./prompt.js";
 
-const MODEL = "gemini-flash-latest";
+import {
+    cleanGeminiResponse,
+    cleanMultiGeminiResponse
+} from "./response.js";
+
+
+// ============================================================
+// CONFIG
+// ============================================================
+
+// Model chính.
+// Không dùng alias "latest" vì một model alias đang bị 503.
+const PRIMARY_MODEL =
+    "gemini-3.5-flash";
+
+// Fallback theo thứ tự.
+// Nếu model trước bị 503/429 thì thử model tiếp theo.
+const FALLBACK_MODELS = [
+    "gemini-3.6-flash",
+    "gemini-2.5-flash"
+];
 
 const GEMINI_API_KEY =
     process.env.GEMINI_API_KEY;
 
-const TIMEOUT =
-    60000;
+const APP_SECRET =
+    process.env.APP_SECRET;
 
-async function callGemini(url, body) {
+// Timeout cho từng request Gemini.
+const TIMEOUT =
+    30000;
+
+
+// ============================================================
+// HELPERS
+// ============================================================
+
+function getModelsToTry(requestedModel) {
+
+    // Cho phép test/debug truyền model từ request.
+    // Nếu không truyền thì dùng primary + fallback.
+    if (requestedModel) {
+
+        const normalized =
+            String(requestedModel)
+                .trim()
+                .replace(/^models\//, "");
+
+        if (normalized) {
+
+            return [
+                normalized,
+                ...FALLBACK_MODELS.filter(
+                    model =>
+                        model !== normalized
+                )
+            ];
+
+        }
+
+    }
+
+    return [
+        PRIMARY_MODEL,
+        ...FALLBACK_MODELS
+    ];
+
+}
+
+
+function isRetryableStatus(status) {
+
+    return (
+        status === 429 ||
+        status === 500 ||
+        status === 502 ||
+        status === 503 ||
+        status === 504
+    );
+
+}
+
+
+function sleep(ms) {
+
+    return new Promise(
+        resolve =>
+            setTimeout(resolve, ms)
+    );
+
+}
+
+
+async function callGemini(
+    model,
+    body
+) {
 
     const controller =
         new AbortController();
@@ -20,6 +110,9 @@ async function callGemini(url, body) {
             TIMEOUT
         );
 
+    const url =
+        `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(GEMINI_API_KEY)}`;
+
     try {
 
         const response =
@@ -29,10 +122,8 @@ async function callGemini(url, body) {
                     method: "POST",
 
                     headers: {
-
                         "Content-Type":
                             "application/json"
-
                     },
 
                     body:
@@ -40,24 +131,79 @@ async function callGemini(url, body) {
 
                     signal:
                         controller.signal
-
                 }
             );
 
-        clearTimeout(timeout);
+        let result = {};
 
-        const result =
-            await response.json();
+        try {
+
+            result =
+                await response.json();
+
+        }
+        catch {
+
+            result = {
+                error: {
+                    message:
+                        "Gemini returned an invalid JSON response."
+                }
+            };
+
+        }
 
         return {
-
             ok:
                 response.ok,
 
             status:
                 response.status,
 
-            result
+            result,
+
+            model
+
+        };
+
+    }
+    catch (error) {
+
+        if (
+            error &&
+            error.name === "AbortError"
+        ) {
+
+            return {
+                ok: false,
+                status: 408,
+
+                result: {
+                    error: {
+                        message:
+                            "Gemini request timeout."
+                    }
+                },
+
+                model
+
+            };
+
+        }
+
+        return {
+            ok: false,
+            status: 500,
+
+            result: {
+                error: {
+                    message:
+                        error?.message ||
+                        "Gemini network error."
+                }
+            },
+
+            model
 
         };
 
@@ -70,7 +216,19 @@ async function callGemini(url, body) {
 
 }
 
-export default async function handler(req, res) {
+
+// ============================================================
+// HANDLER
+// ============================================================
+
+export default async function handler(
+    req,
+    res
+) {
+
+    // --------------------------------------------------------
+    // CORS
+    // --------------------------------------------------------
 
     res.setHeader(
         "Access-Control-Allow-Origin",
@@ -87,88 +245,154 @@ export default async function handler(req, res) {
         "Content-Type, x-app-secret"
     );
 
-    if (req.method === "OPTIONS") {
 
-        return res.status(200).end();
-
-    }
-
-    if (req.method !== "POST") {
-
-        return res.status(405).json({
-
-            error:
-                "Method not allowed"
-
-        });
-
-    }
-
-    const appSecret =
-        process.env.APP_SECRET;
+    // --------------------------------------------------------
+    // OPTIONS
+    // --------------------------------------------------------
 
     if (
-        appSecret &&
-        req.headers["x-app-secret"] !== appSecret
+        req.method === "OPTIONS"
     ) {
 
-        return res.status(401).json({
-
-            error:
-                "Unauthorized"
-
-        });
+        return res
+            .status(200)
+            .end();
 
     }
+
+
+    // --------------------------------------------------------
+    // METHOD
+    // --------------------------------------------------------
+
+    if (
+        req.method !== "POST"
+    ) {
+
+        return res
+            .status(405)
+            .json({
+                error:
+                    "Method not allowed"
+            });
+
+    }
+
+
+    // --------------------------------------------------------
+    // APP SECRET
+    // --------------------------------------------------------
+
+    if (
+        APP_SECRET &&
+        req.headers["x-app-secret"] !==
+            APP_SECRET
+    ) {
+
+        return res
+            .status(401)
+            .json({
+                error:
+                    "Unauthorized"
+            });
+
+    }
+
+
+    // --------------------------------------------------------
+    // ENV CHECK
+    // --------------------------------------------------------
+
+    if (!GEMINI_API_KEY) {
+
+        console.error(
+            "GEMINI_API_KEY is missing."
+        );
+
+        return res
+            .status(500)
+            .json({
+                error:
+                    "Gemini API key is not configured."
+            });
+
+    }
+
+
+    // --------------------------------------------------------
+    // REQUEST
+    // --------------------------------------------------------
 
     try {
 
+        const body =
+            req.body || {};
+
         const {
-
             imageBase64,
-
             mimeType,
-
             rooms,
+            mode = "single",
+            model
+        } = body;
 
-            mode = "single"
 
-        } = req.body;
+        // ----------------------------------------------------
+        // IMAGE CHECK
+        // ----------------------------------------------------
 
         if (!imageBase64) {
 
-            return res.status(400).json({
-
-                error:
-                    "Missing image"
-
-            });
+            return res
+                .status(400)
+                .json({
+                    error:
+                        "Missing image"
+                });
 
         }
 
-        const promptText = mode === "multi"
-            ? createMultiVisionPrompt()
-            : createVisionPrompt(rooms || []);
 
-        const url =
-            `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${GEMINI_API_KEY}`;
+        // ----------------------------------------------------
+        // MODE
+        // ----------------------------------------------------
 
-        const body = {
+        const normalizedMode =
+            mode === "multi"
+                ? "multi"
+                : "single";
+
+
+        // ----------------------------------------------------
+        // PROMPT
+        // ----------------------------------------------------
+
+        const promptText =
+            normalizedMode === "multi"
+                ? createMultiVisionPrompt()
+                : createVisionPrompt(
+                    Array.isArray(rooms)
+                        ? rooms
+                        : []
+                );
+
+
+        // ----------------------------------------------------
+        // GEMINI BODY
+        // ----------------------------------------------------
+
+        const geminiBody = {
 
             contents: [
-
                 {
-
                     parts: [
 
                         {
-
-                            text: promptText
-
+                            text:
+                                promptText
                         },
 
                         {
-
                             inline_data: {
 
                                 mime_type:
@@ -190,9 +414,6 @@ export default async function handler(req, res) {
 
             generationConfig: {
 
-                temperature:
-                    0.2,
-
                 responseMimeType:
                     "application/json"
 
@@ -200,59 +421,309 @@ export default async function handler(req, res) {
 
         };
 
-        let gemini =
-            await callGemini(
-                url,
-                body
+
+        // ----------------------------------------------------
+        // MODEL LIST
+        // ----------------------------------------------------
+
+        const models =
+            getModelsToTry(model);
+
+
+        console.log(
+            "[Gemini] Models:",
+            models.join(", ")
+        );
+
+
+        // ----------------------------------------------------
+        // TRY MODELS
+        // ----------------------------------------------------
+
+        let lastResult =
+            null;
+
+
+        for (
+            let modelIndex = 0;
+            modelIndex < models.length;
+            modelIndex++
+        ) {
+
+            const currentModel =
+                models[modelIndex];
+
+
+            console.log(
+                `[Gemini] Trying ${currentModel}`
             );
 
-        if (!gemini.ok) {
 
-            console.warn(
-                "Retry Gemini..."
-            );
+            // ------------------------------------------------
+            // FIRST ATTEMPT
+            // ------------------------------------------------
 
-            gemini =
+            let gemini =
                 await callGemini(
-                    url,
-                    body
+                    currentModel,
+                    geminiBody
                 );
 
-        }
 
-        if (!gemini.ok) {
+            // ------------------------------------------------
+            // SUCCESS
+            // ------------------------------------------------
 
-            console.error(
-                "Gemini HTTP Error:",
+            if (
+                gemini.ok
+            ) {
+
+                console.log(
+                    `[Gemini] Success: ${currentModel}`
+                );
+
+                return processGeminiResult(
+                    res,
+                    gemini.result,
+                    normalizedMode,
+                    currentModel
+                );
+
+            }
+
+
+            lastResult =
+                gemini;
+
+
+            console.warn(
+                `[Gemini] ${currentModel} failed:`,
+                gemini.status,
                 gemini.result
             );
 
-            return res
-                .status(
+
+            // ------------------------------------------------
+            // RETRY ONLY TRANSIENT ERRORS
+            // ------------------------------------------------
+
+            if (
+                isRetryableStatus(
                     gemini.status
                 )
+            ) {
+
+                // Không retry quá lâu.
+                // Một retry sau 1.2 giây.
+                await sleep(1200);
+
+
+                console.log(
+                    `[Gemini] Retrying ${currentModel}`
+                );
+
+
+                gemini =
+                    await callGemini(
+                        currentModel,
+                        geminiBody
+                    );
+
+
+                // --------------------------------------------
+                // RETRY SUCCESS
+                // --------------------------------------------
+
+                if (
+                    gemini.ok
+                ) {
+
+                    console.log(
+                        `[Gemini] Retry success: ${currentModel}`
+                    );
+
+                    return processGeminiResult(
+                        res,
+                        gemini.result,
+                        normalizedMode,
+                        currentModel
+                    );
+
+                }
+
+
+                lastResult =
+                    gemini;
+
+
+                console.warn(
+                    `[Gemini] Retry failed ${currentModel}:`,
+                    gemini.status,
+                    gemini.result
+                );
+
+            }
+
+
+            // ------------------------------------------------
+            // NEXT MODEL
+            // ------------------------------------------------
+
+            if (
+                modelIndex <
+                models.length - 1
+            ) {
+
+                console.warn(
+                    `[Gemini] Switching from ${currentModel} to ${models[modelIndex + 1]}`
+                );
+
+            }
+
+        }
+
+
+        // ----------------------------------------------------
+        // ALL MODELS FAILED
+        // ----------------------------------------------------
+
+        console.error(
+            "[Gemini] All models failed:",
+            lastResult
+        );
+
+
+        const finalStatus =
+            lastResult?.status &&
+            Number.isInteger(
+                lastResult.status
+            )
+                ? lastResult.status
+                : 503;
+
+
+        return res
+            .status(finalStatus)
+            .json({
+
+                error:
+                    "Gemini API Error",
+
+                model:
+                    lastResult?.model ||
+                    null,
+
+                detail:
+                    lastResult?.result ||
+                    {
+                        error: {
+                            message:
+                                "All Gemini models failed."
+                        }
+                    }
+
+            });
+
+
+    }
+    catch (error) {
+
+        console.error(
+            "[Gemini] Handler error:",
+            error
+        );
+
+
+        if (
+            error?.name ===
+            "AbortError"
+        ) {
+
+            return res
+                .status(408)
                 .json({
-
                     error:
-                        "Gemini API Error",
-
-                    detail:
-                        gemini.result
-
+                        "Gemini timeout"
                 });
 
         }
 
-        const text =
-            gemini.result
-                ?.candidates?.[0]
-                ?.content
-                ?.parts?.[0]
-                ?.text || "";
 
-        const ai = mode === "multi"
-            ? cleanMultiGeminiResponse(text)
-            : cleanGeminiResponse(text);
+        return res
+            .status(500)
+            .json({
+
+                error:
+                    error?.message ||
+                    "Unknown error"
+
+            });
+
+    }
+
+}
+
+
+// ============================================================
+// RESPONSE PROCESSOR
+// ============================================================
+
+function processGeminiResult(
+    res,
+    result,
+    mode,
+    model
+) {
+
+    const text =
+        result
+            ?.candidates?.[0]
+            ?.content
+            ?.parts?.[0]
+            ?.text ||
+        "";
+
+
+    if (!text) {
+
+        console.error(
+            "[Gemini] Empty model response:",
+            result
+        );
+
+        return res
+            .status(502)
+            .json({
+
+                error:
+                    "Gemini returned an empty response.",
+
+                model,
+
+                detail:
+                    result
+
+            });
+
+    }
+
+
+    try {
+
+        const ai =
+            mode === "multi"
+                ? cleanMultiGeminiResponse(
+                    text
+                )
+                : cleanGeminiResponse(
+                    text
+                );
+
+
+        console.log(
+            `[Gemini] Parsed successfully with ${model}`
+        );
+
 
         return res
             .status(200)
@@ -262,33 +733,26 @@ export default async function handler(req, res) {
     catch (error) {
 
         console.error(
-            "Gemini Error:",
+            "[Gemini] Response parsing error:",
             error
         );
 
-        if (
-            error.name ===
-            "AbortError"
-        ) {
-
-            return res
-                .status(408)
-                .json({
-
-                    error:
-                        "Gemini timeout"
-
-                });
-
-        }
 
         return res
-            .status(500)
+            .status(502)
             .json({
 
                 error:
-                    error.message ||
-                    "Unknown error"
+                    "Gemini response parsing failed.",
+
+                model,
+
+                detail:
+                    error?.message ||
+                    "Invalid Gemini response.",
+
+                raw:
+                    text
 
             });
 
