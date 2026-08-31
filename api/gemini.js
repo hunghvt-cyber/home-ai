@@ -58,33 +58,14 @@ function isRetryableStatus(status) {
 }
 
 
-function getModelsToTry(
-    requestedModel
-) {
+function getModelsToTry() {
 
-    if (requestedModel) {
-
-        const normalized =
-            String(requestedModel)
-                .trim()
-                .replace(
-                    /^models\//,
-                    ""
-                );
-
-        if (normalized) {
-
-            return [
-                normalized,
-                ...FALLBACK_MODELS.filter(
-                    model =>
-                        model !== normalized
-                )
-            ];
-
-        }
-
-    }
+    /*
+     * Production model policy:
+     *
+     * The browser must not choose which Gemini model is used.
+     * Only this server-side list controls model selection.
+     */
 
     return [
         PRIMARY_MODEL,
@@ -428,8 +409,7 @@ export default async function handler(
             imageBase64,
             mimeType,
             rooms,
-            mode = "single",
-            model
+            mode = "single"
         } = body;
 
 
@@ -520,9 +500,7 @@ export default async function handler(
         // ----------------------------------------------------
 
         const models =
-            getModelsToTry(
-                model
-            );
+            getModelsToTry();
 
 
         console.log(
