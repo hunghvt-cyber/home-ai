@@ -2,6 +2,11 @@
 
 const BURST_CONCURRENCY = 3;
 
+
+// ============================================================
+// OPEN BURST
+// ============================================================
+
 function openBurstCapture() {
 
     const input =
@@ -16,6 +21,11 @@ function openBurstCapture() {
     }
 
 }
+
+
+// ============================================================
+// INIT
+// ============================================================
 
 function initBurstCapture() {
 
@@ -35,15 +45,28 @@ function initBurstCapture() {
 
 }
 
-async function analyzeOneBurstImage(file, index, roomList) {
+
+// ============================================================
+// ANALYZE ONE IMAGE
+// ============================================================
+
+async function analyzeOneBurstImage(
+    file,
+    index,
+    roomList
+) {
 
     try {
 
         const base64 =
-            await fileToBase64(file);
+            await fileToBase64(
+                file
+            );
+
 
         const cleanBase64 =
             base64.split(",")[1];
+
 
         const ai =
             await callGeminiAPI({
@@ -62,23 +85,44 @@ async function analyzeOneBurstImage(file, index, roomList) {
 
             });
 
+
         return {
 
-            file: file,
+            // IMPORTANT:
+            // Mỗi Burst item giữ FILE RIÊNG.
+            file:
+                file,
 
             previewUrl:
-                URL.createObjectURL(file),
+                URL.createObjectURL(
+                    file
+                ),
 
             name:
-                ai.name || `Món đồ ${index + 1}`,
+                ai.name ||
+                `Món đồ ${index + 1}`,
+
+            location:
+                ai.location ||
+                "",
+
+            room:
+                ai.room ||
+                "",
 
             tags:
-                ai.tags || [],
+                Array.isArray(
+                    ai.tags
+                )
+                    ? ai.tags
+                    : [],
 
             description:
-                ai.description || "",
+                ai.description ||
+                "",
 
-            selected: true
+            selected:
+                true
 
         };
 
@@ -90,21 +134,34 @@ async function analyzeOneBurstImage(file, index, roomList) {
             error
         );
 
+
         return {
 
-            file: file,
+            file:
+                file,
 
             previewUrl:
-                URL.createObjectURL(file),
+                URL.createObjectURL(
+                    file
+                ),
 
             name:
                 `Món đồ ${index + 1}`,
 
-            tags: [],
+            location:
+                "",
 
-            description: "",
+            room:
+                "",
 
-            selected: true
+            tags:
+                [],
+
+            description:
+                "",
+
+            selected:
+                true
 
         };
 
@@ -112,20 +169,32 @@ async function analyzeOneBurstImage(file, index, roomList) {
 
 }
 
-async function handleBurstCaptureImages(event) {
+
+// ============================================================
+// BURST PROCESSING
+// ============================================================
+
+async function handleBurstCaptureImages(
+    event
+) {
 
     const files =
         Array.from(
             event.target.files || []
         );
 
+
     event.target.value = "";
 
-    if (files.length === 0) {
+
+    if (
+        files.length === 0
+    ) {
 
         return;
 
     }
+
 
     const statusBox =
         document.getElementById(
@@ -142,6 +211,7 @@ async function handleBurstCaptureImages(event) {
             "burstProgressBar"
         );
 
+
     if (statusBox) {
 
         statusBox.style.display =
@@ -149,38 +219,54 @@ async function handleBurstCaptureImages(event) {
 
     }
 
+
     let roomList = [];
+
 
     try {
 
-        const { data: roomsData } =
+        const result =
             await db
                 .from("rooms")
                 .select("name");
 
+
+        const roomsData =
+            result.data;
+
+
         roomList =
             roomsData
-                ? roomsData.map(r => r.name)
+                ? roomsData.map(
+                    room =>
+                        room.name
+                )
                 : [];
 
     }
-    catch (e) {
+    catch (error) {
 
         console.warn(
             "Không lấy được danh sách phòng:",
-            e
+            error
         );
 
     }
 
+
     const processedBatch =
-        new Array(files.length);
+        new Array(
+            files.length
+        );
+
 
     let doneCount = 0;
 
-    // Xử lý song song từng nhóm nhỏ (BURST_CONCURRENCY ảnh/lượt)
-    // thay vì tuần tự từng ảnh -> nhanh hơn đáng kể khi burst nhiều ảnh,
-    // đồng thời không gửi quá nhiều request cùng lúc lên Gemini.
+
+    // ========================================================
+    // PROCESS IN CHUNKS
+    // ========================================================
+
     for (
         let start = 0;
         start < files.length;
@@ -190,38 +276,58 @@ async function handleBurstCaptureImages(event) {
         const chunk =
             files.slice(
                 start,
-                start + BURST_CONCURRENCY
+                start +
+                BURST_CONCURRENCY
             );
+
 
         const results =
             await Promise.all(
-
-                chunk.map(function(file, i) {
-
-                    return analyzeOneBurstImage(
+                chunk.map(
+                    function(
                         file,
-                        start + i,
-                        roomList
-                    );
+                        offset
+                    ) {
 
-                })
+                        return analyzeOneBurstImage(
+                            file,
+                            start + offset,
+                            roomList
+                        );
 
+                    }
+                )
             );
 
-        results.forEach(function(result, i) {
 
-            processedBatch[start + i] =
-                result;
+        results.forEach(
+            function(
+                result,
+                offset
+            ) {
 
-        });
+                processedBatch[
+                    start + offset
+                ] =
+                    result;
+
+            }
+        );
+
 
         doneCount +=
             chunk.length;
 
+
         const progressPercent =
             Math.round(
-                (doneCount / files.length) * 100
+                (
+                    doneCount /
+                    files.length
+                ) *
+                100
             );
+
 
         if (statusText) {
 
@@ -229,6 +335,7 @@ async function handleBurstCaptureImages(event) {
                 `⚡ Đang phân tích ảnh ${doneCount}/${files.length}...`;
 
         }
+
 
         if (progressBar) {
 
@@ -239,6 +346,7 @@ async function handleBurstCaptureImages(event) {
 
     }
 
+
     if (statusBox) {
 
         statusBox.style.display =
@@ -246,16 +354,24 @@ async function handleBurstCaptureImages(event) {
 
     }
 
+
     currentBatchItems =
         processedBatch;
 
+
     renderBatchModal();
+
 
     showMessage(
         `⚡ Đã xử lý xong ${files.length} ảnh trong Burst Mode!`
     );
 
 }
+
+
+// ============================================================
+// INIT
+// ============================================================
 
 document.addEventListener(
     "DOMContentLoaded",
