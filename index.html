@@ -22,6 +22,7 @@ href="css/style.css">
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/12.18.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.18.0/firebase-auth-compat.js"></script>
 
 <!-- Firebase + Firestore + ImageKit adapter -->
 <script src="js/firebase.js"></script>
@@ -45,7 +46,7 @@ href="css/style.css">
 
 <body>
 
-<div class="container">
+<div id="appContainer" class="container" style="display:none;">
 
 <h2>🏠 Home AI</h2>
 
@@ -378,6 +379,7 @@ style="display:none;">
 <script src="js/ai/multi-scan.js"></script>
 <script src="js/ai/burst-capture.js"></script>
 
+<script src="js/auth.js"></script>
 <script src="js/app.js"></script>
 
 </body>
