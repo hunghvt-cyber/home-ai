@@ -10,16 +10,12 @@ import {
 
 
 // ============================================================
-// CONFIG
+// GEMINI CONFIG
 // ============================================================
 
-// Model chính.
-// Không dùng alias "latest" vì một model alias đang bị 503.
 const PRIMARY_MODEL =
     "gemini-3.5-flash";
 
-// Fallback theo thứ tự.
-// Nếu model trước bị 503/429 thì thử model tiếp theo.
 const FALLBACK_MODELS = [
     "gemini-3.6-flash",
     "gemini-2.5-flash"
@@ -31,7 +27,6 @@ const GEMINI_API_KEY =
 const APP_SECRET =
     process.env.APP_SECRET;
 
-// Timeout cho từng request Gemini.
 const TIMEOUT =
     30000;
 
@@ -40,16 +35,42 @@ const TIMEOUT =
 // HELPERS
 // ============================================================
 
-function getModelsToTry(requestedModel) {
+function sleep(ms) {
 
-    // Cho phép test/debug truyền model từ request.
-    // Nếu không truyền thì dùng primary + fallback.
+    return new Promise(
+        resolve =>
+            setTimeout(resolve, ms)
+    );
+
+}
+
+
+function isRetryableStatus(status) {
+
+    return (
+        status === 429 ||
+        status === 500 ||
+        status === 502 ||
+        status === 503 ||
+        status === 504
+    );
+
+}
+
+
+function getModelsToTry(
+    requestedModel
+) {
+
     if (requestedModel) {
 
         const normalized =
             String(requestedModel)
                 .trim()
-                .replace(/^models\//, "");
+                .replace(
+                    /^models\//,
+                    ""
+                );
 
         if (normalized) {
 
@@ -73,28 +94,9 @@ function getModelsToTry(requestedModel) {
 }
 
 
-function isRetryableStatus(status) {
-
-    return (
-        status === 429 ||
-        status === 500 ||
-        status === 502 ||
-        status === 503 ||
-        status === 504
-    );
-
-}
-
-
-function sleep(ms) {
-
-    return new Promise(
-        resolve =>
-            setTimeout(resolve, ms)
-    );
-
-}
-
+// ============================================================
+// GEMINI REQUEST
+// ============================================================
 
 async function callGemini(
     model,
@@ -147,13 +149,14 @@ async function callGemini(
             result = {
                 error: {
                     message:
-                        "Gemini returned an invalid JSON response."
+                        "Gemini returned invalid JSON."
                 }
             };
 
         }
 
         return {
+
             ok:
                 response.ok,
 
@@ -171,11 +174,14 @@ async function callGemini(
 
         if (
             error &&
-            error.name === "AbortError"
+            error.name ===
+            "AbortError"
         ) {
 
             return {
+
                 ok: false,
+
                 status: 408,
 
                 result: {
@@ -192,7 +198,9 @@ async function callGemini(
         }
 
         return {
+
             ok: false,
+
             status: 500,
 
             result: {
@@ -218,7 +226,95 @@ async function callGemini(
 
 
 // ============================================================
-// HANDLER
+// RESPONSE PROCESSOR
+// ============================================================
+
+function processGeminiResult(
+    res,
+    result,
+    mode,
+    model
+) {
+
+    const text =
+        result
+            ?.candidates?.[0]
+            ?.content
+            ?.parts?.[0]
+            ?.text ||
+        "";
+
+    if (!text) {
+
+        console.error(
+            "[Gemini] Empty response:",
+            result
+        );
+
+        return res
+            .status(502)
+            .json({
+
+                error:
+                    "Gemini returned an empty response.",
+
+                model,
+
+                detail:
+                    result
+
+            });
+
+    }
+
+    try {
+
+        const ai =
+            mode === "multi"
+                ? cleanMultiGeminiResponse(
+                    text
+                )
+                : cleanGeminiResponse(
+                    text
+                );
+
+        return res
+            .status(200)
+            .json(ai);
+
+    }
+    catch (error) {
+
+        console.error(
+            "[Gemini] Response parsing error:",
+            error
+        );
+
+        return res
+            .status(502)
+            .json({
+
+                error:
+                    "Gemini response parsing failed.",
+
+                model,
+
+                detail:
+                    error?.message ||
+                    "Invalid Gemini response.",
+
+                raw:
+                    text
+
+            });
+
+    }
+
+}
+
+
+// ============================================================
+// API HANDLER
 // ============================================================
 
 export default async function handler(
@@ -300,13 +396,13 @@ export default async function handler(
 
 
     // --------------------------------------------------------
-    // ENV CHECK
+    // API KEY
     // --------------------------------------------------------
 
     if (!GEMINI_API_KEY) {
 
         console.error(
-            "GEMINI_API_KEY is missing."
+            "[Gemini] GEMINI_API_KEY missing."
         );
 
         return res
@@ -337,10 +433,6 @@ export default async function handler(
         } = body;
 
 
-        // ----------------------------------------------------
-        // IMAGE CHECK
-        // ----------------------------------------------------
-
         if (!imageBase64) {
 
             return res
@@ -352,10 +444,6 @@ export default async function handler(
 
         }
 
-
-        // ----------------------------------------------------
-        // MODE
-        // ----------------------------------------------------
 
         const normalizedMode =
             mode === "multi"
@@ -384,7 +472,9 @@ export default async function handler(
         const geminiBody = {
 
             contents: [
+
                 {
+
                     parts: [
 
                         {
@@ -414,6 +504,9 @@ export default async function handler(
 
             generationConfig: {
 
+                temperature:
+                    0.2,
+
                 responseMimeType:
                     "application/json"
 
@@ -423,11 +516,13 @@ export default async function handler(
 
 
         // ----------------------------------------------------
-        // MODEL LIST
+        // MODELS
         // ----------------------------------------------------
 
         const models =
-            getModelsToTry(model);
+            getModelsToTry(
+                model
+            );
 
 
         console.log(
@@ -436,22 +531,22 @@ export default async function handler(
         );
 
 
-        // ----------------------------------------------------
-        // TRY MODELS
-        // ----------------------------------------------------
-
         let lastResult =
             null;
 
 
+        // ----------------------------------------------------
+        // MODEL LOOP
+        // ----------------------------------------------------
+
         for (
-            let modelIndex = 0;
-            modelIndex < models.length;
-            modelIndex++
+            let index = 0;
+            index < models.length;
+            index++
         ) {
 
             const currentModel =
-                models[modelIndex];
+                models[index];
 
 
             console.log(
@@ -460,7 +555,7 @@ export default async function handler(
 
 
             // ------------------------------------------------
-            // FIRST ATTEMPT
+            // FIRST REQUEST
             // ------------------------------------------------
 
             let gemini =
@@ -469,10 +564,6 @@ export default async function handler(
                     geminiBody
                 );
 
-
-            // ------------------------------------------------
-            // SUCCESS
-            // ------------------------------------------------
 
             if (
                 gemini.ok
@@ -504,7 +595,7 @@ export default async function handler(
 
 
             // ------------------------------------------------
-            // RETRY ONLY TRANSIENT ERRORS
+            // RETRY TRANSIENT ERROR
             // ------------------------------------------------
 
             if (
@@ -513,8 +604,6 @@ export default async function handler(
                 )
             ) {
 
-                // Không retry quá lâu.
-                // Một retry sau 1.2 giây.
                 await sleep(1200);
 
 
@@ -529,10 +618,6 @@ export default async function handler(
                         geminiBody
                     );
 
-
-                // --------------------------------------------
-                // RETRY SUCCESS
-                // --------------------------------------------
 
                 if (
                     gemini.ok
@@ -570,12 +655,12 @@ export default async function handler(
             // ------------------------------------------------
 
             if (
-                modelIndex <
+                index <
                 models.length - 1
             ) {
 
                 console.warn(
-                    `[Gemini] Switching from ${currentModel} to ${models[modelIndex + 1]}`
+                    `[Gemini] Switching to ${models[index + 1]}`
                 );
 
             }
@@ -584,7 +669,7 @@ export default async function handler(
 
 
         // ----------------------------------------------------
-        // ALL MODELS FAILED
+        // ALL FAILED
         // ----------------------------------------------------
 
         console.error(
@@ -593,7 +678,7 @@ export default async function handler(
         );
 
 
-        const finalStatus =
+        const status =
             lastResult?.status &&
             Number.isInteger(
                 lastResult.status
@@ -603,7 +688,7 @@ export default async function handler(
 
 
         return res
-            .status(finalStatus)
+            .status(status)
             .json({
 
                 error:
@@ -623,7 +708,6 @@ export default async function handler(
                     }
 
             });
-
 
     }
     catch (error) {
@@ -656,103 +740,6 @@ export default async function handler(
                 error:
                     error?.message ||
                     "Unknown error"
-
-            });
-
-    }
-
-}
-
-
-// ============================================================
-// RESPONSE PROCESSOR
-// ============================================================
-
-function processGeminiResult(
-    res,
-    result,
-    mode,
-    model
-) {
-
-    const text =
-        result
-            ?.candidates?.[0]
-            ?.content
-            ?.parts?.[0]
-            ?.text ||
-        "";
-
-
-    if (!text) {
-
-        console.error(
-            "[Gemini] Empty model response:",
-            result
-        );
-
-        return res
-            .status(502)
-            .json({
-
-                error:
-                    "Gemini returned an empty response.",
-
-                model,
-
-                detail:
-                    result
-
-            });
-
-    }
-
-
-    try {
-
-        const ai =
-            mode === "multi"
-                ? cleanMultiGeminiResponse(
-                    text
-                )
-                : cleanGeminiResponse(
-                    text
-                );
-
-
-        console.log(
-            `[Gemini] Parsed successfully with ${model}`
-        );
-
-
-        return res
-            .status(200)
-            .json(ai);
-
-    }
-    catch (error) {
-
-        console.error(
-            "[Gemini] Response parsing error:",
-            error
-        );
-
-
-        return res
-            .status(502)
-            .json({
-
-                error:
-                    "Gemini response parsing failed.",
-
-                model,
-
-                detail:
-                    error?.message ||
-                    "Invalid Gemini response.",
-
-                raw:
-                    text
 
             });
 
