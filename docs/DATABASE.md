@@ -1,56 +1,50 @@
 # Database & Storage
 
-Storage & Forget sử dụng Supabase PostgreSQL làm cơ sở dữ liệu chính và Supabase Storage Bucket để lưu trữ tệp hình ảnh.
+Home AI uses Firebase Firestore for data and ImageKit for images.
 
----
+## Firestore collections
 
-# Bảng dữ liệu (Database Schema)
+### `items`
 
-### 1. Bảng `items` (Lưu danh sách đồ đạc)
+Each document represents one household item.
 
-| Tên cột | Kiểu dữ liệu | Ràng buộc | Mô tả |
-|---|---|---|---|
-| `id` | `bigint` / `uuid` | Primary Key, Auto Increment | ID định danh duy nhất cho món đồ |
-| `name` | `text` | NOT NULL | Tên đồ đạc |
-| `location` | `text` | Nullable | Vị trí chi tiết (ví dụ: Hộc tủ 2, Kệ sách) |
-| `room` | `text` | Nullable | Tên phòng cất giữ (ví dụ: Phòng khách) |
-| `tags` | `text[]` / `jsonb` | Nullable | Mảng chứa các thẻ đánh dấu |
-| `description` | `text` | Nullable | Mô tả chi tiết món đồ |
-| `image_url` | `text` | Nullable | URL công khai của ảnh đại diện chính |
-| `created_at` | `timestamptz` | Default `now()` | Thời gian tạo bản ghi |
-| `previous_room`| `text` | Nullable | Lưu vết phòng cũ trước khi bị đưa vào Thùng rác |
-| `trashed_at` | `timestamptz` | Nullable | Thời điểm món đồ bị đưa vào Thùng rác |
+- `id`: string document ID
+- `name`: item name
+- `room`: room name
+- `location`: storage location
+- `tags`: array of strings
+- `description`: text description
+- `image_url`: primary ImageKit URL
+- `created_at`: ISO timestamp
+- `trashed_at`: ISO timestamp or empty when active
 
-### 2. Bảng `rooms` (Danh sách phòng)
+### `item_images`
 
-| Tên cột | Kiểu dữ liệu | Ràng buộc | Mô tả |
-|---|---|---|---|
-| `id` | `bigint` / `uuid` | Primary Key, Auto Increment | ID phòng |
-| `name` | `text` | UNIQUE, NOT NULL | Tên phòng (ví dụ: Phòng ngủ, Bếp) |
+Extra images for an item.
 
-### 3. Bảng `item_images` (Danh sách ảnh phụ)
+- `id`: string document ID
+- `item_id`: related `items.id`
+- `image_url`: ImageKit URL
+- `sort_order`: display order
 
-| Tên cột | Kiểu dữ liệu | Ràng buộc | Mô tả |
-|---|---|---|---|
-| `id` | `bigint` / `uuid` | Primary Key, Auto Increment | ID bản ghi ảnh phụ |
-| `item_id` | `bigint` / `uuid` | FK `items(id)` ON DELETE CASCADE | Liên kết tới món đồ thuộc bảng `items` |
-| `image_url` | `text` | NOT NULL | URL công khai của ảnh phụ |
-| `sort_order` | `integer` | Default `0` | Thứ tự sắp xếp ảnh phụ |
+### `rooms`
 
----
+- `id`: string document ID
+- `name`: room name
 
-# Quy trình Upload & Quản lý Storage
-Client (Compressor.js) ──► Nén WebP ──► Tải lên Storage Bucket ('images') ──► Trả về publicUrl
+### `access_users`
 
+Family access control. The document ID is the lowercase Google email.
 
-- **Quy tắc đặt tên file**: `Date.now() + "_" + randomSuffix + "_" + cleanFileName + ".webp"`.
-- **Định dạng tối ưu**: Tất cả ảnh tải lên đều được nén về định dạng WebP với chất lượng 0.7 và kích thước tối đa 1000px.
+- `email`: approved Google email
+- `role`: `owner` or `member`
+- `active`: whether access is enabled
+- `created_at`: ISO timestamp
 
----
+## Images
 
-# Dọn dẹp Storage Mồ côi (`cleanOrphanedStorageFiles`)
+All new primary and extra images upload to ImageKit under `/home-ai`. Firestore stores only the public URL. Deleting an item image removes its Firestore record and requests deletion from ImageKit.
 
-Khi xóa vĩnh viễn món đồ hoặc khi làm sạch thùng rác:
-1. Ứng dụng trích xuất danh sách tất cả các `image_url` đang được liên kết trong bảng `items` và `item_images`.
-2. Truy vấn danh sách toàn bộ file thực tế đang lưu trữ trên Bucket `images`.
-3. So sánh và lọc ra các file "mồ côi" (có trên Storage nhưng không tồn tại trong DB) và thực hiện xoá triệt để khỏi Storage, giải phóng dung lượng.
+## Access control
+
+The browser signs in through Firebase Authentication with Google. Firestore Rules enforce that the signed-in Google email has an active document in `access_users`. The rules source is `firestore.rules`; publish it from Firebase Console.
