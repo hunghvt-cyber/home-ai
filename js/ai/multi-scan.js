@@ -70,7 +70,9 @@ async function handleMultiScanImage(
     try {
 
         const base64 =
-            await fileToBase64(file);
+            await fileToBase64(
+                file
+            );
 
         const cleanBase64 =
             base64.split(",")[1];
@@ -108,8 +110,19 @@ async function handleMultiScanImage(
         }
 
 
+        /*
+         * Multi-Scan:
+         *
+         * Một ảnh -> nhiều item.
+         *
+         * Tất cả item giữ cùng File object và cùng previewUrl.
+         * Khi lưu, getBatchImageUrl() sẽ chỉ upload file này một lần.
+         */
+
         const previewUrl =
-            URL.createObjectURL(file);
+            URL.createObjectURL(
+                file
+            );
 
 
         currentBatchItems =
@@ -124,6 +137,12 @@ async function handleMultiScanImage(
 
                     name:
                         item.name || "",
+
+                    room:
+                        item.room || "",
+
+                    location:
+                        item.location || "",
 
                     tags:
                         Array.isArray(
@@ -255,7 +274,7 @@ function renderBatchModal() {
 
         <label
             for="batch_name_${index}">
-            Tên
+            Tên món
         </label>
 
         <input
@@ -267,6 +286,46 @@ function renderBatchModal() {
             placeholder="Tên món đồ"
             oninput="
                 updateBatchItemName(
+                    ${index},
+                    this.value
+                )
+            ">
+
+
+        <label
+            for="batch_room_${index}">
+            Phòng
+        </label>
+
+        <input
+            type="text"
+            id="batch_room_${index}"
+            value="${escapeHtml(
+                item.room
+            )}"
+            placeholder="Ví dụ: Phòng khách"
+            oninput="
+                updateBatchItemRoom(
+                    ${index},
+                    this.value
+                )
+            ">
+
+
+        <label
+            for="batch_location_${index}">
+            Vị trí
+        </label>
+
+        <input
+            type="text"
+            id="batch_location_${index}"
+            value="${escapeHtml(
+                item.location
+            )}"
+            placeholder="Ví dụ: Kệ sách, ngăn tủ số 2"
+            oninput="
+                updateBatchItemLocation(
                     ${index},
                     this.value
                 )
@@ -370,6 +429,42 @@ function updateBatchItemName(
 }
 
 
+function updateBatchItemRoom(
+    index,
+    value
+) {
+
+    if (
+        currentBatchItems[index]
+    ) {
+
+        currentBatchItems[index]
+            .room =
+            value;
+
+    }
+
+}
+
+
+function updateBatchItemLocation(
+    index,
+    value
+) {
+
+    if (
+        currentBatchItems[index]
+    ) {
+
+        currentBatchItems[index]
+            .location =
+            value;
+
+    }
+
+}
+
+
 function updateBatchItemTags(
     index,
     value
@@ -434,22 +529,36 @@ function closeBatchModal() {
     }
 
 
+    const previewUrls =
+        new Set();
+
+
     currentBatchItems.forEach(
         item => {
 
             if (
                 item.previewUrl &&
-                item.previewUrl
-                    .startsWith(
-                        "blob:"
-                    )
+                item.previewUrl.startsWith(
+                    "blob:"
+                )
             ) {
 
-                URL.revokeObjectURL(
+                previewUrls.add(
                     item.previewUrl
                 );
 
             }
+
+        }
+    );
+
+
+    previewUrls.forEach(
+        previewUrl => {
+
+            URL.revokeObjectURL(
+                previewUrl
+            );
 
         }
     );
@@ -476,9 +585,24 @@ async function getBatchImageUrl(
     }
 
 
-    // File object làm key.
-    // Multi-Scan: tất cả item có cùng File.
-    // Burst: mỗi item có File riêng.
+    /*
+     * Cache theo File object:
+     *
+     * Multi-Scan:
+     *   item 1 -> file A
+     *   item 2 -> file A
+     *   item 3 -> file A
+     *
+     *   => upload A đúng một lần, các item dùng chung URL.
+     *
+     * Burst:
+     *   item 1 -> file A
+     *   item 2 -> file B
+     *   item 3 -> file C
+     *
+     *   => upload A, B, C riêng biệt qua ImageKit.
+     */
+
     if (
         imageCache.has(
             item.file
@@ -528,7 +652,7 @@ async function saveBatchItems() {
 
     const defaultRoom =
         roomSelect
-            ? roomSelect.value
+            ? roomSelect.value.trim()
             : "";
 
 
@@ -561,30 +685,29 @@ async function saveBatchItems() {
     }
 
 
+    const saveButton =
+        document.querySelector(
+            "#batchModal .btnSuccess"
+        );
+
+
+    if (saveButton) {
+
+        saveButton.disabled =
+            true;
+
+        saveButton.innerHTML =
+            "⏳ Đang lưu...";
+
+    }
+
+
     showMessage(
         `⏳ Đang lưu ${selectedItems.length} món...`
     );
 
 
     try {
-
-        /*
-         * Image cache rất quan trọng:
-         *
-         * Multi-Scan:
-         *   item 1 -> file A
-         *   item 2 -> file A
-         *   item 3 -> file A
-         *
-         *   => upload A đúng 1 lần.
-         *
-         * Burst:
-         *   item 1 -> file A
-         *   item 2 -> file B
-         *   item 3 -> file C
-         *
-         *   => upload A, B, C riêng.
-         */
 
         const imageCache =
             new Map();
@@ -604,6 +727,31 @@ async function saveBatchItems() {
                 );
 
 
+            /*
+             * Ưu tiên giá trị riêng của item:
+             *
+             * Burst: giữ đúng room/location AI trả cho ảnh đó.
+             * Multi-Scan: dùng room/location từng item nếu có.
+             *
+             * Ô "Vị trí cất chung" chỉ là phương án dự phòng.
+             */
+
+            const itemRoom =
+                String(
+                    item.room || ""
+                )
+                    .trim() ||
+                defaultRoom;
+
+
+            const itemLocation =
+                String(
+                    item.location || ""
+                )
+                    .trim() ||
+                defaultLocation;
+
+
             await insertItem({
 
                 name:
@@ -612,10 +760,10 @@ async function saveBatchItems() {
                     ).trim(),
 
                 room:
-                    defaultRoom,
+                    itemRoom,
 
                 location:
-                    defaultLocation,
+                    itemLocation,
 
                 tags:
                     Array.isArray(
@@ -673,6 +821,19 @@ async function saveBatchItems() {
             error.message,
             "error"
         );
+
+    }
+    finally {
+
+        if (saveButton) {
+
+            saveButton.disabled =
+                false;
+
+            saveButton.innerHTML =
+                "💾 Lưu toàn bộ đã chọn";
+
+        }
 
     }
 
