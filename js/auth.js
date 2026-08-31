@@ -1,0 +1,20 @@
+const INITIAL_OWNER_EMAIL="thanhhunga4.wtf@gmail.com";
+let homeAiMember=null;
+
+function normalizedEmail(user){return String(user?.email||"").trim().toLowerCase();}
+
+function showLogin(){document.getElementById("appContainer").style.display="none";let gate=document.getElementById("authGate");if(!gate){gate=document.createElement("div");gate.id="authGate";gate.className="container";document.body.prepend(gate);}gate.innerHTML='<h2>🏠 Home AI</h2><p>Đăng nhập Google để tiếp tục.</p><button class="btnHighlight" onclick="signInWithGoogle()">Đăng nhập bằng Google</button><div id="authError"></div>';}
+
+async function loadMembership(user){const email=normalizedEmail(user);const ref=firestore.collection("access_users").doc(email);let snap=await ref.get();if(!snap.exists&&email===INITIAL_OWNER_EMAIL){await ref.set({email,role:"owner",active:true,created_at:new Date().toISOString()});snap=await ref.get();}return snap.exists&&snap.data().active?snap.data():null;}
+
+function showApp(user){const gate=document.getElementById("authGate");if(gate)gate.remove();const app=document.getElementById("appContainer");app.style.display="block";let bar=document.getElementById("accountBar");if(!bar){bar=document.createElement("div");bar.id="accountBar";app.querySelector("h2").after(bar);}bar.innerHTML="👤 "+escapeHtml(user.email)+" "+(homeAiMember.role==="owner"?'<button onclick="openMemberManager()">Quản lý thành viên</button>':"")+' <button onclick="signOutHomeAi()">Đăng xuất</button>';}
+
+function signInWithGoogle(){firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(error=>{const box=document.getElementById("authError");if(box)box.textContent="❌ "+error.message;});}
+function signOutHomeAi(){firebase.auth().signOut();}
+
+async function initAuth(){return new Promise(resolve=>firebase.auth().onAuthStateChanged(async user=>{if(!user){showLogin();resolve(false);return;}try{homeAiMember=await loadMembership(user);if(!homeAiMember){await firebase.auth().signOut();showLogin();document.getElementById("authError").textContent="❌ Email này chưa được cấp quyền.";resolve(false);return;}showApp(user);resolve(true);}catch(error){showLogin();document.getElementById("authError").textContent="❌ "+error.message;resolve(false);}}));}
+
+async function openMemberManager(){if(!homeAiMember||homeAiMember.role!=="owner")return;const rows=await firestore.collection("access_users").orderBy("email").get();let modal=document.getElementById("memberModal");if(!modal){modal=document.createElement("div");modal.id="memberModal";modal.className="modalOverlay";document.body.appendChild(modal);}modal.innerHTML='<div class="modalContent"><h3>👥 Quản lý thành viên</h3><div class="buttonRow"><input id="memberEmail" type="email" placeholder="email@gmail.com"><button class="btnSuccess" onclick="addMember()">➕ Thêm email</button></div><div id="memberList"></div><button class="btnSecondary" onclick="document.getElementById(\'memberModal\').style.display=\'none\'">Đóng</button></div>';const list=document.getElementById("memberList");rows.forEach(doc=>{const m=doc.data();const row=document.createElement("div");row.className="buttonRow";const text=document.createElement("span");text.textContent=m.email+" — "+m.role+(m.active?"":" (đã khóa)");row.appendChild(text);if(m.email!==INITIAL_OWNER_EMAIL){const b=document.createElement("button");b.textContent=m.active?"Khóa":"Mở";b.onclick=()=>toggleMember(m.email,!m.active);row.appendChild(b);}list.appendChild(row);});modal.style.display="flex";}
+
+async function addMember(){const input=document.getElementById("memberEmail");const email=String(input.value||"").trim().toLowerCase();if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){alert("Email không hợp lệ.");return;}await firestore.collection("access_users").doc(email).set({email,role:"member",active:true,created_at:new Date().toISOString()});openMemberManager();}
+async function toggleMember(email,active){await firestore.collection("access_users").doc(email).update({active});openMemberManager();}
