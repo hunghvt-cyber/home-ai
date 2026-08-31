@@ -14,7 +14,35 @@ function signOutHomeAi(){firebase.auth().signOut();}
 
 async function initAuth(){return new Promise(resolve=>firebase.auth().onAuthStateChanged(async user=>{if(!user){showLogin();resolve(false);return;}try{homeAiMember=await loadMembership(user);if(!homeAiMember){await firebase.auth().signOut();showLogin();document.getElementById("authError").textContent="❌ Email này chưa được cấp quyền.";resolve(false);return;}showApp(user);resolve(true);}catch(error){showLogin();document.getElementById("authError").textContent="❌ "+error.message;resolve(false);}}));}
 
-async function openMemberManager(){if(!homeAiMember||homeAiMember.role!=="owner")return;const rows=await firestore.collection("access_users").orderBy("email").get();let modal=document.getElementById("memberModal");if(!modal){modal=document.createElement("div");modal.id="memberModal";modal.className="modalOverlay";document.body.appendChild(modal);}modal.innerHTML='<div class="modalContent"><h3>👥 Quản lý thành viên</h3><div class="buttonRow"><input id="memberEmail" type="email" placeholder="email@gmail.com"><button class="btnSuccess" onclick="addMember()">➕ Thêm email</button></div><div id="memberList"></div><button class="btnSecondary" onclick="document.getElementById(\'memberModal\').style.display=\'none\'">Đóng</button></div>';const list=document.getElementById("memberList");rows.forEach(doc=>{const m=doc.data();const row=document.createElement("div");row.className="buttonRow";const text=document.createElement("span");text.textContent=m.email+" — "+m.role+(m.active?"":" (đã khóa)");row.appendChild(text);if(m.email!==INITIAL_OWNER_EMAIL){const b=document.createElement("button");b.textContent=m.active?"Khóa":"Mở";b.onclick=()=>toggleMember(m.email,!m.active);row.appendChild(b);}list.appendChild(row);});modal.style.display="flex";}
+async function openMemberManager(){if(!homeAiMember||homeAiMember.role!=="owner")return;const rows=await firestore.collection("access_users").orderBy("email").get();let modal=document.getElementById("memberModal");if(!modal){modal=document.createElement("div");modal.id="memberModal";modal.className="modalOverlay";document.body.appendChild(modal);}modal.innerHTML='<div class="modalContent"><h3>👥 Quản lý thành viên</h3><div class="buttonRow"><input id="memberEmail" type="email" placeholder="email@gmail.com"><button class="btnSuccess" onclick="addMember()">➕ Thêm email</button></div><div id="memberList"></div><button class="btnSecondary" onclick="document.getElementById(\'memberModal\').style.display=\'none\'">Đóng</button></div>';const list=document.getElementById("memberList");rows.forEach(doc=>{const m=doc.data();const row=document.createElement("div");row.className="buttonRow";const text=document.createElement("span");text.textContent=m.email+" — "+m.role+(m.active?"":" (đã khóa)");row.appendChild(text);if(m.email!==INITIAL_OWNER_EMAIL){const b=document.createElement("button");b.textContent=m.active?"Khóa":"Mở";b.onclick=()=>toggleMember(m.email,!m.active);row.appendChild(b);const remove=document.createElement("button");remove.textContent="Xóa";remove.onclick=()=>deleteMember(m.email);row.appendChild(remove);}list.appendChild(row);});modal.style.display="flex";}
 
 async function addMember(){const input=document.getElementById("memberEmail");const email=String(input.value||"").trim().toLowerCase();if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){alert("Email không hợp lệ.");return;}await firestore.collection("access_users").doc(email).set({email,role:"member",active:true,created_at:new Date().toISOString()});openMemberManager();}
 async function toggleMember(email,active){await firestore.collection("access_users").doc(email).update({active});openMemberManager();}
+
+async function deleteMember(email){
+
+    if (
+        email === INITIAL_OWNER_EMAIL ||
+        !confirm(
+            "Xóa hẳn quyền truy cập của " +
+            email +
+            "?"
+        )
+    ) {
+
+        return;
+
+    }
+
+    await firestore
+        .collection(
+            "access_users"
+        )
+        .doc(
+            email
+        )
+        .delete();
+
+    openMemberManager();
+
+}
