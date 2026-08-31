@@ -1,25 +1,41 @@
 // js/firebase.js
 
 const FIREBASE_CONFIG = {
-    apiKey: "AIzaSyDVGwWuRpdoFJCGhYDG5drIKFqVJp0O3Ro",
-    authDomain: "home-ai-55a88.firebaseapp.com",
-    projectId: "home-ai-55a88",
-    storageBucket: "home-ai-55a88.firebasestorage.app",
-    messagingSenderId: "187947750301",
-    appId: "1:187947750301:web:3c5b16b16352e0ab71d574"
+    apiKey:
+        "AIzaSyDVGwWuRpdoFJCGhYDG5drIKFqVJp0O3Ro",
+
+    authDomain:
+        "home-ai-55a88.firebaseapp.com",
+
+    projectId:
+        "home-ai-55a88",
+
+    storageBucket:
+        "home-ai-55a88.firebasestorage.app",
+
+    messagingSenderId:
+        "187947750301",
+
+    appId:
+        "1:187947750301:web:3c5b16b16352e0ab71d574"
 };
+
 
 const IMAGEKIT_PUBLIC_KEY =
     "public_dZe8G/hzBOxyyd0dwk85tSdyDmQ=";
 
+
 const IMAGEKIT_URL_ENDPOINT =
     "https://ik.imagekit.io/hunghvt";
+
 
 const IMAGEKIT_AUTH_URL =
     "https://home-ai-two-topaz.vercel.app/api/imagekit-auth";
 
+
 const IMAGEKIT_STORAGE_URL =
     "https://home-ai-two-topaz.vercel.app/api/imagekit-storage";
+
 
 const IMAGEKIT_FOLDER =
     "/home-ai";
@@ -30,10 +46,13 @@ const IMAGEKIT_FOLDER =
    ========================================================= */
 
 if (!firebase.apps.length) {
+
     firebase.initializeApp(
         FIREBASE_CONFIG
     );
+
 }
+
 
 const firestore =
     firebase.firestore();
@@ -61,8 +80,11 @@ function cloneValue(value) {
         value === null ||
         value === undefined
     ) {
+
         return value;
+
     }
+
 
     if (
         typeof value === "object"
@@ -73,6 +95,7 @@ function cloneValue(value) {
         );
 
     }
+
 
     return value;
 
@@ -86,12 +109,14 @@ function normalizeFirestoreData(
 
     const result = {};
 
+
     Object.keys(data || {})
         .forEach(
             key => {
 
                 const value =
                     data[key];
+
 
                 if (
                     value &&
@@ -115,6 +140,7 @@ function normalizeFirestoreData(
             }
         );
 
+
     if (
         id !== undefined &&
         result.id === undefined
@@ -123,6 +149,7 @@ function normalizeFirestoreData(
         result.id = id;
 
     }
+
 
     return result;
 
@@ -137,22 +164,29 @@ function projectFields(
     if (
         !fields ||
         fields === "*" ||
-        fields.trim() === "*"
+        (
+            typeof fields === "string" &&
+            fields.trim() === "*"
+        )
     ) {
 
-        return row;
+        return cloneValue(row);
 
     }
 
+
     const names =
-        fields
+        String(fields)
             .split(",")
             .map(
-                x => x.trim()
+                x =>
+                    x.trim()
             )
             .filter(Boolean);
 
+
     const result = {};
+
 
     names.forEach(
         name => {
@@ -174,6 +208,7 @@ function projectFields(
         }
     );
 
+
     return result;
 
 }
@@ -181,6 +216,7 @@ function projectFields(
 
 /* =========================================================
    FIRESTORE QUERY
+   Supabase-compatible query builder
    ========================================================= */
 
 class FirestoreQuery {
@@ -192,28 +228,67 @@ class FirestoreQuery {
         this.collectionName =
             collectionName;
 
+
         this.operation =
             "select";
 
+
         this.filters = [];
+
 
         this.orderByField =
             null;
 
+
         this.orderAscending =
             true;
+
 
         this.selectedFields =
             "*";
 
+
         this.insertRows =
             null;
+
 
         this.updateData =
             null;
 
+
+        /*
+         * true when Supabase-style
+         * .select() follows a write operation.
+         *
+         * Example:
+         *
+         * insert(...).select()
+         * update(...).select()
+         * delete().select()
+         */
+        this.returning =
+            false;
+
+
+        /*
+         * Supabase:
+         *
+         * .single()
+         * .maybeSingle()
+         */
+        this.singleMode =
+            null;
+
+
+        this.limitCount =
+            null;
+
     }
 
+
+    /* =====================================================
+       SELECT
+       ===================================================== */
 
     select(
         fields = "*"
@@ -222,13 +297,73 @@ class FirestoreQuery {
         this.selectedFields =
             fields;
 
-        this.operation =
-            "select";
+
+        /*
+         * IMPORTANT:
+         *
+         * Do NOT change insert/update/delete
+         * into select here.
+         *
+         * Old broken code:
+         *
+         * this.operation = "select";
+         *
+         * That caused:
+         *
+         * insert().select()
+         *
+         * to become SELECT instead of INSERT.
+         */
+
+        if (
+            this.operation ===
+            "select"
+        ) {
+
+            this.operation =
+                "select";
+
+        }
+        else {
+
+            this.returning =
+                true;
+
+        }
+
 
         return this;
 
     }
 
+
+    /* =====================================================
+       SINGLE / MAYBE SINGLE
+       ===================================================== */
+
+    single() {
+
+        this.singleMode =
+            "single";
+
+        return this;
+
+    }
+
+
+    maybeSingle() {
+
+        this.singleMode =
+            "maybeSingle";
+
+        return this;
+
+    }
+
+
+    /* =====================================================
+       INSERT
+       ===================================================== */
 
     insert(
         rows
@@ -237,15 +372,29 @@ class FirestoreQuery {
         this.operation =
             "insert";
 
+
         this.insertRows =
             Array.isArray(rows)
                 ? rows
                 : [rows];
 
+
+        this.returning =
+            false;
+
+
+        this.singleMode =
+            null;
+
+
         return this;
 
     }
 
+
+    /* =====================================================
+       UPDATE
+       ===================================================== */
 
     update(
         data
@@ -254,23 +403,50 @@ class FirestoreQuery {
         this.operation =
             "update";
 
+
         this.updateData =
             data || {};
+
+
+        this.returning =
+            false;
+
+
+        this.singleMode =
+            null;
+
 
         return this;
 
     }
 
+
+    /* =====================================================
+       DELETE
+       ===================================================== */
 
     delete() {
 
         this.operation =
             "delete";
 
+
+        this.returning =
+            false;
+
+
+        this.singleMode =
+            null;
+
+
         return this;
 
     }
 
+
+    /* =====================================================
+       FILTERS
+       ===================================================== */
 
     eq(
         field,
@@ -278,10 +454,38 @@ class FirestoreQuery {
     ) {
 
         this.filters.push({
-            type: "eq",
-            field,
-            value
+            type:
+                "eq",
+
+            field:
+                field,
+
+            value:
+                value
         });
+
+
+        return this;
+
+    }
+
+
+    neq(
+        field,
+        value
+    ) {
+
+        this.filters.push({
+            type:
+                "neq",
+
+            field:
+                field,
+
+            value:
+                value
+        });
+
 
         return this;
 
@@ -294,13 +498,18 @@ class FirestoreQuery {
     ) {
 
         this.filters.push({
-            type: "in",
-            field,
+            type:
+                "in",
+
+            field:
+                field,
+
             values:
                 Array.isArray(values)
                     ? values
                     : []
         });
+
 
         return this;
 
@@ -313,15 +522,91 @@ class FirestoreQuery {
     ) {
 
         this.filters.push({
-            type: "lt",
-            field,
-            value
+            type:
+                "lt",
+
+            field:
+                field,
+
+            value:
+                value
         });
+
 
         return this;
 
     }
 
+
+    lte(
+        field,
+        value
+    ) {
+
+        this.filters.push({
+            type:
+                "lte",
+
+            field:
+                field,
+
+            value:
+                value
+        });
+
+
+        return this;
+
+    }
+
+
+    gt(
+        field,
+        value
+    ) {
+
+        this.filters.push({
+            type:
+                "gt",
+
+            field:
+                field,
+
+            value:
+                value
+        });
+
+
+        return this;
+
+    }
+
+
+    gte(
+        field,
+        value
+    ) {
+
+        this.filters.push({
+            type:
+                "gte",
+
+            field:
+                field,
+
+            value:
+                value
+        });
+
+
+        return this;
+
+    }
+
+
+    /* =====================================================
+       ORDER
+       ===================================================== */
 
     order(
         field,
@@ -331,36 +616,89 @@ class FirestoreQuery {
         this.orderByField =
             field;
 
+
         this.orderAscending =
             options.ascending !== false;
+
 
         return this;
 
     }
 
 
+    /* =====================================================
+       LIMIT
+       ===================================================== */
+
+    limit(
+        count
+    ) {
+
+        const number =
+            Number(count);
+
+
+        if (
+            Number.isFinite(number) &&
+            number >= 0
+        ) {
+
+            this.limitCount =
+                Math.floor(number);
+
+        }
+
+
+        return this;
+
+    }
+
+
+    /* =====================================================
+       EXECUTE
+       ===================================================== */
+
     async execute() {
 
         try {
+
+            /*
+             * INSERT
+             */
 
             if (
                 this.operation ===
                 "insert"
             ) {
 
-                return await this
-                    .executeInsert();
+                const result =
+                    await this
+                        .executeInsert();
+
+
+                return this
+                    .finalizeResult(
+                        result
+                    );
 
             }
 
+
+            /*
+             * SELECT / UPDATE / DELETE
+             *
+             * Load matching documents first.
+             */
 
             const collection =
                 firestore.collection(
                     this.collectionName
                 );
 
+
             const snapshot =
                 await collection.get();
+
 
             let rows =
                 snapshot.docs.map(
@@ -372,11 +710,19 @@ class FirestoreQuery {
                 );
 
 
+            /*
+             * Filters
+             */
+
             rows =
                 this.applyFilters(
                     rows
                 );
 
+
+            /*
+             * ORDER
+             */
 
             if (
                 this.orderByField
@@ -385,10 +731,12 @@ class FirestoreQuery {
                 const field =
                     this.orderByField;
 
+
                 const direction =
                     this.orderAscending
                         ? 1
                         : -1;
+
 
                 rows.sort(
                     (
@@ -399,46 +747,89 @@ class FirestoreQuery {
                         const av =
                             a[field];
 
+
                         const bv =
                             b[field];
+
 
                         if (
                             av === bv
                         ) {
+
                             return 0;
+
                         }
+
 
                         if (
                             av === undefined ||
                             av === null
                         ) {
-                            return -1 *
-                                direction;
+
+                            return (
+                                -1 *
+                                direction
+                            );
+
                         }
+
 
                         if (
                             bv === undefined ||
                             bv === null
                         ) {
-                            return 1 *
-                                direction;
+
+                            return (
+                                1 *
+                                direction
+                            );
+
                         }
+
 
                         if (
                             av < bv
                         ) {
-                            return -1 *
-                                direction;
+
+                            return (
+                                -1 *
+                                direction
+                            );
+
                         }
 
-                        return 1 *
-                            direction;
+
+                        return (
+                            1 *
+                            direction
+                        );
 
                     }
                 );
 
             }
 
+
+            /*
+             * LIMIT
+             */
+
+            if (
+                this.limitCount !== null
+            ) {
+
+                rows =
+                    rows.slice(
+                        0,
+                        this.limitCount
+                    );
+
+            }
+
+
+            /*
+             * SELECT
+             */
 
             if (
                 this.operation ===
@@ -454,13 +845,22 @@ class FirestoreQuery {
                             )
                     );
 
-                return {
-                    data: rows,
-                    error: null
-                };
+
+                return this
+                    .finalizeResult({
+                        data:
+                            rows,
+
+                        error:
+                            null
+                    });
 
             }
 
+
+            /*
+             * UPDATE
+             */
 
             if (
                 this.operation ===
@@ -472,33 +872,83 @@ class FirestoreQuery {
                         this.collectionName
                     );
 
+
+                const updated =
+                    [];
+
+
                 for (
                     const row
                     of rows
                 ) {
 
-                    await collectionRef
-                        .doc(
+                    const updateRef =
+                        collectionRef.doc(
                             String(
                                 row.id
                             )
-                        )
-                        .set(
-                            this.updateData,
-                            {
-                                merge: true
-                            }
                         );
+
+
+                    await updateRef.set(
+                        this.updateData,
+                        {
+                            merge:
+                                true
+                        }
+                    );
+
+
+                    const merged =
+                        {
+                            ...row,
+                            ...this.updateData
+                        };
+
+
+                    updated.push(
+                        merged
+                    );
 
                 }
 
-                return {
-                    data: null,
-                    error: null
-                };
+
+                /*
+                 * Supabase update()
+                 * without select()
+                 * returns no data.
+                 *
+                 * update().select()
+                 * returns updated rows.
+                 */
+
+                const output =
+                    this.returning
+                        ? updated.map(
+                            row =>
+                                projectFields(
+                                    row,
+                                    this.selectedFields
+                                )
+                        )
+                        : null;
+
+
+                return this
+                    .finalizeResult({
+                        data:
+                            output,
+
+                        error:
+                            null
+                    });
 
             }
 
+
+            /*
+             * DELETE
+             */
 
             if (
                 this.operation ===
@@ -509,6 +959,11 @@ class FirestoreQuery {
                     firestore.collection(
                         this.collectionName
                     );
+
+
+                const deleted =
+                    [];
+
 
                 for (
                     const row
@@ -523,20 +978,46 @@ class FirestoreQuery {
                         )
                         .delete();
 
+
+                    deleted.push(
+                        row
+                    );
+
                 }
 
-                return {
-                    data: null,
-                    error: null
-                };
+
+                const output =
+                    this.returning
+                        ? deleted.map(
+                            row =>
+                                projectFields(
+                                    row,
+                                    this.selectedFields
+                                )
+                        )
+                        : null;
+
+
+                return this
+                    .finalizeResult({
+                        data:
+                            output,
+
+                        error:
+                            null
+                    });
 
             }
 
 
-            return {
-                data: rows,
-                error: null
-            };
+            return this
+                .finalizeResult({
+                    data:
+                        rows,
+
+                    error:
+                        null
+                });
 
         }
         catch (error) {
@@ -546,15 +1027,23 @@ class FirestoreQuery {
                 error
             );
 
+
             return {
-                data: null,
-                error
+                data:
+                    null,
+
+                error:
+                    error
             };
 
         }
 
     }
 
+
+    /* =====================================================
+       INSERT EXECUTION
+       ===================================================== */
 
     async executeInsert() {
 
@@ -565,7 +1054,9 @@ class FirestoreQuery {
                     this.collectionName
                 );
 
-            const inserted = [];
+
+            const inserted =
+                [];
 
 
             for (
@@ -577,6 +1068,10 @@ class FirestoreQuery {
                     ...original
                 };
 
+
+                /*
+                 * Generate ID if necessary.
+                 */
 
                 if (
                     row.id === undefined ||
@@ -598,6 +1093,10 @@ class FirestoreQuery {
                 }
 
 
+                /*
+                 * created_at
+                 */
+
                 if (
                     !row.created_at
                 ) {
@@ -609,6 +1108,10 @@ class FirestoreQuery {
                 }
 
 
+                /*
+                 * Write to Firestore.
+                 */
+
                 await collection
                     .doc(
                         String(
@@ -619,22 +1122,45 @@ class FirestoreQuery {
 
 
                 inserted.push(
-                    cloneValue(row)
+                    cloneValue(
+                        row
+                    )
                 );
 
             }
 
 
+            /*
+             * Supabase insert()
+             * normally returns the inserted
+             * rows only when .select()
+             * is chained.
+             *
+             * In this project save-item.js
+             * uses:
+             *
+             * insert(...).select()
+             *
+             * therefore selectedFields is
+             * applied here.
+             */
+
+            const output =
+                inserted.map(
+                    row =>
+                        projectFields(
+                            row,
+                            this.selectedFields
+                        )
+                );
+
+
             return {
                 data:
-                    inserted.map(
-                        row =>
-                            projectFields(
-                                row,
-                                this.selectedFields
-                            )
-                    ),
-                error: null
+                    output,
+
+                error:
+                    null
             };
 
         }
@@ -645,15 +1171,23 @@ class FirestoreQuery {
                 error
             );
 
+
             return {
-                data: null,
-                error
+                data:
+                    null,
+
+                error:
+                    error
             };
 
         }
 
     }
 
+
+    /* =====================================================
+       FILTER ENGINE
+       ===================================================== */
 
     applyFilters(
         rows
@@ -667,6 +1201,10 @@ class FirestoreQuery {
             const filter
             of this.filters
         ) {
+
+            /*
+             * EQ
+             */
 
             if (
                 filter.type ===
@@ -684,6 +1222,31 @@ class FirestoreQuery {
 
             }
 
+
+            /*
+             * NEQ
+             */
+
+            if (
+                filter.type ===
+                "neq"
+            ) {
+
+                result =
+                    result.filter(
+                        row =>
+                            row[
+                                filter.field
+                            ] !=
+                            filter.value
+                    );
+
+            }
+
+
+            /*
+             * IN
+             */
 
             if (
                 filter.type ===
@@ -706,6 +1269,10 @@ class FirestoreQuery {
             }
 
 
+            /*
+             * LT
+             */
+
             if (
                 filter.type ===
                 "lt"
@@ -713,19 +1280,134 @@ class FirestoreQuery {
 
                 result =
                     result.filter(
-                        row =>
-                            row[
-                                filter.field
-                            ] !==
-                            null &&
-                            row[
-                                filter.field
-                            ] !==
-                            undefined &&
-                            row[
-                                filter.field
-                            ] <
-                            filter.value
+                        row => {
+
+                            const value =
+                                row[
+                                    filter.field
+                                ];
+
+
+                            return (
+                                value !==
+                                    null &&
+
+                                value !==
+                                    undefined &&
+
+                                value <
+                                    filter.value
+                            );
+
+                        }
+                    );
+
+            }
+
+
+            /*
+             * LTE
+             */
+
+            if (
+                filter.type ===
+                "lte"
+            ) {
+
+                result =
+                    result.filter(
+                        row => {
+
+                            const value =
+                                row[
+                                    filter.field
+                                ];
+
+
+                            return (
+                                value !==
+                                    null &&
+
+                                value !==
+                                    undefined &&
+
+                                value <=
+                                    filter.value
+                            );
+
+                        }
+                    );
+
+            }
+
+
+            /*
+             * GT
+             */
+
+            if (
+                filter.type ===
+                "gt"
+            ) {
+
+                result =
+                    result.filter(
+                        row => {
+
+                            const value =
+                                row[
+                                    filter.field
+                                ];
+
+
+                            return (
+                                value !==
+                                    null &&
+
+                                value !==
+                                    undefined &&
+
+                                value >
+                                    filter.value
+                            );
+
+                        }
+                    );
+
+            }
+
+
+            /*
+             * GTE
+             */
+
+            if (
+                filter.type ===
+                "gte"
+            ) {
+
+                result =
+                    result.filter(
+                        row => {
+
+                            const value =
+                                row[
+                                    filter.field
+                                ];
+
+
+                            return (
+                                value !==
+                                    null &&
+
+                                value !==
+                                    undefined &&
+
+                                value >=
+                                    filter.value
+                            );
+
+                        }
                     );
 
             }
@@ -737,6 +1419,147 @@ class FirestoreQuery {
 
     }
 
+
+    /* =====================================================
+       FINALIZE SUPABASE-LIKE RESULT
+       ===================================================== */
+
+    finalizeResult(
+        result
+    ) {
+
+        if (
+            result.error
+        ) {
+
+            return result;
+
+        }
+
+
+        if (
+            !this.singleMode
+        ) {
+
+            return result;
+
+        }
+
+
+        const data =
+            result.data;
+
+
+        /*
+         * INSERT / UPDATE / SELECT
+         * may return arrays.
+         */
+
+        const arrayData =
+            Array.isArray(data)
+                ? data
+                : [];
+
+
+        if (
+            this.singleMode ===
+            "single"
+        ) {
+
+            if (
+                arrayData.length !== 1
+            ) {
+
+                return {
+                    data:
+                        null,
+
+                    error:
+                        new Error(
+                            "Expected exactly one row, but received " +
+                            arrayData.length
+                        )
+                };
+
+            }
+
+
+            return {
+                data:
+                    arrayData[0],
+
+                error:
+                    null
+            };
+
+        }
+
+
+        /*
+         * maybeSingle():
+         *
+         * 0 rows -> null
+         * 1 row  -> object
+         * >1     -> error
+         */
+
+        if (
+            this.singleMode ===
+            "maybeSingle"
+        ) {
+
+            if (
+                arrayData.length === 0
+            ) {
+
+                return {
+                    data:
+                        null,
+
+                    error:
+                        null
+                };
+
+            }
+
+
+            if (
+                arrayData.length > 1
+            ) {
+
+                return {
+                    data:
+                        null,
+
+                    error:
+                        new Error(
+                            "Expected zero or one row, but received " +
+                            arrayData.length
+                        )
+                };
+
+            }
+
+
+            return {
+                data:
+                    arrayData[0],
+
+                error:
+                    null
+            };
+
+        }
+
+
+        return result;
+
+    }
+
+
+    /* =====================================================
+       THENABLE
+       ===================================================== */
 
     then(
         resolve,
@@ -761,12 +1584,17 @@ class FirestoreQuery {
 
 class ImageKitStorage {
 
+
     from() {
 
         return this;
 
     }
 
+
+    /* =====================================================
+       UPLOAD
+       ===================================================== */
 
     async upload(
         fileName,
@@ -775,10 +1603,16 @@ class ImageKitStorage {
 
         try {
 
+            /*
+             * Get temporary ImageKit
+             * authentication from Vercel.
+             */
+
             const authResponse =
                 await fetch(
                     IMAGEKIT_AUTH_URL
                 );
+
 
             if (
                 !authResponse.ok
@@ -790,6 +1624,7 @@ class ImageKitStorage {
 
             }
 
+
             const auth =
                 await authResponse.json();
 
@@ -797,25 +1632,30 @@ class ImageKitStorage {
             const formData =
                 new FormData();
 
+
             formData.append(
                 "file",
                 blob
             );
+
 
             formData.append(
                 "fileName",
                 fileName
             );
 
+
             formData.append(
                 "publicKey",
                 IMAGEKIT_PUBLIC_KEY
             );
 
+
             formData.append(
                 "signature",
                 auth.signature
             );
+
 
             formData.append(
                 "expire",
@@ -824,15 +1664,18 @@ class ImageKitStorage {
                 )
             );
 
+
             formData.append(
                 "token",
                 auth.token
             );
 
+
             formData.append(
                 "folder",
                 IMAGEKIT_FOLDER
             );
+
 
             formData.append(
                 "useUniqueFileName",
@@ -840,12 +1683,17 @@ class ImageKitStorage {
             );
 
 
+            /*
+             * ImageKit upload.
+             */
+
             const response =
                 await fetch(
                     "https://upload.imagekit.io/api/v1/files/upload",
                     {
                         method:
                             "POST",
+
                         body:
                             formData
                     }
@@ -870,14 +1718,20 @@ class ImageKitStorage {
 
             return {
                 data: {
+
                     path:
                         result.filePath,
+
                     url:
                         result.url,
+
                     fileId:
                         result.fileId
+
                 },
-                error: null
+
+                error:
+                    null
             };
 
         }
@@ -888,15 +1742,23 @@ class ImageKitStorage {
                 error
             );
 
+
             return {
-                data: null,
-                error
+                data:
+                    null,
+
+                error:
+                    error
             };
 
         }
 
     }
 
+
+    /* =====================================================
+       PUBLIC URL
+       ===================================================== */
 
     getPublicUrl(
         fileName
@@ -913,17 +1775,25 @@ class ImageKitStorage {
 
 
         return {
+
             data: {
+
                 publicUrl:
                     IMAGEKIT_URL_ENDPOINT +
                     IMAGEKIT_FOLDER +
                     "/" +
                     cleanName
+
             }
+
         };
 
     }
 
+
+    /* =====================================================
+       DELETE
+       ===================================================== */
 
     async remove(
         paths
@@ -935,10 +1805,12 @@ class ImageKitStorage {
                 await fetch(
                     IMAGEKIT_STORAGE_URL,
                     {
+
                         method:
                             "POST",
 
                         headers: {
+
                             "Content-Type":
                                 "application/json",
 
@@ -946,19 +1818,24 @@ class ImageKitStorage {
                                 window
                                     .HOME_AI_APP_SECRET ||
                                 ""
+
                         },
 
                         body:
                             JSON.stringify({
+
                                 action:
                                     "delete",
+
                                 paths:
                                     Array.isArray(
                                         paths
                                     )
                                         ? paths
                                         : [paths]
+
                             })
+
                     }
                 );
 
@@ -980,10 +1857,13 @@ class ImageKitStorage {
 
 
             return {
+
                 data:
                     result,
+
                 error:
                     null
+
             };
 
         }
@@ -994,15 +1874,25 @@ class ImageKitStorage {
                 error
             );
 
+
             return {
-                data: null,
-                error
+
+                data:
+                    null,
+
+                error:
+                    error
+
             };
 
         }
 
     }
 
+
+    /* =====================================================
+       LIST
+       ===================================================== */
 
     async list() {
 
@@ -1013,12 +1903,16 @@ class ImageKitStorage {
                     IMAGEKIT_STORAGE_URL +
                     "?action=list",
                     {
+
                         headers: {
+
                             "x-app-secret":
                                 window
                                     .HOME_AI_APP_SECRET ||
                                 ""
+
                         }
+
                     }
                 );
 
@@ -1040,10 +1934,14 @@ class ImageKitStorage {
 
 
             return {
+
                 data:
-                    result.files || [],
+                    result.files ||
+                    [],
+
                 error:
                     null
+
             };
 
         }
@@ -1054,9 +1952,15 @@ class ImageKitStorage {
                 error
             );
 
+
             return {
-                data: null,
-                error
+
+                data:
+                    null,
+
+                error:
+                    error
+
             };
 
         }
@@ -1065,6 +1969,10 @@ class ImageKitStorage {
 
 }
 
+
+/* =========================================================
+   HOME AI DATABASE OBJECT
+   ========================================================= */
 
 const homeAiDb = {
 
@@ -1078,14 +1986,20 @@ const homeAiDb = {
 
     },
 
+
     storage:
         new ImageKitStorage()
 
 };
 
 
+/* =========================================================
+   GLOBAL EXPORTS
+   ========================================================= */
+
 window.homeAiFirestore =
     firestore;
+
 
 window.homeAiDb =
     homeAiDb;
