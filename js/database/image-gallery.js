@@ -109,6 +109,11 @@ function renderExistingExtraImages(images) {
             '<img src="' +
             escapeHtml(img.image_url) +
             '">' +
+            '<button type="button" title="Xóa ảnh" onclick="removeExistingExtraImage(\'' +
+            escapeHtml(img.id) +
+            '\', \'' +
+            escapeHtml(img.image_url) +
+            '\')">✖</button>' +
             "</div>";
 
     });
@@ -265,5 +270,57 @@ function resetExtraImages() {
             "";
 
     }
+
+}
+
+
+async function removeExistingExtraImage(
+    imageId,
+    imageUrl
+) {
+
+    if (
+        !editingItem ||
+        !confirm(
+            "Xóa hẳn ảnh phụ này?"
+        )
+    ) {
+
+        return;
+
+    }
+
+    const result =
+        await db
+            .from(
+                "item_images"
+            )
+            .delete()
+            .eq(
+                "id",
+                imageId
+            );
+
+    if (result.error) {
+
+        showMessage(
+            "❌ Không thể xóa ảnh."
+        );
+
+        return;
+
+    }
+
+    await deleteStorageImage(
+        imageUrl
+    );
+
+    await loadEditImages(
+        editingItem.id
+    );
+
+    showMessage(
+        "✅ Đã xóa ảnh phụ."
+    );
 
 }
