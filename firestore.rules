@@ -1,0 +1,19 @@
+rules_version = '2';
+service cloud.firestore {
+ match /databases/{database}/documents {
+  function signedIn(){ return request.auth != null && request.auth.token.email != null; }
+  function email(){ return request.auth.token.email; }
+  function initialOwner(){ return signedIn() && email() == "thanhhunga4.wtf@gmail.com"; }
+  function member(){ return signedIn() && exists(/databases/$(database)/documents/access_users/$(email())) && get(/databases/$(database)/documents/access_users/$(email())).data.active == true; }
+  function owner(){ return member() && get(/databases/$(database)/documents/access_users/$(email())).data.role == "owner"; }
+  match /access_users/{memberEmail} {
+   allow get: if member() && (memberEmail == email() || owner());
+   allow list: if owner();
+   allow create: if owner() || (initialOwner() && memberEmail == email() && request.resource.data.role == "owner" && request.resource.data.active == true);
+   allow update, delete: if owner();
+  }
+  match /items/{id} { allow read, write: if member(); }
+  match /item_images/{id} { allow read, write: if member(); }
+  match /rooms/{id} { allow read, write: if member(); }
+ }
+}
