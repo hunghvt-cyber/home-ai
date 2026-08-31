@@ -66,6 +66,14 @@ async function init() {
 
     try {
 
+        if (typeof initAuth === "function") {
+            const allowed = await initAuth();
+
+            if (!allowed) {
+                return;
+            }
+        }
+
         if (typeof initImage === "function") {
             initImage();
         }
