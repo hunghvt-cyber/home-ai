@@ -58,6 +58,28 @@ const firestore =
     firebase.firestore();
 
 
+async function getFirebaseAuthHeaders() {
+
+    const user =
+        firebase.auth().currentUser;
+
+    if (!user) {
+
+        throw new Error(
+            "Vui lòng đăng nhập lại."
+        );
+
+    }
+
+    return {
+        "Authorization":
+            "Bearer " +
+            await user.getIdToken()
+    };
+
+}
+
+
 /* =========================================================
    HELPERS
    ========================================================= */
@@ -1610,7 +1632,11 @@ class ImageKitStorage {
 
             const authResponse =
                 await fetch(
-                    IMAGEKIT_AUTH_URL
+                    IMAGEKIT_AUTH_URL,
+                    {
+                        headers:
+                            await getFirebaseAuthHeaders()
+                    }
                 );
 
 
@@ -1814,10 +1840,7 @@ class ImageKitStorage {
                             "Content-Type":
                                 "application/json",
 
-                            "x-app-secret":
-                                window
-                                    .HOME_AI_APP_SECRET ||
-                                ""
+                            ...await getFirebaseAuthHeaders()
 
                         },
 
@@ -1904,14 +1927,8 @@ class ImageKitStorage {
                     "?action=list",
                     {
 
-                        headers: {
-
-                            "x-app-secret":
-                                window
-                                    .HOME_AI_APP_SECRET ||
-                                ""
-
-                        }
+                        headers:
+                            await getFirebaseAuthHeaders()
 
                     }
                 );
