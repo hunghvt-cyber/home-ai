@@ -1,3 +1,7 @@
+import {
+    requireFirebaseUser
+} from "./firebase-auth.js";
+
 // api/imagekit-storage.js
 //
 // GET  ?action=list
@@ -25,29 +29,7 @@ function setCors(
 
     res.setHeader(
         "Access-Control-Allow-Headers",
-        "Content-Type, x-app-secret"
-    );
-
-}
-
-
-function authorized(
-    req
-) {
-
-    const expected =
-        process.env.APP_SECRET;
-
-    if (!expected) {
-
-        return true;
-
-    }
-
-    return (
-        req.headers[
-            "x-app-secret"
-        ] === expected
+        "Content-Type, Authorization"
     );
 
 }
@@ -253,16 +235,15 @@ export default async function handler(
     }
 
 
-    if (
-        !authorized(req)
-    ) {
+    const user =
+        await requireFirebaseUser(
+            req,
+            res
+        );
 
-        return res
-            .status(401)
-            .json({
-                error:
-                    "Unauthorized"
-            });
+    if (!user) {
+
+        return;
 
     }
 
