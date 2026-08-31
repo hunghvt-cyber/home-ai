@@ -1,5 +1,6 @@
 import { cert, getApps, initializeApp } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
+import { getFirestore } from "firebase-admin/firestore";
 
 function adminAuth() {
     if (!getApps().length) {
@@ -36,10 +37,41 @@ export async function requireFirebaseUser(
     }
 
     try {
-        return await adminAuth().verifyIdToken(
-            authorization.slice(7),
-            true
-        );
+        const decoded =
+            await adminAuth().verifyIdToken(
+                authorization.slice(7),
+                true
+            );
+
+        const email =
+            String(
+                decoded.email || ""
+            )
+                .trim()
+                .toLowerCase();
+
+        const member =
+            await getFirestore()
+                .collection(
+                    "access_users"
+                )
+                .doc(
+                    email
+                )
+                .get();
+
+        if (
+            !member.exists ||
+            member.data().active !== true
+        ) {
+
+            throw new Error(
+                "Account is not allowed"
+            );
+
+        }
+
+        return decoded;
     }
     catch (error) {
         console.warn(
