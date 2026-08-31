@@ -8,6 +8,10 @@ import {
     cleanMultiGeminiResponse
 } from "./response.js";
 
+import {
+    requireFirebaseUser
+} from "./firebase-auth.js";
+
 
 // ============================================================
 // GEMINI CONFIG
@@ -24,8 +28,6 @@ const FALLBACK_MODELS = [
 const GEMINI_API_KEY =
     process.env.GEMINI_API_KEY;
 
-const APP_SECRET =
-    process.env.APP_SECRET;
 
 const TIMEOUT =
     30000;
@@ -319,7 +321,7 @@ export default async function handler(
 
     res.setHeader(
         "Access-Control-Allow-Headers",
-        "Content-Type, x-app-secret"
+        "Content-Type, Authorization"
     );
 
 
@@ -356,22 +358,15 @@ export default async function handler(
     }
 
 
-    // --------------------------------------------------------
-    // APP SECRET
-    // --------------------------------------------------------
+    const user =
+        await requireFirebaseUser(
+            req,
+            res
+        );
 
-    if (
-        APP_SECRET &&
-        req.headers["x-app-secret"] !==
-            APP_SECRET
-    ) {
+    if (!user) {
 
-        return res
-            .status(401)
-            .json({
-                error:
-                    "Unauthorized"
-            });
+        return;
 
     }
 
