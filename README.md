@@ -27,7 +27,7 @@ Home AI (Storage & Forget) là ứng dụng web giúp bạn theo dõi vị trí 
 
 ### 🗑️ Thùng rác & Dọn dẹp tự động
 - **Soft Delete**: Chuyển món đồ vào Thùng rác và lưu vết phòng cũ (`previous_room`) để dễ dàng khôi phục.
-- **Dọn dẹp file mồ côi (`cleanOrphanedStorageFiles`)**: Tự động quét dọn toàn bộ tệp ảnh dư thừa trên Supabase Storage không còn liên kết với dữ liệu.
+- **Dọn dẹp ảnh mồ côi**: Tự động quét dọn toàn bộ tệp ảnh dư thừa trên Storage không còn liên kết với dữ liệu.
 - **Xóa tự động 30 ngày**: Tự động dọn dẹp các mục nằm trong Thùng rác quá 30 ngày.
 
 ---
@@ -36,7 +36,9 @@ Home AI (Storage & Forget) là ứng dụng web giúp bạn theo dõi vị trí 
 
 Frontend (GitHub Pages - HTML5/CSS3/Vanilla JS)
 │
-├─► Supabase Client ──────► PostgreSQL Database + Storage
+├─► Firebase Client ──────► Cloud Firestore (Database)
+│
+├─► ImageKit API ─────────► Image Storage & Optimization
 │
 └─► Secret Header Proxy ──► Vercel Serverless Function (api/gemini.js)
 │
@@ -57,25 +59,28 @@ Google Gemini API
   - `html5-qrcode`: Quét mã QR/Barcode qua Camera.
 - **Backend AI Proxy**: Vercel Serverless Function (Node.js).
 - **AI Model**: Google Gemini (`gemini-flash-latest`).
-- **Database & Storage**: Supabase (PostgreSQL & Storage Buckets).
+- **Database**: Firebase Cloud Firestore.
+- **Storage**: ImageKit.io (Media Storage & Real-time CDN).
 
 ---
 
 ## 🚀 Hướng dẫn cài đặt & Triển khai
 
 ### 1. Cấu hình Frontend
-Sửa file `js/config.js` với thông tin Supabase và secret header proxy của bạn:
-```javascript
-const SUPABASE_URL = "[https://your-supabase-project.supabase.co](https://your-supabase-project.supabase.co)";
-const SUPABASE_KEY = "your-supabase-publishable-key";
-const GEMINI_API_URL = "[https://your-vercel-domain.vercel.app/api/gemini](https://your-vercel-domain.vercel.app/api/gemini)";
-const APP_SECRET = "your-app-secret-key"; // Phải trùng với biến môi trường Vercel
+Cấu hình ứng dụng thông qua Firebase Console và ImageKit Dashboard. Các thông số được quản lý trong hệ thống script của Firebase và Proxy.
 
-2. Cấu hình Vercel Serverless Function
-​Đặt các biến môi trường trên Vercel Dashboard:
-​GEMINI_API_KEY: API Key lấy từ Google AI Studio.
-​APP_SECRET: Mã bí mật chống spam endpoint (Khớp với APP_SECRET ở client).
-​🔒 Bảo mật
-​Chống Stored XSS: Mọi dữ liệu do người dùng hoặc AI tạo ra trước khi chèn vào DOM đều qua hàm escapeHtml() tích hợp DOMPurify.
-​Bảo vệ API Key: GEMINI_API_KEY nằm hoàn toàn ở môi trường server-side trên Vercel, không lộ ra Client.
-​Xác thực Endpoint AI: Serverless Proxy yêu cầu header x-app-secret để ngăn chặn bot/scanner lợi dụng spam tốn chi phí.
+Sửa file `js/config.js` với thông tin API URL và secret header proxy của bạn:
+```javascript
+const GEMINI_API_URL = "https://your-vercel-domain.vercel.app/api/gemini";
+const APP_SECRET = "your-app-secret-key"; // Phải trùng với biến môi trường Vercel
+```
+
+### 2. Cấu hình Vercel Serverless Function
+Đặt các biến môi trường trên Vercel Dashboard:
+- `GEMINI_API_KEY`: API Key lấy từ Google AI Studio.
+- `APP_SECRET`: Mã bí mật chống spam endpoint (Khớp với APP_SECRET ở client).
+
+### 🔒 Bảo mật
+- **Chống Stored XSS**: Mọi dữ liệu do người dùng hoặc AI tạo ra trước khi chèn vào DOM đều qua hàm `escapeHtml()` tích hợp DOMPurify.
+- **Bảo vệ API Key**: `GEMINI_API_KEY` nằm hoàn toàn ở môi trường server-side trên Vercel, không lộ ra Client.
+- **Xác thực Endpoint AI**: Serverless Proxy yêu cầu header `x-app-secret` để ngăn chặn bot/scanner lợi dụng spam tốn chi phí.
