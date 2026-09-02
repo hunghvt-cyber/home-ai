@@ -4,7 +4,14 @@ async function loadItems() {
         typeof runTrashAutoClean === "function"
     ) {
 
-        await runTrashAutoClean();
+        const lastCleanTime = localStorage.getItem("lastTrashAutoClean");
+        const now = Date.now();
+        const twentyFourHours = 24 * 60 * 60 * 1000;
+
+        if (!lastCleanTime || (now - parseInt(lastCleanTime) > twentyFourHours)) {
+            await runTrashAutoClean();
+            localStorage.setItem("lastTrashAutoClean", now.toString());
+        }
 
     }
 
