@@ -7,49 +7,52 @@ async function uploadExtraImages(
     startOrder = 0
 ) {
 
+    const UPLOAD_CONCURRENCY = 3;
+
     for (
         let i = 0;
         i < files.length;
-        i++
+        i += UPLOAD_CONCURRENCY
     ) {
 
-        const imageUrl =
-            await uploadImage(
-                files[i]
+        const chunk =
+            files.slice(
+                i,
+                i + UPLOAD_CONCURRENCY
             );
 
-        const result =
+        await Promise.all(
+            chunk.map(async (file, offset) => {
 
-            await db
+                const sortIndex =
+                    i + offset;
 
-                .from(
-                    "item_images"
-                )
+                const imageUrl =
+                    await uploadImage(
+                        file
+                    );
 
-                .insert([
+                const result =
+                    await db
+                        .from("item_images")
+                        .insert([
+                            {
+                                item_id: itemId,
+                                image_url: imageUrl,
+                                sort_order: startOrder + sortIndex
+                            }
+                        ]);
 
-                    {
+                if (result.error) {
 
-                        item_id:
-                            itemId,
+                    console.warn(
+                        result.error
+                    );
 
-                        image_url:
-                            imageUrl,
+                }
 
-                        sort_order:
-                            startOrder + i
-
-                    }
-
-                ]);
-
-        if (result.error) {
-
-            console.warn(
-                result.error
-            );
-
-        }
+            })
+        );
 
     }
 
