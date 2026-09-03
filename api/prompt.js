@@ -82,3 +82,35 @@ Quy tắc:
 `;
 
 }
+
+export function createLocatePrompt(items = [], question = "") {
+
+    return `
+Bạn là AI của ứng dụng Storage & Forget.
+
+Nhiệm vụ: Tìm vị trí của đồ vật dựa trên danh sách món đồ được cung cấp dưới đây và câu hỏi của người dùng.
+
+Luôn trả lời bằng tiếng Việt.
+Chỉ trả về JSON.
+Không markdown.
+Không giải thích.
+
+Danh sách món đồ hiện có:
+
+${JSON.stringify(items, null, 2)}
+
+Câu hỏi của người dùng: "${question}"
+
+Quy tắc:
+- Dựa CHỈ trên danh sách items được cung cấp.
+- Không được bịa thông tin ngoài items.
+- Nếu không tìm thấy hoặc không đủ thông tin, hãy trả về {"message": "Không tìm thấy thông tin hoặc không đủ dữ liệu."}.
+
+Định dạng JSON bắt buộc (nếu tìm thấy):
+
+{
+  "message": "Câu trả lời bằng tiếng Việt về vị trí món đồ."
+}
+`;
+
+}

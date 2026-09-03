@@ -1,6 +1,7 @@
 import {
     createVisionPrompt,
-    createMultiVisionPrompt
+    createMultiVisionPrompt,
+    createLocatePrompt
 } from "./prompt.js";
 
 import {
@@ -252,14 +253,19 @@ function processGeminiResult(
 
     try {
 
-        const ai =
-            mode === "multi"
-                ? cleanMultiGeminiResponse(
-                    text
-                )
-                : cleanGeminiResponse(
-                    text
-                );
+        let ai;
+        if (mode === "multi") {
+            ai = cleanMultiGeminiResponse(text);
+        } else if (mode === "locate") {
+            try {
+                ai = JSON.parse(text);
+            } catch (e) {
+                console.error("[Gemini] Failed to parse locate JSON", text);
+                ai = { message: "Có lỗi khi xử lý câu trả lời từ AI." };
+            }
+        } else {
+            ai = cleanGeminiResponse(text);
+        }
 
         return res
             .status(200)
@@ -404,11 +410,16 @@ export default async function handler(
             imageBase64,
             mimeType,
             rooms,
-            mode = "single"
+            mode = "single",
+            question,
+            items
         } = body;
 
 
-        if (!imageBase64) {
+        if (
+            mode !== "locate" &&
+            !imageBase64
+        ) {
 
             return res
                 .status(400)
@@ -423,56 +434,63 @@ export default async function handler(
         const normalizedMode =
             mode === "multi"
                 ? "multi"
-                : "single";
+                : (mode === "locate" ? "locate" : "single");
+
+
+        // ----------------------------------------------------
+        // VALIDATE
+        // ----------------------------------------------------
+
+        if (normalizedMode === "locate") {
+            if (typeof question !== "string" || question.trim() === "" || !Array.isArray(items)) {
+                return res.status(400).json({
+                    error: "Invalid request for locate mode. 'question' (string) and 'items' (array) are required."
+                });
+            }
+        }
 
 
         // ----------------------------------------------------
         // PROMPT
         // ----------------------------------------------------
 
-        const promptText =
-            normalizedMode === "multi"
-                ? createMultiVisionPrompt()
-                : createVisionPrompt(
-                    Array.isArray(rooms)
-                        ? rooms
-                        : []
-                );
+        let promptText;
+        if (normalizedMode === "multi") {
+            promptText = createMultiVisionPrompt();
+        } else if (normalizedMode === "locate") {
+            promptText = createLocatePrompt(items, question);
+        } else {
+            promptText = createVisionPrompt(
+                Array.isArray(rooms)
+                    ? rooms
+                    : []
+            );
+        }
 
 
         // ----------------------------------------------------
         // GEMINI BODY
         // ----------------------------------------------------
 
+        const parts = [
+            { text: promptText }
+        ];
+
+        if (normalizedMode !== "locate") {
+            parts.push({
+                inline_data: {
+                    mime_type: mimeType || "image/jpeg",
+                    data: imageBase64
+                }
+            });
+        }
+
         const geminiBody = {
 
             contents: [
 
                 {
-
-                    parts: [
-
-                        {
-                            text:
-                                promptText
-                        },
-
-                        {
-                            inline_data: {
-
-                                mime_type:
-                                    mimeType ||
-                                    "image/jpeg",
-
-                                data:
-                                    imageBase64
-
-                            }
-
-                        }
-
-                    ]
-
+                    parts: parts
                 }
 
             ],
