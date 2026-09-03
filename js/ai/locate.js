@@ -1,17 +1,9 @@
 // js/ai/locate.js
 
-import {
-    callGeminiAPI
-} from "./gemini-client.js";
+// Assuming callGeminiAPI is available globally
+// Assuming filterItems is available globally
 
-import {
-    filterItems
-} from "../search/filter.js";
-
-// Đảm bảo allItems khả dụng (giả định allItems là biến global được load ở nơi khác)
-// Nếu không phải, cần import từ js/database/load.js
-
-export async function askAILocation() {
+async function askAILocation() {
     const searchInput = document.getElementById("search");
     const resultDiv = document.getElementById("aiSearchResult");
 
@@ -32,8 +24,7 @@ export async function askAILocation() {
 
     try {
         // Lọc local sử dụng filterItems hiện có
-        // Lưu ý: filterItems không nhận tham số, nó đọc trực tiếp DOM?
-        // Theo grep, filterItems nhận 1 tham số 'keyword'.
+        // filterItems nằm trong js/search/filter.js
         const filteredItems = filterItems(question);
 
         // Chọn tối đa 10 item phù hợp nhất
@@ -45,7 +36,7 @@ export async function askAILocation() {
             description: item.description
         }));
 
-        // Gọi callGeminiAPI với mode "locate"
+        // Gọi callGeminiAPI
         const response = await callGeminiAPI({
             mode: "locate",
             question: question,
