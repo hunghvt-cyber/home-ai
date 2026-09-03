@@ -283,6 +283,14 @@ style="flex:1;">
 
 </div>
 
+<div class="buttonRow" style="margin-top: 6px;">
+<button onclick="askAILocation()" style="width: 100%; background: #0288d1; color: #fff;">
+🤖 Hỏi AI vị trí đồ
+</button>
+</div>
+
+<div id="aiSearchResult" style="display: none; margin-top: 6px; padding: 10px; background: #e1f5fe; border: 1px solid #b3e5fc; border-radius: 4px; font-size: 0.95em; color: #0277bd; line-height: 1.4;"></div>
+
 <select id="roomFilter">
 
 <option value="">
@@ -378,6 +386,7 @@ style="display:none;">
 <script src="js/ai/suggest.js"></script>
 <script src="js/ai/multi-scan.js"></script>
 <script src="js/ai/burst-capture.js"></script>
+<script src="js/ai/locate.js"></script>
 
 <script src="js/auth.js"></script>
 <script src="js/app.js"></script>

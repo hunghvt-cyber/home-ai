@@ -67,3 +67,5 @@ export async function askAILocation() {
         resultDiv.textContent = "❌ Có lỗi xảy ra khi tìm kiếm: " + (error.message || "Lỗi không xác định.");
     }
 }
+
+window.askAILocation = askAILocation;
