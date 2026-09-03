@@ -3,7 +3,7 @@
 const GEMINI_TIMEOUT_MS = 60000;
 
 
-async function callGeminiAPI(payload) {
+export async function callGeminiAPI(payload) {
 
     const user =
         firebase.auth().currentUser;

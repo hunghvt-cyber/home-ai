@@ -1,4 +1,4 @@
-function filterItems(keyword) {
+export function filterItems(keyword) {
 
 
     keyword =
