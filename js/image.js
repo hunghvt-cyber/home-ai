@@ -1,11 +1,28 @@
 let selectedFile = null;
 
-function openCamera() {
+async function openCamera() {
 
-    const input = document.getElementById("imageInput");
+    if (typeof Swal === "undefined") {
+        const input = document.getElementById("cameraImageInput");
+        if (input) input.click();
+        return;
+    }
 
-    if (input) {
-        input.click();
+    const result = await Swal.fire({
+        title: "📷 1 món",
+        text: "Chọn cách lấy ảnh",
+        showCancelButton: true,
+        showDenyButton: true,
+        confirmButtonText: "📷 Chụp ảnh",
+        denyButtonText: "🖼️ Chọn album",
+        cancelButtonText: "Hủy",
+        reverseButtons: true
+    });
+
+    if (result.isConfirmed) {
+        document.getElementById("cameraImageInput")?.click();
+    } else if (result.isDenied) {
+        document.getElementById("galleryImageInput")?.click();
     }
 
 }
@@ -22,6 +39,21 @@ function openExtraImage() {
 
 function initImage() {
 
+    document
+        .getElementById("cameraImageInput")
+        .addEventListener(
+            "change",
+            handleImage
+        );
+
+    document
+        .getElementById("galleryImageInput")
+        .addEventListener(
+            "change",
+            handleImage
+        );
+
+    // Backward compatibility for any existing caller using imageInput.
     document
         .getElementById("imageInput")
         .addEventListener(
