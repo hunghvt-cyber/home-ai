@@ -22,8 +22,7 @@ const PRIMARY_MODEL =
     "gemini-3.5-flash";
 
 const FALLBACK_MODELS = [
-    "gemini-3.6-flash",
-    "gemini-2.5-flash"
+    "gemini-3.6-flash"
 ];
 
 const GEMINI_API_KEY =
@@ -494,13 +493,14 @@ export default async function handler(
             };
 
             // Gemini 3.x supports these controls.
-            // Keep Gemini 2.5 fallback on the known-compatible request shape.
             if (model.startsWith("gemini-3.")) {
-                generationConfig.mediaResolution =
-                    normalizedMediaResolution;
-
                 generationConfig.thinkingConfig = {
-                    thinkingLevel: "low"
+                    // Single-image extraction is a simple structured task;
+                    // use the minimum supported reasoning level for lower latency.
+                    thinkingLevel:
+                        normalizedMode === "single"
+                            ? "minimal"
+                            : "low"
                 };
             }
 
