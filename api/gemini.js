@@ -489,20 +489,13 @@ export default async function handler(
 
         function buildGeminiBody(model) {
 
+            // Keep the request body minimal while validating the production path.
+            // Client-side image resizing remains enabled; Gemini-side resolution/thinking
+            // controls are temporarily omitted until the API request is proven stable.
             const generationConfig = {
                 responseMimeType:
-                    "application/json",
-
-                mediaResolution:
-                    normalizedMediaResolution
+                    "application/json"
             };
-
-            // Gemini 3.x: low thinking is sufficient for this simple vision/JSON task.
-            if (model.startsWith("gemini-3.")) {
-                generationConfig.thinkingConfig = {
-                    thinkingLevel: "low"
-                };
-            }
 
             return {
                 contents: [
