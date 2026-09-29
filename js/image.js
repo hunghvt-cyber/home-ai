@@ -2,70 +2,28 @@ let selectedFile = null;
 
 function openCamera() {
 
-    document
-        .getElementById(
-            "cameraInput"
-        )
-        .click();
+    const input = document.getElementById("imageInput");
+
+    if (input) {
+        input.click();
+    }
 
 }
 
-function openGallery() {
+function openExtraImage() {
 
-    document
-        .getElementById(
-            "galleryInput"
-        )
-        .click();
+    const input = document.getElementById("extraImageInput");
 
-}
-
-function openExtraCamera() {
-
-    const input =
-        document.getElementById(
-            "extraImageInput"
-        );
-
-    input.setAttribute(
-        "capture",
-        "environment"
-    );
-
-    input.click();
-
-}
-
-function openExtraGallery() {
-
-    const input =
-        document.getElementById(
-            "extraImageInput"
-        );
-
-    input.removeAttribute(
-        "capture"
-    );
-
-    input.click();
+    if (input) {
+        input.click();
+    }
 
 }
 
 function initImage() {
 
     document
-        .getElementById(
-            "cameraInput"
-        )
-        .addEventListener(
-            "change",
-            handleImage
-        );
-
-    document
-        .getElementById(
-            "galleryInput"
-        )
+        .getElementById("imageInput")
         .addEventListener(
             "change",
             handleImage
@@ -129,8 +87,7 @@ function handleImage(event) {
     if (!editingItem) {
 
         showActionButtons({
-            addCamera: true,
-            addGallery: true,
+            addImage: true,
             skip: true,
             cancel: false
         });
@@ -139,8 +96,7 @@ function handleImage(event) {
     else {
 
         showActionButtons({
-            addCamera: true,
-            addGallery: true,
+            addImage: true,
             skip: false,
             cancel: true
         });
@@ -176,14 +132,9 @@ function handleExtraImage(event) {
 
 function showActionButtons(opts) {
 
-    const addCameraBtn =
+    const addImageBtn =
         document.getElementById(
-            "addCameraButton"
-        );
-
-    const addGalleryBtn =
-        document.getElementById(
-            "addGalleryButton"
+            "addImageButton"
         );
 
     const skipBtn =
@@ -196,19 +147,10 @@ function showActionButtons(opts) {
             "cancelButton"
         );
 
-    if (addCameraBtn) {
+    if (addImageBtn) {
 
-        addCameraBtn.style.display =
-            opts.addCamera
-                ? "inline-block"
-                : "none";
-
-    }
-
-    if (addGalleryBtn) {
-
-        addGalleryBtn.style.display =
-            opts.addGallery
+        addImageBtn.style.display =
+            opts.addImage
                 ? "inline-block"
                 : "none";
 
@@ -234,39 +176,47 @@ function showActionButtons(opts) {
 
 }
 
-// Dùng Compressor.js tự động nén ảnh + xoay đúng chiều EXIF
-async function resizeImage(file) {
+// Temporary AI copies only. The original file is never modified.
+const AI_IMAGE_PROFILES = {
+    fast: {
+        maxDimension: 1024,
+        quality: 0.72
+    },
+    detail: {
+        maxDimension: 1600,
+        quality: 0.78
+    }
+};
+
+async function resizeImage(file, profile = "fast") {
+
+    const config =
+        AI_IMAGE_PROFILES[profile] ||
+        AI_IMAGE_PROFILES.fast;
 
     return new Promise(function(resolve) {
 
-        if (typeof Compressor !== "undefined") {
-
-            new Compressor(file, {
-                quality: 0.7,
-                maxWidth: 1000,
-                maxHeight: 1000,
-                mimeType: "image/webp",
-
-                success(result) {
-
-                    resolve(result);
-
-                },
-
-                error(err) {
-
-                    console.warn("Compressor.js error, fallback file:", err);
-
-                    resolve(file);
-
-                }
-            });
-
-        } else {
-
+        if (typeof Compressor === "undefined") {
             resolve(file);
-
+            return;
         }
+
+        new Compressor(file, {
+            quality: config.quality,
+            maxWidth: config.maxDimension,
+            maxHeight: config.maxDimension,
+            mimeType: "image/webp",
+            convertSize: 0,
+
+            success(result) {
+                resolve(result);
+            },
+
+            error(err) {
+                console.warn("Compressor.js error, fallback file:", err);
+                resolve(file);
+            }
+        });
 
     });
 
