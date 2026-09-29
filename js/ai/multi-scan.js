@@ -69,9 +69,20 @@ async function handleMultiScanImage(
 
     try {
 
+        const resizeStart = performance.now();
+
+        const aiFile =
+            await resizeImage(
+                file,
+                "detail"
+            );
+
+        const resizeMs =
+            Math.round(performance.now() - resizeStart);
+
         const base64 =
             await fileToBase64(
-                file
+                aiFile
             );
 
         const cleanBase64 =
@@ -85,7 +96,10 @@ async function handleMultiScanImage(
                     cleanBase64,
 
                 mimeType:
-                    file.type,
+                    aiFile.type,
+
+                mediaResolution:
+                    "MEDIA_RESOLUTION_HIGH",
 
                 mode:
                     "multi"
@@ -164,6 +178,16 @@ async function handleMultiScanImage(
 
         renderBatchModal();
 
+
+        console.info(
+            "[AI] multi image pipeline:",
+            {
+                originalBytes: file.size,
+                aiBytes: aiFile.size,
+                resizeMs,
+                itemCount: items.length
+            }
+        );
 
         showMessage(
             `📸 AI đã tách được ${items.length} món đồ từ ảnh!`
