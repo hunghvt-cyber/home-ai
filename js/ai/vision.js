@@ -89,15 +89,32 @@ async function analyzeImage() {
 
 async function sendImageToAI() {
 
+    const resizeStart = performance.now();
+
+    // FAST profile: temporary 1024px WebP for Gemini only.
+    const aiFile =
+        await resizeImage(
+            selectedFile,
+            "fast"
+        );
+
+    const resizeMs =
+        Math.round(performance.now() - resizeStart);
+
+    const encodeStart = performance.now();
+
     const base64 =
         await fileToBase64(
-            selectedFile
+            aiFile
         );
 
 
 
     const cleanBase64 =
         base64.split(",")[1];
+
+    const encodeMs =
+        Math.round(performance.now() - encodeStart);
 
 
 
@@ -124,7 +141,10 @@ async function sendImageToAI() {
                 cleanBase64,
 
             mimeType:
-                selectedFile.type,
+                aiFile.type,
+
+            mediaResolution:
+                "MEDIA_RESOLUTION_MEDIUM",
 
             rooms:
                 roomList,
@@ -200,6 +220,16 @@ async function sendImageToAI() {
     }
 
 
+
+    console.info(
+        "[AI] single image pipeline:",
+        {
+            originalBytes: selectedFile.size,
+            aiBytes: aiFile.size,
+            resizeMs,
+            encodeMs
+        }
+    );
 
     showMessage(
         "🤖 AI đã nhận diện xong."
