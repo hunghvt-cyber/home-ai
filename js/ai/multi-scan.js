@@ -7,17 +7,23 @@ let currentBatchItems = [];
 // MULTI-SCAN CAMERA
 // ============================================================
 
-function openMultiScanCamera() {
+async function openMultiScanCamera() {
 
-    const input =
-        document.getElementById(
-            "multiScanInput"
-        );
+    const result = await Swal.fire({
+        title: "📸 1 ảnh nhiều món",
+        text: "Chọn cách lấy ảnh",
+        showCancelButton: true,
+        showDenyButton: true,
+        confirmButtonText: "📷 Chụp ảnh",
+        denyButtonText: "🖼️ Chọn album",
+        cancelButtonText: "Hủy",
+        reverseButtons: true
+    });
 
-    if (input) {
-
-        input.click();
-
+    if (result.isConfirmed) {
+        document.getElementById("multiScanCameraInput")?.click();
+    } else if (result.isDenied) {
+        document.getElementById("multiScanGalleryInput")?.click();
     }
 
 }
@@ -25,19 +31,19 @@ function openMultiScanCamera() {
 
 function initMultiScan() {
 
-    const input =
-        document.getElementById(
-            "multiScanInput"
-        );
-
-    if (input) {
-
-        input.addEventListener(
-            "change",
-            handleMultiScanImage
-        );
-
-    }
+    [
+        "multiScanCameraInput",
+        "multiScanGalleryInput",
+        "multiScanInput"
+    ].forEach(function(id) {
+        const input = document.getElementById(id);
+        if (input) {
+            input.addEventListener(
+                "change",
+                handleMultiScanImage
+            );
+        }
+    });
 
 }
 
@@ -190,7 +196,7 @@ async function handleMultiScanImage(
         );
 
         showMessage(
-            `📸 AI đã tách được ${items.length} món đồ từ ảnh!`
+            `📸 AI (${data._model || "unknown"}) đã tách được ${items.length} món đồ từ ảnh!`
         );
 
     }
