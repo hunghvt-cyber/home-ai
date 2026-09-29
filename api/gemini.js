@@ -494,13 +494,15 @@ export default async function handler(
 
             const generationConfig = {
                 responseMimeType:
-                    "application/json",
-
-                mediaResolution:
-                    normalizedMediaResolution
+                    "application/json"
             };
 
+            // Gemini 3.x supports these controls.
+            // Keep Gemini 2.5 fallback on the known-compatible request shape.
             if (model.startsWith("gemini-3.")) {
+                generationConfig.mediaResolution =
+                    normalizedMediaResolution;
+
                 generationConfig.thinkingConfig = {
                     thinkingLevel: "low"
                 };
