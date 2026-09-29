@@ -260,9 +260,14 @@ function processGeminiResult(
             ai = cleanGeminiResponse(text);
         }
 
+        // Diagnostic only: expose the model that actually returned this response.
+        // Existing consumers ignore unknown JSON fields.
         return res
             .status(200)
-            .json(ai);
+            .json({
+                ...ai,
+                _model: model
+            });
 
     }
     catch (error) {
