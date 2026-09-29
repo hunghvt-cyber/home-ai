@@ -10,19 +10,12 @@ function clearForm() {
 
 
 
-    document
-        .getElementById(
-            "cameraInput"
-        )
-        .value = "";
+    const imageInput =
+        document.getElementById("imageInput");
 
-
-
-    document
-        .getElementById(
-            "galleryInput"
-        )
-        .value = "";
+    if (imageInput) {
+        imageInput.value = "";
+    }
 
 
 
@@ -135,8 +128,6 @@ function clearForm() {
     ) {
 
         showActionButtons({
-
-            addImage: false,
 
             addImage: false,
 
