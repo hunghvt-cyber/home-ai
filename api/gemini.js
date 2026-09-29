@@ -19,7 +19,7 @@ import {
 // ============================================================
 
 const PRIMARY_MODEL =
-    "gemini-3.5-flash";
+    "gemini-3.6-flash";
 
 // Keep a single production model for predictable billing and behavior.
 // Do not silently switch to another model.
