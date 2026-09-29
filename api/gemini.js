@@ -19,11 +19,12 @@ import {
 // ============================================================
 
 const PRIMARY_MODEL =
-    "gemini-3.6-flash";
+    "gemini-3.5-flash";
 
-// Keep a single production model for predictable billing and behavior.
-// Do not silently switch to another model.
-
+const FALLBACK_MODELS = [
+    "gemini-3.6-flash",
+    "gemini-2.5-flash"
+];
 
 const GEMINI_API_KEY =
     process.env.GEMINI_API_KEY;
@@ -62,8 +63,10 @@ function isRetryableStatus(status) {
 
 function getModelsToTry() {
 
-    // Single-model policy: no model fallback.
-    return [PRIMARY_MODEL];
+    return [
+        PRIMARY_MODEL,
+        ...FALLBACK_MODELS
+    ];
 
 }
 
@@ -489,13 +492,16 @@ export default async function handler(
 
         function buildGeminiBody(model) {
 
-            // Keep the request body minimal while validating the production path.
-            // Client-side image resizing remains enabled; Gemini-side resolution/thinking
-            // controls are temporarily omitted until the API request is proven stable.
             const generationConfig = {
                 responseMimeType:
                     "application/json"
             };
+
+            if (model.startsWith("gemini-3.")) {
+                generationConfig.thinkingConfig = {
+                    thinkingLevel: "low"
+                };
+            }
 
             return {
                 contents: [
@@ -672,7 +678,7 @@ export default async function handler(
             .json({
 
                 error:
-                    "Gemini API Error",
+                    "All Gemini models failed",
 
                 model:
                     lastResult?.model ||
@@ -683,7 +689,7 @@ export default async function handler(
                     {
                         error: {
                             message:
-                                "Gemini request failed after retry."
+                                "All Gemini models failed."
                         }
                     }
 
