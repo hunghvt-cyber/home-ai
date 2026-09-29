@@ -21,10 +21,9 @@ import {
 const PRIMARY_MODEL =
     "gemini-3.5-flash";
 
-const FALLBACK_MODELS = [
-    "gemini-3.6-flash",
-    "gemini-2.5-flash"
-];
+// Keep a single production model for predictable billing and behavior.
+// Do not silently switch to another model.
+
 
 const GEMINI_API_KEY =
     process.env.GEMINI_API_KEY;
@@ -63,17 +62,8 @@ function isRetryableStatus(status) {
 
 function getModelsToTry() {
 
-    /*
-     * Production model policy:
-     *
-     * The browser must not choose which Gemini model is used.
-     * Only this server-side list controls model selection.
-     */
-
-    return [
-        PRIMARY_MODEL,
-        ...FALLBACK_MODELS
-    ];
+    // Single-model policy: no model fallback.
+    return [PRIMARY_MODEL];
 
 }
 
@@ -507,16 +497,10 @@ export default async function handler(
                     normalizedMediaResolution
             };
 
-            // Gemini 3.x: use low thinking for this simple vision/JSON task.
-            // Gemini 2.5 fallback: use the compatible thinkingBudget parameter.
+            // Gemini 3.x: low thinking is sufficient for this simple vision/JSON task.
             if (model.startsWith("gemini-3.")) {
                 generationConfig.thinkingConfig = {
                     thinkingLevel: "low"
-                };
-            }
-            else if (model.startsWith("gemini-2.5-")) {
-                generationConfig.thinkingConfig = {
-                    thinkingBudget: 1024
                 };
             }
 
@@ -532,11 +516,10 @@ export default async function handler(
 
 
         // ----------------------------------------------------
-        // MODELS
+        // MODEL
         // ----------------------------------------------------
 
-        const models =
-            getModelsToTry();
+        const models = getModelsToTry();
 
 
         console.log(
@@ -667,20 +650,7 @@ export default async function handler(
             }
 
 
-            // ------------------------------------------------
-            // NEXT MODEL
-            // ------------------------------------------------
 
-            if (
-                index <
-                models.length - 1
-            ) {
-
-                console.warn(
-                    `[Gemini] Switching to ${models[index + 1]}`
-                );
-
-            }
 
         }
 
@@ -690,7 +660,7 @@ export default async function handler(
         // ----------------------------------------------------
 
         console.error(
-            "[Gemini] All models failed:",
+            "[Gemini] Model failed after retry:",
             lastResult
         );
 
@@ -720,7 +690,7 @@ export default async function handler(
                     {
                         error: {
                             message:
-                                "All Gemini models failed."
+                                "Gemini request failed after retry."
                         }
                     }
 
