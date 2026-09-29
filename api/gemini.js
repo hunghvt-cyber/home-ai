@@ -495,12 +495,7 @@ export default async function handler(
             // Gemini 3.x supports these controls.
             if (model.startsWith("gemini-3.")) {
                 generationConfig.thinkingConfig = {
-                    // Single-image extraction is a simple structured task;
-                    // use the minimum supported reasoning level for lower latency.
-                    thinkingLevel:
-                        normalizedMode === "single"
-                            ? "minimal"
-                            : "low"
+                    thinkingLevel: "low"
                 };
             }
 
