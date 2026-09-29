@@ -88,14 +88,7 @@ placeholder="Tên phòng">
 <hr>
 
 <input
-id="cameraInput"
-type="file"
-accept="image/*"
-capture="environment"
-style="display:none;">
-
-<input
-id="galleryInput"
+id="imageInput"
 type="file"
 accept="image/*"
 style="display:none;">
@@ -147,19 +140,15 @@ placeholder="Vị trí (ví dụ: Hộc tủ 2, Kệ sách)">
 <div class="buttonRow">
 
 <button onclick="openCamera()">
-📷 Chụp 1 món
-</button>
-
-<button onclick="openGallery()">
-🖼️ Album
+📷 1 món
 </button>
 
 <button onclick="openMultiScanCamera()" class="btnHighlight">
-📸 Multi-Scan
+📸 1 ảnh nhiều món
 </button>
 
 <button onclick="openBurstCapture()" class="btnHighlight">
-⚡ Burst Mode
+⚡ Chụp liên tiếp
 </button>
 
 </div>
@@ -177,7 +166,7 @@ placeholder="Vị trí (ví dụ: Hộc tủ 2, Kệ sách)">
 <div class="buttonRow" style="margin-top:8px;">
 
 <button onclick="analyzeImage()">
-🤖 AI Phân tích (1 món)
+🤖 AI phân tích
 </button>
 
 </div>
@@ -240,17 +229,10 @@ onclick="saveItem()">
 </button>
 
 <button
-id="addCameraButton"
-onclick="openExtraCamera()"
+id="addImageButton"
+onclick="openExtraImage()"
 style="display:none;">
-📷 Chụp thêm
-</button>
-
-<button
-id="addGalleryButton"
-onclick="openExtraGallery()"
-style="display:none;">
-🖼️ Thêm từ album
+➕ Thêm ảnh
 </button>
 
 <button
