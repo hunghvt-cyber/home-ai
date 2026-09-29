@@ -232,7 +232,9 @@ async function sendImageToAI() {
     );
 
     showMessage(
-        "🤖 AI đã nhận diện xong."
+        "🤖 AI đã nhận diện xong (" +
+        (ai._model || "unknown") +
+        ")."
     );
 
 }
