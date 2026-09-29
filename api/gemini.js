@@ -411,6 +411,7 @@ export default async function handler(
             mimeType,
             rooms,
             mode = "single",
+            mediaResolution,
             question,
             items
         } = body;
@@ -485,27 +486,49 @@ export default async function handler(
             });
         }
 
-        const geminiBody = {
+        const allowedMediaResolutions = new Set([
+            "MEDIA_RESOLUTION_LOW",
+            "MEDIA_RESOLUTION_MEDIUM",
+            "MEDIA_RESOLUTION_HIGH"
+        ]);
 
-            contents: [
+        const normalizedMediaResolution =
+            allowedMediaResolutions.has(mediaResolution)
+                ? mediaResolution
+                : "MEDIA_RESOLUTION_MEDIUM";
 
-                {
-                    parts: parts
-                }
+        function buildGeminiBody(model) {
 
-            ],
-
-            generationConfig: {
-
-                temperature:
-                    0.2,
-
+            const generationConfig = {
                 responseMimeType:
-                    "application/json"
+                    "application/json",
 
+                mediaResolution:
+                    normalizedMediaResolution
+            };
+
+            // Gemini 3.x: use low thinking for this simple vision/JSON task.
+            // Gemini 2.5 fallback: use the compatible thinkingBudget parameter.
+            if (model.startsWith("gemini-3.")) {
+                generationConfig.thinkingConfig = {
+                    thinkingLevel: "low"
+                };
+            }
+            else if (model.startsWith("gemini-2.5-")) {
+                generationConfig.thinkingConfig = {
+                    thinkingBudget: 1024
+                };
             }
 
-        };
+            return {
+                contents: [
+                    {
+                        parts: parts
+                    }
+                ],
+                generationConfig
+            };
+        }
 
 
         // ----------------------------------------------------
@@ -548,6 +571,9 @@ export default async function handler(
             // ------------------------------------------------
             // FIRST REQUEST
             // ------------------------------------------------
+
+            const geminiBody =
+                buildGeminiBody(currentModel);
 
             let gemini =
                 await callGemini(
