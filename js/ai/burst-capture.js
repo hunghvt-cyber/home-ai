@@ -58,9 +58,20 @@ async function analyzeOneBurstImage(
 
     try {
 
+        const resizeStart = performance.now();
+
+        const aiFile =
+            await resizeImage(
+                file,
+                "fast"
+            );
+
+        const resizeMs =
+            Math.round(performance.now() - resizeStart);
+
         const base64 =
             await fileToBase64(
-                file
+                aiFile
             );
 
 
@@ -75,7 +86,10 @@ async function analyzeOneBurstImage(
                     cleanBase64,
 
                 mimeType:
-                    file.type,
+                    aiFile.type,
+
+                mediaResolution:
+                    "MEDIA_RESOLUTION_MEDIUM",
 
                 rooms:
                     roomList,
@@ -85,6 +99,16 @@ async function analyzeOneBurstImage(
 
             });
 
+
+        console.info(
+            "[AI] burst image pipeline:",
+            {
+                index: index + 1,
+                originalBytes: file.size,
+                aiBytes: aiFile.size,
+                resizeMs
+            }
+        );
 
         return {
 
