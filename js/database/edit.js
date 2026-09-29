@@ -86,8 +86,6 @@ function enterEditMode() {
 
         addImage: true,
 
-        addImage: true,
-
         skip: false,
 
         cancel: true
