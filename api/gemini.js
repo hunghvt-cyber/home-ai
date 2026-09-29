@@ -494,7 +494,10 @@ export default async function handler(
 
             const generationConfig = {
                 responseMimeType:
-                    "application/json"
+                    "application/json",
+
+                mediaResolution:
+                    normalizedMediaResolution
             };
 
             if (model.startsWith("gemini-3.")) {
