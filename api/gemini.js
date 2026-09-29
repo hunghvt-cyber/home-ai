@@ -475,15 +475,6 @@ export default async function handler(
             { text: promptText }
         ];
 
-        if (normalizedMode !== "locate") {
-            parts.push({
-                inline_data: {
-                    mime_type: mimeType || "image/jpeg",
-                    data: imageBase64
-                }
-            });
-        }
-
         const allowedMediaResolutions = new Set([
             "MEDIA_RESOLUTION_LOW",
             "MEDIA_RESOLUTION_MEDIUM",
@@ -513,10 +504,31 @@ export default async function handler(
                 };
             }
 
+            const requestParts = [...parts];
+
+            if (normalizedMode !== "locate") {
+                const imagePart = {
+                    inline_data: {
+                        mime_type: mimeType || "image/jpeg",
+                        data: imageBase64
+                    }
+                };
+
+                // Gemini 3.x expects media resolution on the image part,
+                // not inside generationConfig.
+                if (model.startsWith("gemini-3.")) {
+                    imagePart.mediaResolution = {
+                        level: normalizedMediaResolution
+                    };
+                }
+
+                requestParts.push(imagePart);
+            }
+
             return {
                 contents: [
                     {
-                        parts: parts
+                        parts: requestParts
                     }
                 ],
                 generationConfig
