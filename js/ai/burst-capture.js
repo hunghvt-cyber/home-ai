@@ -7,17 +7,23 @@ const BURST_CONCURRENCY = 3;
 // OPEN BURST
 // ============================================================
 
-function openBurstCapture() {
+async function openBurstCapture() {
 
-    const input =
-        document.getElementById(
-            "burstCaptureInput"
-        );
+    const result = await Swal.fire({
+        title: "⚡ Chụp liên tiếp",
+        text: "Chọn cách lấy ảnh",
+        showCancelButton: true,
+        showDenyButton: true,
+        confirmButtonText: "📷 Chụp ảnh",
+        denyButtonText: "🖼️ Chọn album",
+        cancelButtonText: "Hủy",
+        reverseButtons: true
+    });
 
-    if (input) {
-
-        input.click();
-
+    if (result.isConfirmed) {
+        document.getElementById("burstCameraInput")?.click();
+    } else if (result.isDenied) {
+        document.getElementById("burstGalleryInput")?.click();
     }
 
 }
@@ -29,19 +35,19 @@ function openBurstCapture() {
 
 function initBurstCapture() {
 
-    const input =
-        document.getElementById(
-            "burstCaptureInput"
-        );
-
-    if (input) {
-
-        input.addEventListener(
-            "change",
-            handleBurstCaptureImages
-        );
-
-    }
+    [
+        "burstCameraInput",
+        "burstGalleryInput",
+        "burstCaptureInput"
+    ].forEach(function(id) {
+        const input = document.getElementById(id);
+        if (input) {
+            input.addEventListener(
+                "change",
+                handleBurstCaptureImages
+            );
+        }
+    });
 
 }
 
